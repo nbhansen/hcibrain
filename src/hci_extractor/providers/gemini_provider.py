@@ -7,8 +7,9 @@ from typing import Any, Dict, List, Optional
 
 import google.generativeai as genai
 
-from .base import LLMError, LLMProvider, RateLimitError, LLMValidationError
-from ..prompts import PromptManager
+from hci_extractor.core.models import LLMError, RateLimitError, LLMValidationError
+from hci_extractor.prompts import PromptManager
+from hci_extractor.providers.base import LLMProvider
 
 logger = logging.getLogger(__name__)
 
@@ -123,11 +124,17 @@ class GeminiProvider(LLMProvider):
             if not response.text:
                 raise LLMError("Empty response from Gemini API")
 
-            # Parse JSON response
+            # Parse JSON response with recovery attempts
             try:
                 response_data = json.loads(response.text)
             except json.JSONDecodeError as e:
-                raise LLMValidationError(f"Invalid JSON response from Gemini: {e}")
+                # Try to recover from common JSON issues
+                recovered_data = self._attempt_json_recovery(response.text, e)
+                if recovered_data is not None:
+                    logger.warning(f"Recovered from JSON error: {e}")
+                    response_data = recovered_data
+                else:
+                    raise LLMValidationError(f"Invalid JSON response from Gemini: {e}")
 
             return response_data
 
@@ -143,6 +150,53 @@ class GeminiProvider(LLMProvider):
                 raise LLMError(f"Gemini safety filter triggered: {e}")
             else:
                 raise LLMError(f"Gemini API error: {e}")
+
+    def _attempt_json_recovery(self, response_text: str, original_error: json.JSONDecodeError) -> Optional[Dict[str, Any]]:
+        """Attempt to recover from JSON parsing errors."""
+        try:
+            # Common issue: unterminated strings - try truncating at error position
+            if "Unterminated string" in str(original_error):
+                error_pos = getattr(original_error, 'pos', len(response_text))
+                
+                # Try to find the last complete JSON object before the error
+                for try_pos in range(error_pos - 1, max(0, error_pos - 1000), -1):
+                    if response_text[try_pos] == '}':
+                        # Try parsing up to this closing brace
+                        truncated = response_text[:try_pos + 1]
+                        try:
+                            return json.loads(truncated)
+                        except json.JSONDecodeError:
+                            continue
+                
+                # Try to find and close the last opened elements array
+                elements_start = response_text.rfind('{"elements":[')
+                if elements_start >= 0:
+                    # Find last complete element
+                    bracket_count = 0
+                    last_complete = -1
+                    
+                    for i in range(elements_start, min(len(response_text), error_pos)):
+                        if response_text[i] == '{':
+                            bracket_count += 1
+                        elif response_text[i] == '}':
+                            bracket_count -= 1
+                            if bracket_count == 1:  # Back to elements level
+                                last_complete = i
+                    
+                    if last_complete > elements_start:
+                        # Construct valid JSON ending
+                        recovered = response_text[:last_complete + 1] + ']}'
+                        try:
+                            return json.loads(recovered)
+                        except json.JSONDecodeError:
+                            pass
+            
+            # If no recovery possible, return None
+            return None
+            
+        except Exception:
+            # If recovery attempt fails, return None
+            return None
 
     def validate_response(self, response: Dict[str, Any]) -> bool:
         """Validate Gemini response format."""
@@ -208,16 +262,6 @@ class GeminiProvider(LLMProvider):
                         f"Element {i} text must be non-empty string"
                     )
                 
-                # Validate optional hci_contribution_type field
-                if "hci_contribution_type" in element:
-                    valid_contribution_types = [
-                        "knowledge-increasing", "knowledge-contesting", "artifact", 
-                        "method", "theory", "synthesis", "unknown"
-                    ]
-                    if element["hci_contribution_type"] not in valid_contribution_types:
-                        raise LLMValidationError(
-                            f"Element {i} has invalid hci_contribution_type: {element['hci_contribution_type']}"
-                        )
 
             return True
 

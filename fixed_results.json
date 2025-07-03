@@ -1,0 +1,762 @@
+{
+  "paper": {
+    "paper_id": "5fcd0016-2ea5-4c42-ab58-3f8422395472",
+    "title": "Autisticadults",
+    "authors": [
+      "Unknown"
+    ],
+    "venue": null,
+    "year": null,
+    "file_path": "autisticadults.pdf"
+  },
+  "extraction_summary": {
+    "total_elements": 81,
+    "elements_by_type": {
+      "claim": 37,
+      "finding": 35,
+      "method": 9,
+      "artifact": 0
+    },
+    "elements_by_section": {
+      "abstract": 3,
+      "introduction": 3,
+      "related_work": 9,
+      "methodology": 8,
+      "discussion": 53,
+      "conclusion": 5
+    },
+    "average_confidence": 0.9197530864197531,
+    "created_at": "2025-07-02T21:56:40.321894"
+  },
+  "extracted_elements": [
+    {
+      "element_id": "da9b2a13-701b-4cd2-a185-05d8295dac2f",
+      "element_type": "method",
+      "text": "scoping review analysis of 11 projects across 18 papers that focused on including autistic adults in the design of technology that impacts their lives",
+      "section": "abstract",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "3dbbf9d2-6df1-4523-bc15-352981c6aa76",
+      "element_type": "finding",
+      "text": "mixed positions on how the lived autistic perspective was harnessed to direct the application of topics and technologies chosen",
+      "section": "abstract",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "bc11d6c0-ee9a-44f5-bd55-75005de9d086",
+      "element_type": "finding",
+      "text": "Most projects employed infrastructures to enhance participation (e.g., providing multiple modes to participate or employing a tailored methodology)",
+      "section": "abstract",
+      "confidence": 0.85,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "79908f66-79ff-419c-b001-753d8db18af1",
+      "element_type": "claim",
+      "text": "In this scoping review, we investigate the involvement of autistic adults1 in technology design.",
+      "section": "introduction",
+      "confidence": 0.95,
+      "evidence_type": "unknown",
+      "page_number": 1
+    },
+    {
+      "element_id": "7d84ae94-e72b-4fe4-9649-8940d89b11cc",
+      "element_type": "claim",
+      "text": "There has been increasing interest in supporting autistic adults with technology (for example, at home [68, 87] or at work [35, 82]).",
+      "section": "introduction",
+      "confidence": 0.9,
+      "evidence_type": "unknown",
+      "page_number": 1
+    },
+    {
+      "element_id": "eadebe04-69be-4a34-bc3f-8fe984769638",
+      "element_type": "claim",
+      "text": "a growing concern relates to 1In this article, we use identity-first language (i.e. autistic adult) rather than person-first language (i.e. person with autism), as this has been the preference of the autistic community [84].",
+      "section": "introduction",
+      "confidence": 0.8,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "3e438bec-bbf3-4b45-bbfb-b8173668d95e",
+      "element_type": "claim",
+      "text": "Autism research has been framed in three ways.",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "d141b712-c0e6-4670-a44c-4ead481ff20c",
+      "element_type": "claim",
+      "text": "One perspective views the autistic person as having problems that need to be fixed.",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "e0e102cd-bfcf-4253-9d7e-7c03529bf732",
+      "element_type": "claim",
+      "text": "Infamously, the medical model positions autism as a “deficit” with traits that need to be cured [3].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "9d41f3d0-2ce6-46be-be67-f6e394fabd3b",
+      "element_type": "claim",
+      "text": "For instance, the Diagnostic and Statistical Manual of Mental Disorders (DSM-5) is often referred to when diagnosing autism [5]; the diagnostic criteria positions autistic traits as impairments, notably in social relationships, motor movements, and executive functioning.",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "e85b8794-d6d9-48bb-9f75-6709b5897486",
+      "element_type": "claim",
+      "text": "Moreover, the theory of mind positions autistic people as unable to understand the mental states of themselves and others [7].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "d7192f1d-8fd1-4fae-b820-4af4082c4c46",
+      "element_type": "claim",
+      "text": "Autistic people have been characterised as having difficulties seeing the “bigger picture” due to their tendencies to focus on details [34].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "c355e796-fc65-4323-938a-329466501105",
+      "element_type": "claim",
+      "text": "While many autistic people need support in daily life, framing the problem from within the autistic person has been seen as harmful; it promotes a perception that autistic people must change their behaviour and adapt to the context [16, 54, 80].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "33b31f53-ccf3-4df2-b2c7-c6c891418279",
+      "element_type": "claim",
+      "text": "Thus, they have been contested by autistic advocates because they assume that there is an ideal mind to be attained [43, 45, 80].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "f2c230eb-448c-4329-ac42-26f55f81d429",
+      "element_type": "claim",
+      "text": "Many autistic people engage in self-stimulatory movements, such as hand rocking and fidgeting, that help regulate emotions [46].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "86a91271-b155-4b97-b100-0e6656e4297d",
+      "element_type": "method",
+      "text": "We employed the Joanna Briggs approach [65] as our search strategy, driven by our goal to include a wide range of case studies involving autistic adults in designing technology.",
+      "section": "methodology",
+      "confidence": 0.9,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "9f228b88-f14d-490f-86ba-ab571282746b",
+      "element_type": "method",
+      "text": "The Joanna Briggs Scoping approach allowed us to scan reference lists of included papers for other relevant sources.",
+      "section": "methodology",
+      "confidence": 0.85,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "0b779a00-8567-4b19-ab97-0c26ee16c4d2",
+      "element_type": "method",
+      "text": "This enabled us to add an additional phase to obtain more contextual information on the projects identified.",
+      "section": "methodology",
+      "confidence": 0.85,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "7bab8aed-8b83-4818-99ae-6283e518641c",
+      "element_type": "method",
+      "text": "The generation of keywords for our search involved careful discussion between the two authors and an independent reviewer (recommended by the Joanna Briggs approach [65]).",
+      "section": "methodology",
+      "confidence": 0.8,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "832f4f6e-ece0-47c9-86c2-070f852b9146",
+      "element_type": "method",
+      "text": "We adapted keywords based on venue themes.",
+      "section": "methodology",
+      "confidence": 0.8,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "f93b7a6e-7628-44f1-a111-2d3016712dd9",
+      "element_type": "method",
+      "text": "So, in technology development venues, we used only autism-specific keywords (with wildcards (*) where appropriate).",
+      "section": "methodology",
+      "confidence": 0.8,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "23dadf15-06b1-469d-9ce2-8faae7eb2f4e",
+      "element_type": "method",
+      "text": "In the venues dedicated to autism research, our keyword searches focused on participation in the design process (Table 2).",
+      "section": "methodology",
+      "confidence": 0.8,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "5f3cc39c-4053-4252-9ebf-25f38674cad2",
+      "element_type": "method",
+      "text": "To obtain these keywords, one author created a Python script that counted keyword frequency from the corpus after the phase 1 filtering removed irrelevant papers (e.g., false positives, duplicates, or concerning children).",
+      "section": "methodology",
+      "confidence": 0.9,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "0b2b6975-e264-4856-b0e1-03e465cf94d3",
+      "element_type": "finding",
+      "text": "The projects involved autistic adults in different ways to share their expertise on topics and the project direction.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "a796efb4-9498-407a-b4e6-741b48087a03",
+      "element_type": "finding",
+      "text": "All but one project had predefined goals or topics.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "93c258c8-29ec-43e0-bd95-803c869d5bdc",
+      "element_type": "finding",
+      "text": "Five projects concentrated on the involvement of autistic adults in shaping the understanding of the project topic (AHAT, Inclusive Online Dating, AccessASD, PIUMA, Reimagining Social Media).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "8a2abecf-a581-43c6-9aff-1ae7bbf80016",
+      "element_type": "finding",
+      "text": "These projects were driven by methodological approaches intended to understand the perspective of autistic adults and draw on their expertise on the topic, whether through customised participatory methodologies (AccessASD, AHAT) or with a philosophy of understanding the topic from the perspective of autistic adults (e.g., by embedding approaches that focus on lived experience (PIUMA)) or intending to understand a particular topic from the autistic perspective (Reimagining Social Media).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "86781759-c6c4-4422-958b-07f4adedca9c",
+      "element_type": "finding",
+      "text": "In Connecting through Kinect, autistic partners were valued for their expertise in game design, which was harnessed in the design process.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "a79b49ed-8dfb-4ded-aeb9-40ad521a0817",
+      "element_type": "finding",
+      "text": "This suggests that the autistic perspective as a way of experiencing the world is valued across projects.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "08641235-83d2-4249-b067-d9a1fc6c7d38",
+      "element_type": "finding",
+      "text": "It is important to note that the level of participation differed between the projects.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "88a45147-fdc1-4a2f-ad10-64dfbae202e8",
+      "element_type": "finding",
+      "text": "However, it is not clear how decisions surrounding participation were made, which merits reflection.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "58ced438-b13e-431b-a043-2bf868375ece",
+      "element_type": "finding",
+      "text": "Literature indicates that autistic stakeholders may not want to participate fully [56].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "7f75e767-8b5b-45fb-be30-48244976b573",
+      "element_type": "finding",
+      "text": "Moreover, experience adopting participatory design should be considered, particularly for researchers and stakeholders who are employing it for the first time in autism research [22].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "4fcb7872-e575-4485-a8ad-d08c01d7d2db",
+      "element_type": "finding",
+      "text": "In other cases, as we have seen in Connecting through Kinect, it may not be possible to directly include the target stakeholders.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "fc4965f2-8a9a-41b8-a0b3-80c1496dd000",
+      "element_type": "finding",
+      "text": "In these cases, there was a known importance for having some autistic representation (e.g., autistic researchers or autistic allies).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "d3f19e5d-268e-4719-8712-a32f05640c86",
+      "element_type": "finding",
+      "text": "There is an important consideration in understanding what knowledge those stakeholders have and what assumptions they may bring to the process based on their lived experience [30, 59].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "cda1cff1-74d7-4ff9-ad34-dfc5e115b2c0",
+      "element_type": "claim",
+      "text": "We argue that more work is needed to reflect on decision-making on who participates, as well as assumptions that may influence those decisions.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "124713dc-c986-425e-ad0b-c761a665b2b4",
+      "element_type": "finding",
+      "text": "Building infrastructures to support participation varied between projects, such as devising customised participatory approaches (e.g. AHAT and AccessASD) or (as in most cases) providing multiple modes of participation (Reimagining Social Media, Inclusive Online Dating).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "3688a299-540b-4447-822b-a15f722f8ce7",
+      "element_type": "finding",
+      "text": "Conencting through Kinect employed this quite creatively by encouraging movement in the design process, which was directly tailored to autistic needs.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "4408e5fc-5ce0-483a-ae81-4563a5af9259",
+      "element_type": "finding",
+      "text": "We learn that the conflicting sensory needs of autistic people need to be considered particularly in group activities (e.g., in PIUMA and Biomusic).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "bcef20d8-5e94-47af-ac22-89e2984e9ca0",
+      "element_type": "finding",
+      "text": "All people, but especially autistic people, report differences in how they process sensory information, such as sounds [13].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "8f110e63-238a-4beb-85ad-b437b63969a3",
+      "element_type": "finding",
+      "text": "Some people have low thresholds, meaning they are highly sensitive to the stimulus and desire to avoid them.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "c92114a4-dadf-49ef-9d9c-dede1dad9675",
+      "element_type": "finding",
+      "text": "Others may have a high threshold and actively seek certain sensory stimuli.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "3b400801-3a5f-4d7b-969e-d6119a637c89",
+      "element_type": "finding",
+      "text": "These differences can cause tension and power imbalance, particularly in cases where it may seem that one stakeholder’s needs are prioritised over another.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "963e5a42-9307-464a-a6a7-7750f3d8eda4",
+      "element_type": "claim",
+      "text": "It is important to consider how the nuances of how autistic stakeholders experience the world can be factored in designing activities, particularly in cases where there may be conflicts in sensory needs, such as in group activities (as referenced by Maun et al. [52]).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "4911cbf1-490b-4893-861c-b5127f8c3748",
+      "element_type": "finding",
+      "text": "Power dynamics played a nuanced role in facilitating conversations between autistic and non-autistic stakeholders [57, 59].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "b8b41cea-b0f7-4a6e-9f16-56d1766f107c",
+      "element_type": "finding",
+      "text": "Three of the projects (AccessASD, AHAT, and Reimagining Social Media) mentioned having autistic researchers on the team, who were imperative for making decisions on the project direction and making connections with other autistic stakeholders, which has been recommended as a means for empowering autistic participation [62].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "c4806411-2149-41ac-8657-bd6fada52051",
+      "element_type": "finding",
+      "text": "How activities were structured seemed to be important to ensure that participants had a voice.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "fc37c28a-2427-4ea9-9a49-32aab7ea838f",
+      "element_type": "finding",
+      "text": "Some projects approached this by ensuring that autistic stakeholders had an opportunity to share ideas individually before engaging in group activities (e.g., in AccessASD and SocialMirror), while others facilitated turn-taking (e.g., in PIUMA).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "99630a10-d3a6-45b7-8979-91627fb77fa9",
+      "element_type": "finding",
+      "text": "However, while these researchers have done great work, we also witnessed limited engagement of the autistic adult stakeholders in shaping and refining the approaches employed for participation.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "1b8cebd4-e8ce-421a-b0fa-f8ad8e43f6d5",
+      "element_type": "claim",
+      "text": "Just as autistic adults are experts on what tools and technologies would benefit their lives, they are also experts on what methods and approaches could engage and drive them to participate.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "7d0fbedd-c33c-4ccf-992c-19a5b7fd12a7",
+      "element_type": "claim",
+      "text": "Therefore, we believe there could be more opportunities to involve autistic people in the decision-making of methods employed through active reflection, as we will discuss in section 6.2.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "01e67675-05ad-4743-82ff-f76ca7cdae16",
+      "element_type": "claim",
+      "text": "Additionally, the projects demonstrated that balancing power is a principle that should be considered when evaluating how the project unfolds.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "3d4b2900-0ca4-4343-bcd7-37f8d1af60aa",
+      "element_type": "finding",
+      "text": "The introduction of individual activities before group activities occurred was important in AccessASD and SocialMirror.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "11b2bbc9-35b1-49ac-b153-e57771cb57ce",
+      "element_type": "claim",
+      "text": "Although balancing such power is generally important in participatory projects [41, 76], the reflections on why this was facilitated seemed to stem from a consideration toward the voice of autistics in design and keeping the process autistic-centred.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "2d8abee6-7d1f-43b1-828c-5ec7b2eb69aa",
+      "element_type": "finding",
+      "text": "The level of participatory relationships varied between projects.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "a4258f5c-14bd-40a2-b9b7-a49313a287a2",
+      "element_type": "finding",
+      "text": "However, few initiated from long-lasting relationships, with most focusing on a shorter period of time.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "56c1f60e-5884-4326-9330-298bec12117a",
+      "element_type": "finding",
+      "text": "This is not surprising, given the limited resources available to support neurodiversity-affirmative research in autism [66].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "a35917ea-3cd6-47d4-a3dd-0f6b73a2d9b5",
+      "element_type": "claim",
+      "text": "Creating lasting impact is a key issue facing much of HCI research that engages communities (see e.g. [23, 42]).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "5021c504-be29-4964-8022-f95c5836dbc3",
+      "element_type": "claim",
+      "text": "The shorter-term projects seemed to gather positive relationship-building experiences, particularly through partnerships with autism organisations and charities.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "27bba91a-1d56-4a77-bf36-a0766cb35d70",
+      "element_type": "claim",
+      "text": "Such approaches enable shorter-term projects to connect with existing infrastructures within the community where there are predefined relationships with autistic people, and their role in society, thus mirroring existing developments in PD [23].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "fbb6d61e-a913-4aec-a792-1f9c9b22ce18",
+      "element_type": "claim",
+      "text": "As researchers, we should connect with autistic-led organisations if the mechanism is to respect the autistic experience [31].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "fd07e5ff-e040-414b-a25e-e2cae4c91960",
+      "element_type": "claim",
+      "text": "Embedding this research into the community enables “infrastructuring” [47], strengthening existing positive efforts by embedding them into the fabric of what is already there, strengthening impact, and increasing the possibility of long-term engagements.",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "8c07a45b-f30f-4d50-b8bf-1af3d4fc0d7b",
+      "element_type": "claim",
+      "text": "In saying that, we argue the need to make visible the immediate gains that autistic people can harness through participation (which is important in community-based participatory design [48]).",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "a7988c0e-62af-46ec-b82a-ab32f7f6d6d7",
+      "element_type": "claim",
+      "text": "Doing so will also need to consider the plurality of goals between autistic stakeholders and organisational objectives, and how they align with the communities where participation is sought [48].",
+      "section": "discussion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "3d54c5b9-10e5-4fc2-b54c-63a713f9995c",
+      "element_type": "claim",
+      "text": "We suggest that more participatory design projects could include autistic people in conversations about the role AI (e.g. Large Language Models employed in chatbots/agents, or deep learning techniques employed for autism diagnosis) could play in their lives.",
+      "section": "discussion",
+      "confidence": 0.9,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "388e0d10-a19e-4e7a-ba6c-d26da84acc14",
+      "element_type": "claim",
+      "text": "Additionally, we suggest conducting participatory research with autistic people to explore what the diagnostic process could look like and how technology could support that process.",
+      "section": "discussion",
+      "confidence": 0.9,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "c9db8bf5-4cd8-418f-a444-fe7de881d4ca",
+      "element_type": "claim",
+      "text": "With the growing recognition of self-diagnosis in neurodiversity-affirmative research (e.g., as indicated by Sarrett[73]), we recommend involving those who self-identify as autistic and how their needs could be facilitated in the diagnosis process, if at all.",
+      "section": "discussion",
+      "confidence": 0.85,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "70206597-c290-4905-93f5-351799406ab8",
+      "element_type": "claim",
+      "text": "We agree with Fletcher-Watson et al. [30] that participation in hard science topics (e.g. AI, Brain Scanning applications) could result in knowledge exchange that empowers autistic people with the skills to critique the role they play in their lives.",
+      "section": "discussion",
+      "confidence": 0.8,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "764bf381-ded0-406f-887a-712a696badf9",
+      "element_type": "claim",
+      "text": "We would like to reinforce that autistic people have multiple lived expertise [59] that can be critical to planning and fostering engagement in participatory activities.",
+      "section": "discussion",
+      "confidence": 0.9,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "99c3be57-bbe3-4beb-a7fb-7f3d8476f43e",
+      "element_type": "claim",
+      "text": "In future projects, there are certainly more possibilities to consider the multiple lived expertise in participatory design and research as recommended by Nicoladis et al. [59].",
+      "section": "discussion",
+      "confidence": 0.85,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "04788888-582b-4dd5-92ce-fa9ec923bd4e",
+      "element_type": "claim",
+      "text": "However, we argue that broadening the scope of participation, and reimagining how activities are not only tailored to meet their needs but also strengths, can be beneficial.",
+      "section": "discussion",
+      "confidence": 0.9,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "75414424-738c-4ec9-9c33-e4367d181758",
+      "element_type": "claim",
+      "text": "Moreover, we argue that involving autistics in some way falls in line with the considerations of community-based participatory research (see, e.g. [48]) in that more work is needed to document, reflect and challenge assumptions on decisions made on the design process before the work takes place.",
+      "section": "discussion",
+      "confidence": 0.8,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "321e8d41-4a7b-4f7a-839d-2ceb0f063ffe",
+      "element_type": "claim",
+      "text": "Reflective processes can make visible research and design assumptions and create a deeper understanding of practice from the stakeholders’ perspective (which, like other community-based participatory research projects, may involve a plurality of practices [48]).",
+      "section": "discussion",
+      "confidence": 0.8,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "70029d05-64ed-409c-9b07-80a84927c224",
+      "element_type": "claim",
+      "text": "We encourage researchers to consider reflection activities in collaboration with autistics on the methods employed to foster participation (whether interviews, focus groups, or workshops), and whether those approaches are suitable for communication between all stakeholders involved and harness their strengths.",
+      "section": "discussion",
+      "confidence": 0.9,
+      "evidence_type": "theoretical",
+      "page_number": 12
+    },
+    {
+      "element_id": "61b9891d-f71a-40e2-9265-69bd948a12d2",
+      "element_type": "claim",
+      "text": "Our analysis suggests that there is not a “one size fits all” solution, but rather an approach that is revisited and refined for future work following reflections between autistic and non-autistic stakeholders.",
+      "section": "discussion",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 12
+    },
+    {
+      "element_id": "87b7ce84-6108-46ee-8212-5890a98db278",
+      "element_type": "finding",
+      "text": "In conclusion, the projects examined showed diverse ways of involving autistic adults in design, from tailored methodologies to providing multiple modes to participate in specific design activities.",
+      "section": "conclusion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "20408ff0-7b71-42ea-9d33-4b92fd93e18e",
+      "element_type": "finding",
+      "text": "Through the lens of Program Theory, we shed light on how participatory design activities unfolded and the opportunities for further involvement.",
+      "section": "conclusion",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "f95b097c-550a-4721-ad16-5038123e4d39",
+      "element_type": "finding",
+      "text": "We believe this was a valuable means for understanding how participation was mapped throughout the process of all projects: it drew attention to who was involved, how activities were structured to foster participation, and the long-lasting effects of the process.",
+      "section": "conclusion",
+      "confidence": 0.85,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "6069a801-84d5-46cb-92e2-eec172f2a99a",
+      "element_type": "finding",
+      "text": "It also revealed discussions that require attention (e.g. decision-making in participation).",
+      "section": "conclusion",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "e3bb0fbd-5477-4d79-a41b-5f3e5ecf0a5d",
+      "element_type": "claim",
+      "text": "our proposed opportunities for design can help researchers consider how their project inputs, mechanisms, and effects fall in line with the autistic stakeholders’ strengths, values, and desired outcomes/impacts - meaning that they are leading to more autistic-centred approaches.",
+      "section": "conclusion",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 14
+    }
+  ]
+}

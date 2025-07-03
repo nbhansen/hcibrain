@@ -15,9 +15,9 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
-from ..extractors import PdfExtractor
-from ..models import Paper, ExtractedElement, ExtractionResult, PdfError, LLMError
-from ..llm import LLMProvider
+from hci_extractor.core.extraction import PdfExtractor
+from hci_extractor.core.models import Paper, ExtractedElement, ExtractionResult, PdfError, LLMError
+from hci_extractor.providers.llm import LLMProvider
 from .section_detector import detect_sections
 from .section_processor import LLMSectionProcessor, process_sections_batch
 
@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 async def extract_paper_simple(
     pdf_path: Path,
     llm_provider: LLMProvider,
-    paper_metadata: Optional[Dict[str, Any]] = None
+    paper_metadata: Optional[Dict[str, Any]] = None,
+    progress_callback: Optional[Any] = None
 ) -> ExtractionResult:
     """
     Extract academic elements from a PDF - simple version that just works!
@@ -48,22 +49,37 @@ async def extract_paper_simple(
     
     try:
         # Step 1: Extract PDF content
+        if progress_callback:
+            progress_callback.update_section("pdf_extraction")
+        
         logger.info("📄 Extracting PDF content...")
         pdf_extractor = PdfExtractor()
         pdf_content = pdf_extractor.extract_content(pdf_path)
         logger.info(f"✅ Extracted {pdf_content.total_pages} pages, {pdf_content.total_chars} characters")
+        
+        if progress_callback:
+            progress_callback.complete_section()
         
         # Step 2: Create paper metadata
         paper = _create_paper_from_metadata(pdf_path, paper_metadata)
         logger.info(f"📋 Created paper: {paper.title}")
         
         # Step 3: Detect sections
+        if progress_callback:
+            progress_callback.update_section("section_detection")
+        
         logger.info("🔍 Detecting paper sections...")
         sections = detect_sections(pdf_content)
         logger.info(f"✅ Detected {len(sections)} sections: {[s.section_type for s in sections]}")
         
+        if progress_callback:
+            progress_callback.complete_section()
+        
         if not sections:
             logger.warning("No sections detected - returning empty result")
+            if progress_callback:
+                progress_callback.complete_paper(0)
+                progress_callback.finish()
             return ExtractionResult(
                 paper=paper,
                 elements=(),
@@ -76,6 +92,9 @@ async def extract_paper_simple(
             )
         
         # Step 4: Process sections with LLM
+        if progress_callback:
+            progress_callback.update_section("llm_analysis")
+        
         logger.info("🤖 Processing sections with LLM...")
         processor = LLMSectionProcessor(llm_provider=llm_provider)
         
@@ -87,6 +106,9 @@ async def extract_paper_simple(
         )
         
         logger.info(f"✅ Extracted {len(all_elements)} total elements")
+        
+        if progress_callback:
+            progress_callback.complete_section()
         
         # Step 5: Create final result
         result = ExtractionResult(
@@ -100,6 +122,10 @@ async def extract_paper_simple(
                 "sections_processed": [s.section_type for s in sections]
             }
         )
+        
+        if progress_callback:
+            progress_callback.complete_paper(len(all_elements))
+            progress_callback.finish()
         
         logger.info(f"🎉 Extraction complete! Found {len(all_elements)} elements from {len(sections)} sections")
         return result
@@ -145,7 +171,8 @@ def _create_paper_from_metadata(pdf_path: Path, metadata: Optional[Dict[str, Any
 async def extract_multiple_papers(
     pdf_paths: List[Path],
     llm_provider: LLMProvider,
-    papers_metadata: Optional[List[Dict[str, Any]]] = None
+    papers_metadata: Optional[List[Dict[str, Any]]] = None,
+    progress_callback: Optional[Any] = None
 ) -> List[ExtractionResult]:
     """
     Extract from multiple papers - simple batch processing.
@@ -173,7 +200,8 @@ async def extract_multiple_papers(
             result = await extract_paper_simple(
                 pdf_path=pdf_path,
                 llm_provider=llm_provider,
-                paper_metadata=paper_metadata
+                paper_metadata=paper_metadata,
+                progress_callback=progress_callback
             )
             
             results.append(result)
@@ -191,7 +219,8 @@ async def extract_multiple_papers(
 def extract_paper_sync(
     pdf_path: Path,
     llm_provider: LLMProvider,
-    paper_metadata: Optional[Dict[str, Any]] = None
+    paper_metadata: Optional[Dict[str, Any]] = None,
+    progress_callback: Optional[Any] = None
 ) -> ExtractionResult:
     """
     Synchronous wrapper for simple extraction (for non-async environments).
@@ -204,4 +233,4 @@ def extract_paper_sync(
     Returns:
         ExtractionResult with extracted elements
     """
-    return asyncio.run(extract_paper_simple(pdf_path, llm_provider, paper_metadata))
+    return asyncio.run(extract_paper_simple(pdf_path, llm_provider, paper_metadata, progress_callback))

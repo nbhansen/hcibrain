@@ -10,7 +10,7 @@ import logging
 import re
 from typing import Tuple
 
-from ..models import DetectedSection, PdfContent
+from hci_extractor.core.models import DetectedSection, PdfContent
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,9 @@ def detect_sections(pdf_content: PdfContent) -> Tuple[DetectedSection, ...]:
     # Sort by character position and resolve overlaps
     detected_sections.sort(key=lambda s: s.char_start)
     resolved_sections = _resolve_overlapping_sections(detected_sections)
+    
+    # Log section size warnings
+    _log_section_size_warnings(resolved_sections)
     
     logger.info(f"Detected {len(resolved_sections)} sections")
     return tuple(resolved_sections)
@@ -317,3 +320,31 @@ def _sections_overlap(section1: DetectedSection, section2: DetectedSection) -> b
         section1.char_end <= section2.char_start or 
         section2.char_end <= section1.char_start
     )
+
+
+def _log_section_size_warnings(sections: list[DetectedSection]) -> None:
+    """Log warnings for sections that may cause processing issues."""
+    large_section_threshold = 15000  # Characters
+    very_large_threshold = 25000     # Characters
+    
+    for section in sections:
+        section_size = len(section.text)
+        
+        if section_size > very_large_threshold:
+            logger.warning(
+                f"Very large {section.section_type} section detected "
+                f"({section_size:,} chars). This may cause timeouts or "
+                f"JSON parsing issues. Consider manual review."
+            )
+        elif section_size > large_section_threshold:
+            logger.info(
+                f"Large {section.section_type} section detected "
+                f"({section_size:,} chars). Will be automatically chunked for processing."
+            )
+    
+    total_size = sum(len(s.text) for s in sections)
+    if total_size > 100000:  # 100k characters
+        logger.warning(
+            f"Very large document detected ({total_size:,} total chars). "
+            f"Processing may take several minutes."
+        )

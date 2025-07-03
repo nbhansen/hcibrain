@@ -225,7 +225,7 @@ class ExtractedElement:
 
     element_id: str
     paper_id: str
-    element_type: Literal["claim", "finding", "method"]
+    element_type: Literal["claim", "finding", "method", "artifact"]
     text: str
     section: str
     confidence: float
@@ -251,7 +251,7 @@ class ExtractedElement:
     def create_with_auto_id(
         cls,
         paper_id: str,
-        element_type: Literal["claim", "finding", "method"],
+        element_type: Literal["claim", "finding", "method", "artifact"],
         text: str,
         section: str,
         confidence: float,
@@ -299,7 +299,7 @@ class ExtractionResult:
     @property
     def elements_by_type(self) -> dict[str, int]:
         """Return count of elements by type."""
-        counts = {"claim": 0, "finding": 0, "method": 0}
+        counts = {"claim": 0, "finding": 0, "method": 0, "artifact": 0}
         for element in self.elements:
             counts[element.element_type] += 1
         return counts
@@ -334,7 +334,7 @@ class ExtractionResult:
         )
 
     def filter_by_type(
-        self, element_types: tuple[Literal["claim", "finding", "method"], ...]
+        self, element_types: tuple[Literal["claim", "finding", "method", "artifact"], ...]
     ) -> "ExtractionResult":
         """Return new ExtractionResult with only specified element types."""
         filtered_elements = tuple(

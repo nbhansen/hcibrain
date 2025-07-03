@@ -11,25 +11,21 @@ examples:
           text: "Users completed tasks 34% faster (M=42.3s vs M=64.1s, t(23)=4.72, p<0.001)"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "made 58% fewer errors (M=1.2 vs M=2.8 errors per task, t(23)=3.89, p=0.001)"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "Participants rated the gesture interface as significantly more intuitive (M=6.2 vs M=4.1 on 7-point scale, t(23)=5.14, p<0.001)"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "older participants (65+) showed the greatest improvement, with 67% faster task completion compared to young adults' 28% improvement"
           evidence_type: "quantitative"
           confidence: 0.90
-          hci_contribution_type: "knowledge-increasing"
 
   - section_text: |
       "Demographic data showed that 62% of participants were female, 38% male. The average age was 24.3 years (SD=3.2). All participants had normal or corrected-to-normal vision. Participants were randomly assigned to conditions using a random number generator. The experiment lasted approximately 45 minutes including setup and debriefing."
@@ -48,19 +44,16 @@ examples:
           text: "users developed 'micro-gestures' - small, abbreviated versions of prescribed gestures that were faster but less accurate"
           evidence_type: "qualitative"
           confidence: 0.90
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "users often combined voice and touch input simultaneously, even when not instructed to do so, creating a 'multimodal redundancy' pattern"
           evidence_type: "qualitative"
           confidence: 0.90
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "when the system failed to recognize input, users instinctively switched to more exaggerated gestures rather than repeating the original gesture"
           evidence_type: "qualitative"
           confidence: 0.85
-          hci_contribution_type: "knowledge-increasing"
 
   - section_text: |
       "The machine learning model achieved 94.2% accuracy on the test dataset, outperforming the baseline by 12.8 percentage points. Processing time was reduced from 2.3 seconds to 0.7 seconds per gesture. However, accuracy dropped significantly for left-handed users (78.3% vs 96.1% for right-handed users, χ²(1)=45.2, p<0.001), revealing an unexpected bias in the training data."
@@ -71,19 +64,16 @@ examples:
           text: "machine learning model achieved 94.2% accuracy on the test dataset, outperforming the baseline by 12.8 percentage points"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "Processing time was reduced from 2.3 seconds to 0.7 seconds per gesture"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "accuracy dropped significantly for left-handed users (78.3% vs 96.1% for right-handed users, χ²(1)=45.2, p<0.001), revealing an unexpected bias in the training data"
           evidence_type: "quantitative"
           confidence: 0.90
-          hci_contribution_type: "knowledge-increasing"
 
   - section_text: |
       "Post-study interviews revealed strong emotional responses to the AI assistant. P7 stated: 'I felt like it actually understood me, not just my words.' P12 noted: 'When it made mistakes, I found myself apologizing to it.' This anthropomorphization was consistent across participants, with 18 of 20 participants using human-like descriptors when referring to the AI. Participants who anthropomorphized the AI showed 23% higher engagement scores (M=7.8 vs M=6.3, t(18)=2.41, p=0.027)."
@@ -94,13 +84,11 @@ examples:
           text: "anthropomorphization was consistent across participants, with 18 of 20 participants using human-like descriptors when referring to the AI"
           evidence_type: "qualitative"
           confidence: 0.90
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "finding"
           text: "Participants who anthropomorphized the AI showed 23% higher engagement scores (M=7.8 vs M=6.3, t(18)=2.41, p=0.027)"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
 
 guidance_notes: |
   When analyzing results sections:

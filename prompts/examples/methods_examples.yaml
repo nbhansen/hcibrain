@@ -11,13 +11,11 @@ examples:
           text: "Social Interaction Authenticity Protocol' (SIAP)"
           evidence_type: "mixed"
           confidence: 0.95
-          hci_contribution_type: "method"
         
         - element_type: "method"
           text: "protocol uses a combination of physiological sensors, behavioral coding, and post-hoc interviews to validate that laboratory interactions reflect real-world social dynamics"
           evidence_type: "mixed"
           confidence: 0.90
-          hci_contribution_type: "method"
 
   - section_text: |
       "Participants were recruited through university mailing lists and completed informed consent procedures. The study used a standard 2x2 factorial design with interface type (touchscreen vs. voice) and task complexity (simple vs. complex) as independent variables. Data was collected using established usability metrics including task completion time, error rate, and subjective satisfaction scores measured on a 7-point Likert scale."
@@ -36,19 +34,16 @@ examples:
           text: "Rapid Persona Iteration Method' (RPIM)"
           evidence_type: "qualitative"
           confidence: 0.95
-          hci_contribution_type: "method"
         
         - element_type: "method"
           text: "combines traditional persona development with daily micro-interviews lasting 2-3 minutes each"
           evidence_type: "qualitative"
           confidence: 0.90
-          hci_contribution_type: "method"
         
         - element_type: "finding"
           text: "reduces persona development time from weeks to days while maintaining accuracy"
           evidence_type: "quantitative"
           confidence: 0.85
-          hci_contribution_type: "knowledge-increasing"
 
   - section_text: |
       "We used the Wizard of Oz technique to simulate AI capabilities that were not yet implemented. The wizard (researcher) was positioned in an adjacent room and controlled the system responses through a custom interface. This allowed us to test user reactions to AI features before full implementation. Standard questionnaires were administered after each session to measure user acceptance and trust."
@@ -67,19 +62,16 @@ examples:
           text: "Traditional think-aloud protocols often interrupt natural interaction flow"
           evidence_type: "theoretical"
           confidence: 0.85
-          hci_contribution_type: "knowledge-contesting"
         
         - element_type: "method"
           text: "Retrospective Think-Aloud with Micro-Cues' (RTA-MC), where users perform tasks normally while micro-sensors capture interaction moments of interest"
           evidence_type: "mixed"
           confidence: 0.95
-          hci_contribution_type: "method"
         
         - element_type: "claim"
           text: "preserves natural interaction while still capturing thought processes"
           evidence_type: "theoretical"
           confidence: 0.80
-          hci_contribution_type: "knowledge-increasing"
 
 guidance_notes: |
   When analyzing methods sections:

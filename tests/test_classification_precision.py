@@ -16,12 +16,12 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from hci_extractor.models import (
+from hci_extractor.core.models import (
     Paper,
     DetectedSection,
     ExtractedElement,
 )
-from hci_extractor.pipeline import LLMSectionProcessor
+from hci_extractor.core.analysis import LLMSectionProcessor
 
 
 # Ground truth classification datasets for testing precision

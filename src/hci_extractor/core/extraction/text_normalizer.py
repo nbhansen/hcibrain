@@ -3,7 +3,7 @@
 import re
 from typing import List, Tuple
 
-from ..models import TextTransformation
+from hci_extractor.core.models import TextTransformation
 
 
 class TextNormalizer:

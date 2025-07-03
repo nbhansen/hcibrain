@@ -67,8 +67,7 @@ json_format: |
         "element_type": "claim|finding|method|artifact",
         "text": "exact verbatim text from section",
         "evidence_type": "quantitative|qualitative|theoretical|mixed|unknown",
-        "confidence": 0.95,
-        "hci_contribution_type": "knowledge-increasing|knowledge-contesting|artifact|method|theory|synthesis|unknown"
+        "confidence": 0.95
       }
     ]
   }

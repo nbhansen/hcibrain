@@ -12,7 +12,7 @@ Keep it simple!
 import logging
 from typing import Tuple, Set
 
-from ..models import ExtractedElement, PdfContent
+from hci_extractor.core.models import ExtractedElement, PdfContent
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 
-from ..models import (
+from hci_extractor.core.models import (
     CharacterPosition,
     CorruptedFileError,
     ExtractionQualityError,

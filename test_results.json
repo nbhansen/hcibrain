@@ -1,0 +1,292 @@
+{
+  "paper": {
+    "paper_id": "8b705ee4-e3ef-4d83-b034-d3ca306f5e7d",
+    "title": "Autisticadults",
+    "authors": [
+      "Unknown"
+    ],
+    "venue": null,
+    "year": null,
+    "file_path": "autisticadults.pdf"
+  },
+  "extraction_summary": {
+    "total_elements": 29,
+    "elements_by_type": {
+      "claim": 13,
+      "finding": 6,
+      "method": 10
+    },
+    "elements_by_section": {
+      "abstract": 3,
+      "introduction": 3,
+      "related_work": 9,
+      "methodology": 9,
+      "conclusion": 5
+    },
+    "average_confidence": 0.9172413793103448,
+    "created_at": "2025-07-02T21:46:11.147323"
+  },
+  "extracted_elements": [
+    {
+      "element_id": "317a49f8-6f8a-45b0-88e5-5b2293e57707",
+      "element_type": "method",
+      "text": "scoping review analysis of 11 projects across 18 papers that focused on including autistic adults in the design of technology that impacts their lives",
+      "section": "abstract",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "3134950d-8623-4f0b-bb70-829f95d9acb1",
+      "element_type": "finding",
+      "text": "mixed positions on how the lived autistic perspective was harnessed to direct the application of topics and technologies chosen",
+      "section": "abstract",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "a5b2656e-8180-4c85-91f1-6fea3ca9f907",
+      "element_type": "finding",
+      "text": "Most projects employed infrastructures to enhance participation (e.g., providing multiple modes to participate or employing a tailored methodology)",
+      "section": "abstract",
+      "confidence": 0.85,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "0e7ca09f-6236-46f9-bcc5-8b5ae364ffb2",
+      "element_type": "claim",
+      "text": "In this scoping review, we investigate the involvement of autistic adults1 in technology design.",
+      "section": "introduction",
+      "confidence": 0.95,
+      "evidence_type": "unknown",
+      "page_number": 1
+    },
+    {
+      "element_id": "14f5703e-4659-419b-9a78-b8c08cec7597",
+      "element_type": "claim",
+      "text": "There has been increasing interest in supporting autistic adults with technology (for example, at home [68, 87] or at work [35, 82]).",
+      "section": "introduction",
+      "confidence": 0.9,
+      "evidence_type": "unknown",
+      "page_number": 1
+    },
+    {
+      "element_id": "0c5f1bec-f290-4cce-a778-fe496b6be69d",
+      "element_type": "claim",
+      "text": "a growing concern relates to 1In this article, we use identity-first language (i.e. autistic adult) rather than person-first language (i.e. person with autism), as this has been the preference of the autistic community [84].",
+      "section": "introduction",
+      "confidence": 0.8,
+      "evidence_type": "qualitative",
+      "page_number": 1
+    },
+    {
+      "element_id": "f48deceb-38d7-43ca-8da5-b412a39307a9",
+      "element_type": "claim",
+      "text": "Autism research has been framed in three ways.",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "5db5e054-45c3-46a8-be0d-697f3239244b",
+      "element_type": "claim",
+      "text": "One perspective views the autistic person as having problems that need to be fixed.",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "b18585cf-9fad-4e3e-b65e-b47aea778d37",
+      "element_type": "claim",
+      "text": "Infamously, the medical model positions autism as a “deficit” with traits that need to be cured [3].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "afceec22-3c23-43f9-b4e0-823ede87a698",
+      "element_type": "claim",
+      "text": "For instance, the Diagnostic and Statistical Manual of Mental Disorders (DSM-5) is often referred to when diagnosing autism [5]; the diagnostic criteria positions autistic traits as impairments, notably in social relationships, motor movements, and executive functioning.",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "9b8d4686-5260-4353-904c-db772eb61f1a",
+      "element_type": "claim",
+      "text": "Moreover, the theory of mind positions autistic people as unable to understand the mental states of themselves and others [7].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "8dff0f3d-1953-4287-ad8c-a8b697fb09f4",
+      "element_type": "claim",
+      "text": "Autistic people have been characterised as having difficulties seeing the “bigger picture” due to their tendencies to focus on details [34].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "b953e9b3-1954-431b-9120-ce5416f12808",
+      "element_type": "claim",
+      "text": "While many autistic people need support in daily life, framing the problem from within the autistic person has been seen as harmful; it promotes a perception that autistic people must change their behaviour and adapt to the context [16, 54, 80].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "698aa25a-cba5-4c93-bb12-a01158845de1",
+      "element_type": "claim",
+      "text": "Thus, they have been contested by autistic advocates because they assume that there is an ideal mind to be attained [43, 45, 80].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "1621114a-7dfe-42a4-9ff3-8081ad74e8ff",
+      "element_type": "claim",
+      "text": "Many autistic people engage in self-stimulatory movements, such as hand rocking and fidgeting, that help regulate emotions [46].",
+      "section": "related_work",
+      "confidence": 0.95,
+      "evidence_type": "theoretical",
+      "page_number": 2
+    },
+    {
+      "element_id": "d3cdf9c9-1449-4ec6-81e6-ff0ed5e26597",
+      "element_type": "method",
+      "text": "We employed the Joanna Briggs approach [65] as our search strategy, driven by our goal to include a wide range of case studies involving autistic adults in designing technology.",
+      "section": "methodology",
+      "confidence": 0.9,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "889be086-f838-461b-b3e6-0ccdc387cce1",
+      "element_type": "method",
+      "text": "The Joanna Briggs Scoping approach allowed us to scan reference lists of included papers for other relevant sources.",
+      "section": "methodology",
+      "confidence": 0.85,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "23a8cee2-81f5-4c95-bbca-41a779d27e00",
+      "element_type": "method",
+      "text": "This enabled us to add an additional phase to obtain more contextual information on the projects identified.",
+      "section": "methodology",
+      "confidence": 0.85,
+      "evidence_type": "mixed",
+      "page_number": 4
+    },
+    {
+      "element_id": "d4a24c4f-e347-4f34-a6f6-c492d9aaf467",
+      "element_type": "method",
+      "text": "The generation of keywords for our search involved careful discussion between the two authors and an independent reviewer (recommended by the Joanna Briggs approach [65]).",
+      "section": "methodology",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 4
+    },
+    {
+      "element_id": "ff115324-cfcc-4110-8ee3-5adefa288c12",
+      "element_type": "method",
+      "text": "To obtain these keywords, one author created a Python script that counted keyword frequency from the corpus after the phase 1 filtering removed irrelevant papers (e.g., false positives, duplicates, or concerning children).",
+      "section": "methodology",
+      "confidence": 0.95,
+      "evidence_type": "quantitative",
+      "page_number": 4
+    },
+    {
+      "element_id": "ff64b403-24fc-4277-90bf-c5286f3218df",
+      "element_type": "method",
+      "text": "Once filtered, one author manually categorised keywords relating to a) technologies and b) topics.",
+      "section": "methodology",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 4
+    },
+    {
+      "element_id": "a186d222-ad28-4b92-9cd7-f5989cdcd60a",
+      "element_type": "method",
+      "text": "These categories were reviewed by another author.",
+      "section": "methodology",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 4
+    },
+    {
+      "element_id": "a79cde86-8802-4b06-b86a-c11805d0a5d0",
+      "element_type": "method",
+      "text": "We finalised the groupings to form topic/technology categories.",
+      "section": "methodology",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 4
+    },
+    {
+      "element_id": "e935be35-c3bd-47d9-9ba7-cfce3503559c",
+      "element_type": "method",
+      "text": "Lastly, we generated an additional Python script to identify the frequency in which a keyword connected with that category appeared (Figure 1).",
+      "section": "methodology",
+      "confidence": 0.95,
+      "evidence_type": "quantitative",
+      "page_number": 4
+    },
+    {
+      "element_id": "567ccbe3-ec81-4641-a2ff-1e95b52a9dc0",
+      "element_type": "finding",
+      "text": "In conclusion, the projects examined showed diverse ways of involving autistic adults in design, from tailored methodologies to providing multiple modes to participate in specific design activities.",
+      "section": "conclusion",
+      "confidence": 0.95,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "1d61a964-25f7-488f-890b-788ec3a47dc0",
+      "element_type": "finding",
+      "text": "Through the lens of Program Theory, we shed light on how participatory design activities unfolded and the opportunities for further involvement.",
+      "section": "conclusion",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "0c4e9ab8-9da4-4dae-9105-16d0ebacd224",
+      "element_type": "finding",
+      "text": "We believe this was a valuable means for understanding how participation was mapped throughout the process of all projects: it drew attention to who was involved, how activities were structured to foster participation, and the long-lasting effects of the process.",
+      "section": "conclusion",
+      "confidence": 0.85,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "618ddad6-9ad8-45a8-a217-6b2097946917",
+      "element_type": "finding",
+      "text": "It also revealed discussions that require attention (e.g. decision-making in participation).",
+      "section": "conclusion",
+      "confidence": 0.9,
+      "evidence_type": "qualitative",
+      "page_number": 14
+    },
+    {
+      "element_id": "2edbb638-1a5c-4050-be8a-fa1ed7c43fb4",
+      "element_type": "claim",
+      "text": "our proposed opportunities for design can help researchers consider how their project inputs, mechanisms, and effects fall in line with the autistic stakeholders’ strengths, values, and desired outcomes/impacts - meaning that they are leading to more autistic-centred approaches.",
+      "section": "conclusion",
+      "confidence": 0.9,
+      "evidence_type": "theoretical",
+      "page_number": 14
+    }
+  ]
+}

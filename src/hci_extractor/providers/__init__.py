@@ -1,14 +1,9 @@
-"""LLM provider abstractions and implementations."""
+"""LLM provider implementations for text analysis."""
 
 from .base import LLMProvider
+from .gemini_provider import GeminiProvider
 
-__all__ = ["LLMProvider"]
-
-# Try to import providers with optional dependencies
-try:
-    from .gemini_provider import GeminiProvider
-    __all__.append("GeminiProvider")
-except ImportError:
-    # GeminiProvider requires google-generativeai dependency
-    # This allows the base LLM classes to be imported without it
-    pass
+__all__ = [
+    "LLMProvider",
+    "GeminiProvider",
+]

@@ -1,28 +1,24 @@
-"""Immutable data models for PDF content extraction."""
+"""Core data models for the HCI Extractor."""
 
 from .exceptions import (
-    # Base exceptions
-    HciExtractorError,
-    ProcessingError,
-    ConfigurationError,
-    DataError,
-    # PDF exceptions
-    PdfError,
-    PasswordProtectedError,
-    CorruptedFileError,
-    NoTextLayerError,
-    ExtractionQualityError,
-    # LLM exceptions
-    LLMError,
-    RateLimitError,
-    LLMValidationError,
     ApiKeyError,
-    ModelNotFoundError,
+    ConfigurationError,
     ContentFilterError,
-    # Data exceptions
-    SerializationError,
+    CorruptedFileError,
+    DataError,
     DataValidationError,
     DependencyError,
+    ExtractionQualityError,
+    HciExtractorError,
+    LLMError,
+    LLMValidationError,
+    ModelNotFoundError,
+    NoTextLayerError,
+    PasswordProtectedError,
+    PdfError,
+    ProcessingError,
+    RateLimitError,
+    SerializationError,
 )
 from .pdf_models import (
     CharacterPosition,
@@ -36,20 +32,9 @@ from .pdf_models import (
 )
 
 __all__ = [
-    # Data models
-    "CharacterPosition",
-    "DetectedSection",
-    "PdfPage",
-    "PdfContent",
-    "TextTransformation",
-    "Paper",
-    "ExtractedElement",
-    "ExtractionResult",
     # Exceptions
     "HciExtractorError",
     "ProcessingError",
-    "ConfigurationError",
-    "DataError",
     "PdfError",
     "PasswordProtectedError",
     "CorruptedFileError",
@@ -61,7 +46,18 @@ __all__ = [
     "ApiKeyError",
     "ModelNotFoundError",
     "ContentFilterError",
+    "DataError",
     "SerializationError",
     "DataValidationError",
+    "ConfigurationError",
     "DependencyError",
+    # PDF Models
+    "CharacterPosition",
+    "PdfPage",
+    "PdfContent",
+    "TextTransformation",
+    "DetectedSection",
+    "Paper",
+    "ExtractedElement",
+    "ExtractionResult",
 ]

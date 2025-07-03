@@ -11,25 +11,21 @@ examples:
           text: "TouchGestures, a novel interaction technique that enables users to perform complex multi-touch gestures with 40% fewer errors than standard touch interfaces"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "artifact"
         
         - element_type: "finding"
           text: "users completed tasks 23% faster using TouchGestures compared to conventional touch input"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "method"
           text: "three new gesture recognition algorithms that improve accuracy while reducing computational overhead by 15%"
           evidence_type: "quantitative"
           confidence: 0.90
-          hci_contribution_type: "method"
         
         - element_type: "claim"
           text: "TouchGestures could significantly enhance mobile interaction design"
           evidence_type: "mixed"
           confidence: 0.80
-          hci_contribution_type: "knowledge-increasing"
 
   - section_text: |
       "Previous research has shown that virtual reality training can improve performance, but existing systems lack adaptive feedback mechanisms. We developed AdaptVR, a training system that dynamically adjusts difficulty based on user performance. In a study with 32 medical students, AdaptVR improved training outcomes by 35% compared to static VR training. Our contribution is a novel adaptive algorithm that personalizes VR experiences in real-time."
@@ -40,25 +36,21 @@ examples:
           text: "existing systems lack adaptive feedback mechanisms"
           evidence_type: "theoretical"
           confidence: 0.85
-          hci_contribution_type: "knowledge-contesting"
         
         - element_type: "artifact"
           text: "AdaptVR, a training system that dynamically adjusts difficulty based on user performance"
           evidence_type: "mixed"
           confidence: 0.95
-          hci_contribution_type: "artifact"
         
         - element_type: "finding"
           text: "AdaptVR improved training outcomes by 35% compared to static VR training"
           evidence_type: "quantitative"
           confidence: 0.95
-          hci_contribution_type: "knowledge-increasing"
         
         - element_type: "method"
           text: "novel adaptive algorithm that personalizes VR experiences in real-time"
           evidence_type: "theoretical"
           confidence: 0.90
-          hci_contribution_type: "method"
 
   - section_text: |
       "This paper reviews 150 studies on accessibility in mobile applications published between 2015-2023. Our analysis reveals three critical gaps in current accessibility research: limited focus on cognitive disabilities, insufficient evaluation with real users, and lack of cross-platform consistency guidelines. We propose a unified framework for mobile accessibility evaluation that addresses these limitations."
@@ -69,13 +61,11 @@ examples:
           text: "three critical gaps in current accessibility research: limited focus on cognitive disabilities, insufficient evaluation with real users, and lack of cross-platform consistency guidelines"
           evidence_type: "qualitative"
           confidence: 0.90
-          hci_contribution_type: "synthesis"
         
         - element_type: "artifact"
           text: "unified framework for mobile accessibility evaluation that addresses these limitations"
           evidence_type: "theoretical"
           confidence: 0.85
-          hci_contribution_type: "theory"
 
 guidance_notes: |
   When analyzing abstracts:
