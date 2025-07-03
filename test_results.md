@@ -1,6 +1,6 @@
 # HCI Paper Extraction Results
 
-**Total Elements:** 83
+**Total Elements:** 78
 **Total Papers:** 1
 
 ## Autisticadults
@@ -22,34 +22,9 @@
    - *Evidence Type:* mixed
    - *Confidence:* 0.85
 
-4. **This enabled us to add an additional phase to obtain more contextual information on the projects identified.**
+4. **To obtain these keywords, one author created a Python script that counted keyword frequency from the corpus after the phase 1 filtering removed irrelevant papers (e.g., false positives, duplicates, or concerning children).**
    - *Section:* methodology
-   - *Evidence Type:* mixed
-   - *Confidence:* 0.85
-
-5. **The generation of keywords for our search involved careful discussion between the two authors and an independent reviewer (recommended by the Joanna Briggs approach [65]).**
-   - *Section:* methodology
-   - *Evidence Type:* mixed
-   - *Confidence:* 0.80
-
-6. **We adapted keywords based on venue themes.**
-   - *Section:* methodology
-   - *Evidence Type:* mixed
-   - *Confidence:* 0.80
-
-7. **So, in technology development venues, we used only autism-specific keywords (with wildcards (*) where appropriate).**
-   - *Section:* methodology
-   - *Evidence Type:* mixed
-   - *Confidence:* 0.80
-
-8. **In the venues dedicated to autism research, our keyword searches focused on participation in the design process (Table 2).**
-   - *Section:* methodology
-   - *Evidence Type:* mixed
-   - *Confidence:* 0.80
-
-9. **To obtain these keywords, one author created a Python script that counted keyword frequency from the corpus after the phase 1 filtering removed irrelevant papers (e.g., false positives, duplicates, or concerning children).**
-   - *Section:* methodology
-   - *Evidence Type:* mixed
+   - *Evidence Type:* quantitative
    - *Confidence:* 0.90
 
 ### Findings
@@ -409,7 +384,7 @@
 35. **Reflective processes can make visible research and design assumptions and create a deeper understanding of practice from the stakeholders’ perspective (which, like other community-based participatory research projects, may involve a plurality of practices [48]).**
    - *Section:* discussion
    - *Evidence Type:* theoretical
-   - *Confidence:* 0.85
+   - *Confidence:* 0.80
 
 36. **We encourage researchers to consider reflection activities in collaboration with autistics on the methods employed to foster participation (whether interviews, focus groups, or workshops), and whether those approaches are suitable for communication between all stakeholders involved and harness their strengths.**
    - *Section:* discussion

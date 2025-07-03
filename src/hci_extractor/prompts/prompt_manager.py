@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from ..models import HciExtractorError
+from ..core.models import HciExtractorError
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +49,9 @@ class PromptManager:
             raise PromptLoadError(f"Prompts directory not found: {self.prompts_dir}")
         
         # Cache for loaded prompt data
-        self._base_prompts = None
-        self._section_guidance = None
-        self._examples_cache = {}
+        self._base_prompts: Optional[Dict[str, Any]] = None
+        self._section_guidance: Optional[Dict[str, Any]] = None
+        self._examples_cache: Dict[str, str] = {}
         
         logger.info(f"PromptManager initialized with prompts directory: {self.prompts_dir}")
 
@@ -152,7 +152,8 @@ class PromptManager:
         """Load and parse a YAML file."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                return yaml.safe_load(f)
+                data = yaml.safe_load(f)
+                return data if isinstance(data, dict) else {}
         except FileNotFoundError:
             raise PromptLoadError(f"Prompt file not found: {file_path}")
         except yaml.YAMLError as e:

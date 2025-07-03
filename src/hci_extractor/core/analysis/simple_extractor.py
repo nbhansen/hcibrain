@@ -12,12 +12,20 @@ No complex validation, no statistical analysis, just text discovery.
 
 import asyncio
 import logging
+import time
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from hci_extractor.core.extraction import PdfExtractor
 from hci_extractor.core.models import Paper, ExtractedElement, ExtractionResult, PdfError, LLMError
-from hci_extractor.providers.llm import LLMProvider
+from hci_extractor.providers import LLMProvider
+from hci_extractor.core.events import (
+    get_event_bus, 
+    ExtractionStarted, 
+    ExtractionCompleted, 
+    ExtractionFailed,
+    SectionDetected
+)
 from .section_detector import detect_sections
 from .section_processor import LLMSectionProcessor, process_sections_batch
 
@@ -47,6 +55,25 @@ async def extract_paper_simple(
     """
     logger.info(f"Starting simple extraction for {pdf_path}")
     
+    # Get event bus
+    event_bus = get_event_bus()
+    start_time = time.time()
+    
+    # Create paper metadata early for event tracking
+    paper = _create_paper_from_metadata(pdf_path, paper_metadata)
+    
+    # Publish extraction started event
+    try:
+        file_size = pdf_path.stat().st_size
+    except:
+        file_size = 0
+    
+    event_bus.publish(ExtractionStarted(
+        pdf_path=str(pdf_path),
+        paper_id=paper.paper_id,
+        file_size_bytes=file_size
+    ))
+    
     try:
         # Step 1: Extract PDF content
         if progress_callback:
@@ -60,8 +87,7 @@ async def extract_paper_simple(
         if progress_callback:
             progress_callback.complete_section()
         
-        # Step 2: Create paper metadata
-        paper = _create_paper_from_metadata(pdf_path, paper_metadata)
+        # Step 2: Paper metadata already created above
         logger.info(f"📋 Created paper: {paper.title}")
         
         # Step 3: Detect sections
@@ -71,6 +97,13 @@ async def extract_paper_simple(
         logger.info("🔍 Detecting paper sections...")
         sections = detect_sections(pdf_content)
         logger.info(f"✅ Detected {len(sections)} sections: {[s.section_type for s in sections]}")
+        
+        # Publish section detected event
+        event_bus.publish(SectionDetected(
+            paper_id=paper.paper_id,
+            section_count=len(sections),
+            section_types=tuple(s.section_type for s in sections)
+        ))
         
         if progress_callback:
             progress_callback.complete_section()
@@ -127,17 +160,40 @@ async def extract_paper_simple(
             progress_callback.complete_paper(len(all_elements))
             progress_callback.finish()
         
+        # Publish extraction completed event
+        event_bus.publish(ExtractionCompleted(
+            paper_id=paper.paper_id,
+            pages_extracted=pdf_content.total_pages,
+            characters_extracted=pdf_content.total_chars,
+            duration_seconds=time.time() - start_time
+        ))
+        
         logger.info(f"🎉 Extraction complete! Found {len(all_elements)} elements from {len(sections)} sections")
         return result
         
     except PdfError as e:
         logger.error(f"PDF processing failed: {e}")
+        event_bus.publish(ExtractionFailed(
+            pdf_path=str(pdf_path),
+            error_type="PdfError",
+            error_message=str(e)
+        ))
         raise
     except LLMError as e:
         logger.error(f"LLM processing failed: {e}")
+        event_bus.publish(ExtractionFailed(
+            pdf_path=str(pdf_path),
+            error_type="LLMError",
+            error_message=str(e)
+        ))
         raise
     except Exception as e:
         logger.error(f"Unexpected error during extraction: {e}")
+        event_bus.publish(ExtractionFailed(
+            pdf_path=str(pdf_path),
+            error_type=type(e).__name__,
+            error_message=str(e)
+        ))
         raise LLMError(f"Extraction failed: {e}")
 
 

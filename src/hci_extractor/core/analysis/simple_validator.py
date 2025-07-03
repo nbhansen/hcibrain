@@ -10,7 +10,7 @@ Keep it simple!
 """
 
 import logging
-from typing import Tuple, Set
+from typing import Tuple, Set, Any
 
 from hci_extractor.core.models import ExtractedElement, PdfContent
 
@@ -143,7 +143,7 @@ def _basic_quality_filter(elements: list[ExtractedElement]) -> list[ExtractedEle
 def quick_validation_stats(
     original_elements: Tuple[ExtractedElement, ...],
     validated_elements: Tuple[ExtractedElement, ...]
-) -> dict:
+) -> dict[str, Any]:
     """
     Quick validation statistics for logging/debugging.
     

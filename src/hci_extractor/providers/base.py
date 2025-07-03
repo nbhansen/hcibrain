@@ -14,10 +14,13 @@ class LLMProvider(ABC):
     """Abstract base class for LLM providers."""
 
     def __init__(self, rate_limit_delay: float = 1.0, max_retries: int = 3):
-        """Initialize provider with rate limiting configuration."""
-        self.rate_limit_delay = rate_limit_delay
+        """Initialize provider with configuration.
+        
+        Note: rate_limit_delay is deprecated. Rate limiting should be handled
+        by the specific provider implementation or external rate limiter.
+        """
+        self.rate_limit_delay = rate_limit_delay  # Kept for backwards compatibility
         self.max_retries = max_retries
-        self.last_request_time = 0.0
 
     @abstractmethod
     async def analyze_section(
@@ -66,7 +69,7 @@ class LLMProvider(ABC):
 
     @abstractmethod
     async def _make_api_request(
-        self, prompt: str, **kwargs
+        self, prompt: str, **kwargs: Any
     ) -> Dict[str, Any]:
         """
         Make the actual API request to the LLM provider.
@@ -85,21 +88,16 @@ class LLMProvider(ABC):
         pass
 
     async def _enforce_rate_limit(self) -> None:
-        """Enforce rate limiting between requests."""
-        import time
-
-        current_time = time.time()
-        time_since_last = current_time - self.last_request_time
-
-        if time_since_last < self.rate_limit_delay:
-            sleep_time = self.rate_limit_delay - time_since_last
-            logger.debug(f"Rate limiting: sleeping {sleep_time:.2f} seconds")
-            await asyncio.sleep(sleep_time)
-
-        self.last_request_time = time.time()
+        """Enforce rate limiting between requests.
+        
+        Deprecated: This method is kept for backwards compatibility but does nothing.
+        Rate limiting should be handled by the specific provider implementation.
+        """
+        logger.debug("Rate limiting is deprecated in base LLMProvider")
+        pass
 
     async def _retry_with_backoff(
-        self, operation, *args, **kwargs
+        self, operation: Any, *args: Any, **kwargs: Any
     ) -> Any:
         """
         Execute operation with exponential backoff retry logic.
@@ -114,11 +112,10 @@ class LLMProvider(ABC):
         Raises:
             LLMError: If all retries are exhausted
         """
-        last_exception = None
+        last_exception: Optional[Exception] = None
 
         for attempt in range(self.max_retries):
             try:
-                await self._enforce_rate_limit()
                 return await operation(*args, **kwargs)
 
             except RateLimitError as e:
@@ -135,7 +132,7 @@ class LLMProvider(ABC):
                 await asyncio.sleep(delay)
 
             except LLMError as e:
-                last_exception = e
+                last_exception = LLMError(str(e))
                 if attempt < self.max_retries - 1:
                     delay = 2**attempt
                     logger.warning(

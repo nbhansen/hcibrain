@@ -91,7 +91,7 @@ class TestCLIIntegration:
                 assert "environment variable is required" in result.output
     
     @patch('hci_extractor.cli.commands.get_llm_provider')
-    @patch('hci_extractor.core.analysis.extract_paper_simple')
+    @patch('hci_extractor.cli.commands.extract_paper_simple')
     def test_extract_command_basic_workflow(self, mock_extract, mock_get_provider):
         """Test extract command with mocked LLM to verify workflow."""
         runner = CliRunner()
@@ -101,7 +101,7 @@ class TestCLIIntegration:
         mock_get_provider.return_value = mock_provider
         
         # Mock the extraction result
-        from hci_extractor.models import Paper, ExtractedElement, ExtractionResult
+        from hci_extractor.core.models import Paper, ExtractedElement, ExtractionResult
         from datetime import datetime
         
         mock_paper = Paper.create_with_auto_id(
@@ -144,7 +144,7 @@ class TestCLIIntegration:
                 assert "1" in result.output  # Total elements
     
     @patch('hci_extractor.cli.commands.get_llm_provider')
-    @patch('hci_extractor.core.analysis.extract_paper_simple')
+    @patch('hci_extractor.cli.commands.extract_paper_simple')
     def test_extract_command_with_output_file(self, mock_extract, mock_get_provider):
         """Test extract command saves results to JSON file."""
         runner = CliRunner()
@@ -153,7 +153,7 @@ class TestCLIIntegration:
         mock_provider = AsyncMock()
         mock_get_provider.return_value = mock_provider
         
-        from hci_extractor.models import Paper, ExtractedElement, ExtractionResult
+        from hci_extractor.core.models import Paper, ExtractedElement, ExtractionResult
         from datetime import datetime
         
         mock_paper = Paper.create_with_auto_id(

@@ -9,7 +9,7 @@ from hci_extractor.core.models import TextTransformation
 class TextNormalizer:
     """Clean PDF text while maintaining verbatim validation capability."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize with academic-aware cleaning rules."""
         # Patterns to preserve during cleaning
         self.citation_patterns = [
@@ -36,7 +36,7 @@ class TextNormalizer:
                 char_mapping={},
             )
 
-        transformations = []
+        transformations: List[str] = []
         char_mapping = {}
         current_text = raw_text
 
@@ -77,7 +77,7 @@ class TextNormalizer:
         # Pattern: word- \n word -> word word
         pattern = r"(\w+)-\s*\n\s*(\w+)"
 
-        def replace_hyphen(match):
+        def replace_hyphen(match: re.Match[str]) -> str:
             return f"{match.group(1)}{match.group(2)}"
 
         new_text = ""
@@ -133,7 +133,7 @@ class TextNormalizer:
 
         # Sort and merge overlapping ranges
         protected_ranges.sort()
-        merged_ranges = []
+        merged_ranges: List[Tuple[int, int]] = []
         for start, end in protected_ranges:
             if merged_ranges and start <= merged_ranges[-1][1]:
                 merged_ranges[-1] = (
@@ -236,7 +236,7 @@ class TextNormalizer:
 
         # Identify potential headers/footers (conservative approach)
         # Look for lines that appear multiple times and are short
-        line_counts = {}
+        line_counts: dict[str, int] = {}
         for line in lines:
             stripped = line.strip()
             if stripped and len(stripped) < 100:  # Only consider short lines

@@ -13,7 +13,7 @@ from datetime import datetime
 
 import pytest
 
-from hci_extractor.models import (
+from hci_extractor.core.models import (
     Paper,
     ExtractedElement, 
     DetectedSection,
@@ -425,7 +425,7 @@ class TestExceptionHierarchy:
     def test_exception_inheritance(self):
         """Test exception inheritance relationships."""
         # All should inherit from HciExtractorError
-        from hci_extractor.models import (
+        from hci_extractor.core.models import (
             ProcessingError, DataValidationError, 
             LLMError, PdfError
         )

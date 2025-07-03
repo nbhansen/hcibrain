@@ -7,9 +7,12 @@ from typing import Any, Dict, List, Optional
 
 import google.generativeai as genai
 
+from hci_extractor.core.config import ExtractorConfig, get_config
+from hci_extractor.core.metrics import LLMMetricsContext, get_metrics_collector
 from hci_extractor.core.models import LLMError, RateLimitError, LLMValidationError
 from hci_extractor.prompts import PromptManager
 from hci_extractor.providers.base import LLMProvider
+from hci_extractor.utils import recover_json, JsonRecoveryOptions
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +24,9 @@ class GeminiProvider(LLMProvider):
         self,
         api_key: Optional[str] = None,
         model_name: str = "gemini-1.5-flash",
-        rate_limit_delay: float = 1.0,
-        max_retries: int = 3,
+        config: Optional[ExtractorConfig] = None,
+        rate_limit_delay: Optional[float] = None,
+        max_retries: Optional[int] = None,
         prompt_manager: Optional[PromptManager] = None,
     ):
         """
@@ -31,11 +35,16 @@ class GeminiProvider(LLMProvider):
         Args:
             api_key: Gemini API key (if None, reads from GEMINI_API_KEY env var)
             model_name: Gemini model to use
-            rate_limit_delay: Seconds to wait between requests
-            max_retries: Maximum number of retry attempts
+            config: Optional configuration object
+            rate_limit_delay: Seconds to wait between requests (deprecated, use config)
+            max_retries: Maximum number of retry attempts (deprecated, use config)
             prompt_manager: PromptManager instance for prompt templates
         """
-        super().__init__(rate_limit_delay, max_retries)
+        self.config = config or get_config()
+        # Support legacy parameters for backwards compatibility
+        rate_limit = rate_limit_delay if rate_limit_delay is not None else 1.0  # Will move to config later
+        retries = max_retries if max_retries is not None else self.config.retry.max_attempts
+        super().__init__(rate_limit, retries)
         
         # Initialize PromptManager for this provider
         self.prompt_manager = prompt_manager or PromptManager()
@@ -50,22 +59,20 @@ class GeminiProvider(LLMProvider):
 
         # Configure Gemini
         try:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel(model_name)
+            genai.configure(api_key=self.api_key)  # type: ignore[attr-defined]
+            self.model = genai.GenerativeModel(model_name)  # type: ignore[attr-defined]
         except Exception as e:
             raise LLMError(f"Failed to initialize Gemini model: {e}")
 
         # Generation configuration optimized for academic analysis
         self.generation_config = genai.types.GenerationConfig(
-            temperature=0.1,  # Low temperature for consistent output
-            max_output_tokens=4000,  # Sufficient for element extraction
+            temperature=self.config.analysis.temperature,
+            max_output_tokens=self.config.analysis.max_output_tokens,
             response_mime_type="application/json",  # Force JSON output
         )
-
-        # Usage tracking
-        self._requests_made = 0
-        self._tokens_used = 0
-        self._estimated_cost = 0.0
+        
+        # Store model name for metrics
+        self.model_name = model_name
 
     async def analyze_section(
         self,
@@ -77,42 +84,55 @@ class GeminiProvider(LLMProvider):
         if not section_text.strip():
             return []
 
-        try:
-            # Build the prompt using PromptManager
-            prompt = self.prompt_manager.get_analysis_prompt(
-                section_text=section_text,
-                section_type=section_type,
-                context=context,
-                include_examples=True
-            )
+        # Extract paper_id from context if available
+        paper_id = context.get("paper_id") if context else None
+        
+        # Use metrics context manager for tracking
+        with LLMMetricsContext(
+            provider="gemini",
+            model=self.model_name,
+            operation="analyze_section",
+            paper_id=paper_id,
+            section_type=section_type
+        ) as metrics:
+            try:
+                # Build the prompt using PromptManager
+                prompt = self.prompt_manager.get_analysis_prompt(
+                    section_text=section_text,
+                    section_type=section_type,
+                    context=context,
+                    include_examples=True
+                )
+                
+                # Estimate input tokens (rough approximation)
+                metrics.tokens_input = len(prompt) // 4
 
-            # Make API request with retry logic
-            response = await self._retry_with_backoff(
-                self._make_api_request, prompt
-            )
+                # Make API request with retry logic
+                response = await self._retry_with_backoff(
+                    self._make_api_request, prompt
+                )
 
-            # Parse and validate response
-            elements = self._parse_response(response)
+                # Parse and validate response
+                elements = self._parse_response(response)
+                
+                # Estimate output tokens
+                response_text = json.dumps(response) if isinstance(response, dict) else str(response)
+                metrics.tokens_output = len(response_text) // 4
 
-            # Track usage
-            self._requests_made += 1
-            # Note: Actual token counting would require usage metadata from response
-            self._tokens_used += len(section_text) // 4  # Rough estimate
+                logger.info(
+                    f"Analyzed {section_type} section: {len(elements)} elements extracted"
+                )
 
-            logger.info(
-                f"Analyzed {section_type} section: {len(elements)} elements extracted"
-            )
+                return elements
 
-            return elements
+            except Exception as e:
+                logger.error(f"Error analyzing section {section_type}: {e}")
+                if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
+                    raise
+                else:
+                    raise LLMError(f"Unexpected error in section analysis: {e}")
 
-        except Exception as e:
-            logger.error(f"Error analyzing section {section_type}: {e}")
-            if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
-                raise
-            else:
-                raise LLMError(f"Unexpected error in section analysis: {e}")
-
-    async def _make_api_request(self, prompt: str, **kwargs) -> Dict[str, Any]:
+    async def _make_api_request(self, prompt: str, **kwargs: Any) -> Dict[str, Any]:
         """Make API request to Gemini."""
         try:
             # Generate content using Gemini
@@ -129,14 +149,19 @@ class GeminiProvider(LLMProvider):
                 response_data = json.loads(response.text)
             except json.JSONDecodeError as e:
                 # Try to recover from common JSON issues
-                recovered_data = self._attempt_json_recovery(response.text, e)
-                if recovered_data is not None:
-                    logger.warning(f"Recovered from JSON error: {e}")
-                    response_data = recovered_data
+                recovery_options = JsonRecoveryOptions(
+                    strategies=['truncation', 'array_completion'],
+                    expected_structure={'elements': list}
+                )
+                recovery_result = recover_json(response.text, recovery_options)
+                
+                if recovery_result.success:
+                    logger.warning(f"Recovered from JSON error using {recovery_result.strategy_used}: {e}")
+                    response_data = recovery_result.recovered_data
                 else:
                     raise LLMValidationError(f"Invalid JSON response from Gemini: {e}")
 
-            return response_data
+            return response_data  # type: ignore[no-any-return]
 
         except Exception as e:
             # Handle specific Gemini errors
@@ -151,52 +176,6 @@ class GeminiProvider(LLMProvider):
             else:
                 raise LLMError(f"Gemini API error: {e}")
 
-    def _attempt_json_recovery(self, response_text: str, original_error: json.JSONDecodeError) -> Optional[Dict[str, Any]]:
-        """Attempt to recover from JSON parsing errors."""
-        try:
-            # Common issue: unterminated strings - try truncating at error position
-            if "Unterminated string" in str(original_error):
-                error_pos = getattr(original_error, 'pos', len(response_text))
-                
-                # Try to find the last complete JSON object before the error
-                for try_pos in range(error_pos - 1, max(0, error_pos - 1000), -1):
-                    if response_text[try_pos] == '}':
-                        # Try parsing up to this closing brace
-                        truncated = response_text[:try_pos + 1]
-                        try:
-                            return json.loads(truncated)
-                        except json.JSONDecodeError:
-                            continue
-                
-                # Try to find and close the last opened elements array
-                elements_start = response_text.rfind('{"elements":[')
-                if elements_start >= 0:
-                    # Find last complete element
-                    bracket_count = 0
-                    last_complete = -1
-                    
-                    for i in range(elements_start, min(len(response_text), error_pos)):
-                        if response_text[i] == '{':
-                            bracket_count += 1
-                        elif response_text[i] == '}':
-                            bracket_count -= 1
-                            if bracket_count == 1:  # Back to elements level
-                                last_complete = i
-                    
-                    if last_complete > elements_start:
-                        # Construct valid JSON ending
-                        recovered = response_text[:last_complete + 1] + ']}'
-                        try:
-                            return json.loads(recovered)
-                        except json.JSONDecodeError:
-                            pass
-            
-            # If no recovery possible, return None
-            return None
-            
-        except Exception:
-            # If recovery attempt fails, return None
-            return None
 
     def validate_response(self, response: Dict[str, Any]) -> bool:
         """Validate Gemini response format."""
@@ -300,15 +279,18 @@ class GeminiProvider(LLMProvider):
         return processed_elements
 
     def get_usage_stats(self) -> Dict[str, Any]:
-        """Return usage statistics."""
-        # Rough cost estimation for Gemini 1.5 Flash
-        # These are example rates - adjust based on actual pricing
-        cost_per_1k_tokens = 0.000075  # $0.075 per 1M tokens
-        estimated_cost = (self._tokens_used / 1000) * cost_per_1k_tokens
-
+        """Return usage statistics.
+        
+        This method is deprecated. Use the global metrics collector instead.
+        Returns empty stats for backwards compatibility.
+        """
+        logger.warning(
+            "GeminiProvider.get_usage_stats() is deprecated. "
+            "Use get_metrics_collector().get_llm_summary() instead."
+        )
         return {
-            "requests_made": self._requests_made,
-            "tokens_used": self._tokens_used,
-            "estimated_cost": estimated_cost,
-            "model_name": "gemini-1.5-flash",
+            "requests_made": 0,
+            "tokens_used": 0,
+            "estimated_cost": 0.0,
+            "model_name": self.model_name,
         }

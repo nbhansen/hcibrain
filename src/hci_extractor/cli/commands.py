@@ -17,19 +17,12 @@ from hci_extractor.core.extraction import PdfExtractor, TextNormalizer
 from hci_extractor.core.models import PdfError, LLMError, Paper
 from hci_extractor.providers import GeminiProvider
 from hci_extractor.cli.progress import ProgressTracker
+from hci_extractor.utils.logging import setup_logging
 
 # Load environment variables from .env file
 load_dotenv()
 
 __version__ = "0.1.0"
-
-
-def setup_logging(verbose: bool = False) -> None:
-    """Configure logging for the application."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
 
 
 def get_llm_provider() -> GeminiProvider:
@@ -264,12 +257,12 @@ def _test_api_key(api_key: str, progress: ProgressTracker) -> bool:
         provider = GeminiProvider(api_key=api_key)
         
         # Make a simple test call using the async method
-        async def test_call():
+        async def test_call() -> Dict[str, Any]:
             return await provider._make_api_request("Say 'test' in one word only.")
         
         test_response = asyncio.run(test_call())
         
-        return test_response and isinstance(test_response, dict)
+        return bool(test_response and isinstance(test_response, dict))
         
     except Exception as e:
         progress.warning(f"API key test failed: {e}")
@@ -496,12 +489,13 @@ def parse(pdf_path: Path, output: Optional[Path], normalize: bool) -> None:
         )
 
         # Apply normalization if requested
+        output_data: Dict[str, Any]
         if normalize:
             normalizer = TextNormalizer()
             click.echo("Applying text normalization...")
 
             # Normalize each page
-            normalized_pages = []
+            normalized_pages: List[Dict[str, Any]] = []
             for page in content.pages:
                 transformation = normalizer.normalize(page.text)
                 normalized_pages.append(
@@ -638,7 +632,7 @@ def extract(
 ) -> None:
     """Extract academic elements (claims, findings, methods) from a PDF using LLM analysis.
     
-    Output format is auto-detected from file extension:
+    Output format is auto-detects from file extension:
     - .json: Complete extraction data (default)
     - .csv: Analysis-ready spreadsheet format  
     - .md: Human-readable Markdown format
@@ -655,11 +649,11 @@ def extract(
         llm_provider = get_llm_provider()
         
         # Prepare paper metadata
-        paper_metadata = {}
+        paper_metadata: Dict[str, Any] = {}
         if title:
             paper_metadata["title"] = title
         if authors:
-            paper_metadata["authors"] = [author.strip() for author in authors.split(",")]
+            paper_metadata["authors"] = ', '.join([author.strip() for author in authors.split(",")])
         if venue:
             paper_metadata["venue"] = venue
         if year:
@@ -884,11 +878,11 @@ def batch(
                     raise
                 return False
         
-        async def process_batch():
+        async def process_batch() -> List[Any]:
             """Process all PDFs with concurrency control."""
             semaphore = asyncio.Semaphore(max_concurrent)
             
-            async def process_with_semaphore(pdf_path):
+            async def process_with_semaphore(pdf_path: Path) -> bool:
                 async with semaphore:
                     return await process_single_pdf(pdf_path)
             
@@ -1090,7 +1084,7 @@ def _export_to_csv(elements: List[Dict[str, Any]]) -> str:
         return ""
     
     # Get all possible field names
-    fieldnames = set()
+    fieldnames: set[str] = set()
     for element in elements:
         fieldnames.update(element.keys())
     
@@ -1103,12 +1097,12 @@ def _export_to_csv(elements: List[Dict[str, Any]]) -> str:
     
     # Add any additional fields not in the ordered list
     remaining_fields = sorted(fieldnames - set(ordered_fields))
-    fieldnames = [f for f in ordered_fields if f in fieldnames] + remaining_fields
+    fieldnames_list: List[str] = [f for f in ordered_fields if f in fieldnames] + remaining_fields
     
     # Generate CSV
     import io
     output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer = csv.DictWriter(output, fieldnames=fieldnames_list)
     writer.writeheader()
     writer.writerows(elements)
     
@@ -1142,7 +1136,7 @@ def _export_to_markdown(elements: List[Dict[str, Any]], papers_info: List[Dict[s
     lines.append("")
     
     # Group elements by paper
-    elements_by_paper = {}
+    elements_by_paper: Dict[str, List[Dict[str, Any]]] = {}
     for element in elements:
         paper_title = element.get("paper_title", "Unknown Paper")
         if paper_title not in elements_by_paper:
@@ -1155,7 +1149,7 @@ def _export_to_markdown(elements: List[Dict[str, Any]], papers_info: List[Dict[s
         lines.append("")
         
         # Group by element type
-        elements_by_type = {}
+        elements_by_type: Dict[str, List[Dict[str, Any]]] = {}
         for element in paper_elements:
             element_type = element.get("element_type", "unknown")
             if element_type not in elements_by_type:

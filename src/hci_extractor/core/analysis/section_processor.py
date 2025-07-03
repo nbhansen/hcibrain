@@ -8,11 +8,18 @@ injection (DIP) to decouple from concrete LLM implementations.
 
 import asyncio
 import logging
+import time
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple, Optional, List, Union
 
+from hci_extractor.core.config import ExtractorConfig, get_config
 from hci_extractor.core.models import DetectedSection, ExtractedElement, Paper, LLMError
-from hci_extractor.providers.llm import LLMProvider
+from hci_extractor.providers import LLMProvider
+from hci_extractor.core.events import (
+    get_event_bus,
+    SectionProcessingStarted,
+    SectionProcessingCompleted
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,26 +67,30 @@ class LLMSectionProcessor(SectionProcessor):
     def __init__(
         self, 
         llm_provider: LLMProvider,
-        max_retries: int = 2,
-        timeout_seconds: float = 60.0,
-        chunk_size: int = 10000,
-        chunk_overlap: int = 500
+        config: Optional[ExtractorConfig] = None,
+        max_retries: Optional[int] = None,
+        timeout_seconds: Optional[float] = None,
+        chunk_size: Optional[int] = None,
+        chunk_overlap: Optional[int] = None
     ):
         """
         Initialize with injected LLM provider.
         
         Args:
             llm_provider: Abstract LLM provider (DIP)
-            max_retries: Maximum retry attempts for failed processing
-            timeout_seconds: Timeout for processing operations
-            chunk_size: Maximum characters per chunk for large sections
-            chunk_overlap: Character overlap between chunks for context
+            config: Optional configuration object
+            max_retries: Maximum retry attempts for failed processing (deprecated, use config)
+            timeout_seconds: Timeout for processing operations (deprecated, use config)
+            chunk_size: Maximum characters per chunk for large sections (deprecated, use config)
+            chunk_overlap: Character overlap between chunks for context (deprecated, use config)
         """
+        self.config = config or get_config()
         self.llm_provider = llm_provider
-        self.max_retries = max_retries
-        self.timeout_seconds = timeout_seconds
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
+        # Support legacy parameters for backwards compatibility
+        self.max_retries = max_retries if max_retries is not None else self.config.retry.max_attempts
+        self.timeout_seconds = timeout_seconds if timeout_seconds is not None else self.config.analysis.section_timeout_seconds
+        self.chunk_size = chunk_size if chunk_size is not None else self.config.analysis.chunk_size
+        self.chunk_overlap = chunk_overlap if chunk_overlap is not None else self.config.analysis.chunk_overlap
     
     async def process_section(
         self,
@@ -98,6 +109,23 @@ class LLMSectionProcessor(SectionProcessor):
             f"({len(section.text)} chars) from paper {paper.paper_id}"
         )
         
+        # Get event bus
+        event_bus = get_event_bus()
+        start_time = time.time()
+        
+        # Calculate chunk count for event
+        chunk_count = 1
+        if len(section.text) > self.chunk_size:
+            chunk_count = len(self._split_text_into_chunks(section.text))
+        
+        # Publish section processing started event
+        event_bus.publish(SectionProcessingStarted(
+            paper_id=paper.paper_id,
+            section_type=section.section_type,
+            section_size_chars=len(section.text),
+            chunk_count=chunk_count
+        ))
+        
         try:
             # Build context for LLM analysis
             analysis_context = self._build_analysis_context(paper, section, context)
@@ -108,7 +136,17 @@ class LLMSectionProcessor(SectionProcessor):
                     f"Large section ({len(section.text)} chars) detected, "
                     f"splitting into chunks of {self.chunk_size} chars"
                 )
-                return await self._process_section_chunked(section, analysis_context, paper)
+                extracted_elements = await self._process_section_chunked(section, analysis_context, paper)
+                
+                # Publish section processing completed event
+                event_bus.publish(SectionProcessingCompleted(
+                    paper_id=paper.paper_id,
+                    section_type=section.section_type,
+                    elements_extracted=len(extracted_elements),
+                    duration_seconds=time.time() - start_time
+                ))
+                
+                return extracted_elements
             else:
                 # Process normally for smaller sections
                 elements_data = await self._process_with_retries(
@@ -125,12 +163,29 @@ class LLMSectionProcessor(SectionProcessor):
                     f"from {section.section_type} section"
                 )
                 
+                # Publish section processing completed event
+                event_bus.publish(SectionProcessingCompleted(
+                    paper_id=paper.paper_id,
+                    section_type=section.section_type,
+                    elements_extracted=len(extracted_elements),
+                    duration_seconds=time.time() - start_time
+                ))
+                
                 return extracted_elements
             
         except Exception as e:
             logger.error(
                 f"Failed to process {section.section_type} section: {e}"
             )
+            
+            # Publish completion event even for failures (with 0 elements)
+            event_bus.publish(SectionProcessingCompleted(
+                paper_id=paper.paper_id,
+                section_type=section.section_type,
+                elements_extracted=0,
+                duration_seconds=time.time() - start_time
+            ))
+            
             # Return empty tuple instead of raising - graceful degradation
             return ()
     
@@ -142,7 +197,7 @@ class LLMSectionProcessor(SectionProcessor):
     ) -> Tuple[ExtractedElement, ...]:
         """Process large section by splitting into chunks."""
         chunks = self._split_text_into_chunks(section.text)
-        all_elements = []
+        all_elements: List[ExtractedElement] = []
         
         logger.info(f"Processing {len(chunks)} chunks for {section.section_type} section")
         
@@ -189,6 +244,9 @@ class LLMSectionProcessor(SectionProcessor):
             f"Chunked processing complete: {len(all_elements)} total elements "
             f"from {len(chunks)} chunks"
         )
+        
+        # Note: For chunked processing, the completion event is published
+        # in the main process_section method, not here
         
         return tuple(all_elements)
     
@@ -267,7 +325,7 @@ class LLMSectionProcessor(SectionProcessor):
         
         # Add authors if available
         if paper.authors:
-            context["authors"] = paper.authors
+            context["authors"] = paper.authors if isinstance(paper.authors, str) else ', '.join(paper.authors)
         
         # Merge additional context
         if additional_context:
@@ -329,7 +387,10 @@ class LLMSectionProcessor(SectionProcessor):
             f"Failed to process {section.section_type} section after "
             f"{self.max_retries + 1} attempts"
         )
-        raise last_error
+        if last_error:
+            raise last_error
+        else:
+            raise LLMError("Processing failed after all retries")
     
     def _create_extracted_elements(
         self,
@@ -384,7 +445,8 @@ async def process_sections_batch(
     paper: Paper,
     processor: SectionProcessor,
     context: Optional[Dict[str, Any]] = None,
-    max_concurrent: int = 3
+    max_concurrent: Optional[int] = None,
+    config: Optional[ExtractorConfig] = None
 ) -> Tuple[ExtractedElement, ...]:
     """
     Process multiple sections concurrently for efficiency.
@@ -397,11 +459,14 @@ async def process_sections_batch(
         paper: Immutable paper metadata
         processor: Abstract processor (OCP/LSP compliance)
         context: Optional context for all sections
-        max_concurrent: Maximum concurrent processing operations
+        max_concurrent: Maximum concurrent processing operations (deprecated, use config)
+        config: Optional configuration object
         
     Returns:
         Immutable tuple of all extracted elements
     """
+    config = config or get_config()
+    max_concurrent = max_concurrent if max_concurrent is not None else config.analysis.max_concurrent_sections
     if not sections:
         return ()
     
@@ -423,7 +488,7 @@ async def process_sections_batch(
     section_results = await asyncio.gather(*tasks, return_exceptions=True)
     
     # Flatten results and filter out errors
-    all_elements = []
+    all_elements: List[ExtractedElement] = []
     successful_sections = 0
     
     for i, result in enumerate(section_results):
@@ -432,7 +497,10 @@ async def process_sections_batch(
                 f"Failed to process section {sections[i].section_type}: {result}"
             )
         else:
-            all_elements.extend(result)
+            if isinstance(result, tuple):
+                all_elements.extend(result)
+            else:
+                logger.warning(f"Unexpected result type: {type(result)}")
             successful_sections += 1
     
     logger.info(

@@ -8,14 +8,15 @@ returning immutable DetectedSection objects.
 
 import logging
 import re
-from typing import Tuple
+from typing import Tuple, Optional
 
+from hci_extractor.core.config import ExtractorConfig, get_config
 from hci_extractor.core.models import DetectedSection, PdfContent
 
 logger = logging.getLogger(__name__)
 
 
-def detect_sections(pdf_content: PdfContent) -> Tuple[DetectedSection, ...]:
+def detect_sections(pdf_content: PdfContent, config: Optional[ExtractorConfig] = None) -> Tuple[DetectedSection, ...]:
     """
     Detect academic paper sections from PDF content.
     
@@ -24,6 +25,7 @@ def detect_sections(pdf_content: PdfContent) -> Tuple[DetectedSection, ...]:
     
     Args:
         pdf_content: Immutable PDF content to analyze
+        config: Optional configuration object
         
     Returns:
         Immutable tuple of detected sections, ordered by appearance
@@ -31,6 +33,7 @@ def detect_sections(pdf_content: PdfContent) -> Tuple[DetectedSection, ...]:
     Raises:
         ValueError: If PDF content is invalid
     """
+    config = config or get_config()
     if not pdf_content.pages:
         return ()
     
@@ -40,6 +43,7 @@ def detect_sections(pdf_content: PdfContent) -> Tuple[DetectedSection, ...]:
         return ()
     
     logger.info(f"Detecting sections in document with {len(full_text)} characters")
+    logger.debug(f"First 200 chars of text: {repr(full_text[:200])}")
     
     # Define section patterns following academic conventions
     section_patterns = _get_section_patterns()
@@ -51,7 +55,8 @@ def detect_sections(pdf_content: PdfContent) -> Tuple[DetectedSection, ...]:
             full_text, 
             pdf_content, 
             pattern_name, 
-            patterns
+            patterns,
+            config
         )
         detected_sections.extend(sections)
     
@@ -112,6 +117,9 @@ def _get_section_patterns() -> dict[str, list[str]]:
             r"(?i)^\s*\d+\.?\s*experimental\s+design\s*$",
             r"(?i)\n\s*\d+\.?\s*methodology\s*\n",
             r"(?i)\n\s*\d+\.?\s*methods?\s*\n",
+            # Unnumbered sections (common in test data)
+            r"(?i)^\s*methodology\s*$",
+            r"(?i)^\s*methods?\s*$",
         ],
         
         # Design section (common in HCI papers)
@@ -175,7 +183,8 @@ def _find_sections_by_pattern(
     full_text: str,
     pdf_content: PdfContent,
     section_type: str,
-    patterns: list[str]
+    patterns: list[str],
+    config: ExtractorConfig
 ) -> list[DetectedSection]:
     """Find sections matching the given patterns."""
     sections = []
@@ -193,7 +202,7 @@ def _find_sections_by_pattern(
             # Extract section text
             section_text = full_text[start_pos:end_pos].strip()
             
-            if len(section_text) < 50:  # Skip very short sections
+            if len(section_text) < config.analysis.min_section_length:  # Skip very short sections
                 continue
             
             # Map character positions to pages
@@ -292,7 +301,7 @@ def _resolve_overlapping_sections(sections: list[DetectedSection]) -> list[Detec
     if not sections:
         return []
     
-    resolved = []
+    resolved: list[DetectedSection] = []
     
     for current in sections:
         # Check if current section overlaps with any resolved section

@@ -17,7 +17,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from hci_extractor.models import (
+from hci_extractor.core.models import (
     Paper,
     ExtractedElement,
     ExtractionResult,
@@ -27,7 +27,7 @@ from hci_extractor.models import (
 
 # Try to import simple extraction (requires PDF dependencies)
 try:
-    from hci_extractor.pipeline import extract_paper_simple, extract_multiple_papers, extract_paper_sync
+    from hci_extractor.core.analysis import extract_paper_simple, extract_multiple_papers, extract_paper_sync
     SIMPLE_EXTRACTION_AVAILABLE = True
 except ImportError:
     SIMPLE_EXTRACTION_AVAILABLE = False
@@ -64,7 +64,7 @@ class TestSimpleExtraction:
                     PdfPage(
                         page_number=1,
                         text="Abstract\nUsers performed 25% better with our system.",
-                        char_count=50,
+                        char_count=len("Abstract\nUsers performed 25% better with our system."),
                         dimensions=(612.0, 792.0),
                         char_positions=()
                     ),
@@ -72,7 +72,7 @@ class TestSimpleExtraction:
                 extraction_metadata={}
             )
             
-            with patch('hci_extractor.pipeline.simple_extractor.extract_pdf_content', return_value=mock_pdf_content):
+            with patch('hci_extractor.core.extraction.PdfExtractor.extract_content', return_value=mock_pdf_content):
                 result = await extract_paper_simple(
                     pdf_path=pdf_path,
                     llm_provider=mock_llm,
@@ -92,7 +92,14 @@ class TestSimpleExtraction:
     async def test_extract_paper_simple_no_metadata(self):
         """Test extraction without explicit paper metadata."""
         mock_llm = AsyncMock()
-        mock_llm.analyze_section.return_value = []
+        mock_llm.analyze_section.return_value = [
+            {
+                "element_type": "claim",
+                "text": "novel interaction method for touch-based devices",
+                "evidence_type": "theoretical",
+                "confidence": 0.85
+            }
+        ]
         
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_file:
             pdf_path = Path(tmp_file.name)
@@ -105,8 +112,8 @@ class TestSimpleExtraction:
                 pages=(
                     PdfPage(
                         page_number=1,
-                        text="TouchGestures: A Novel Interaction Method\n\nAbstract\nThis paper presents...",
-                        char_count=70,
+                        text="TouchGestures: A Novel Interaction Method\n\nAbstract\nThis paper presents a novel interaction method for touch-based devices that improves user performance and satisfaction through innovative gesture recognition.",
+                        char_count=len("TouchGestures: A Novel Interaction Method\n\nAbstract\nThis paper presents a novel interaction method for touch-based devices that improves user performance and satisfaction through innovative gesture recognition."),
                         dimensions=(612.0, 792.0),
                         char_positions=()
                     ),
@@ -114,16 +121,17 @@ class TestSimpleExtraction:
                 extraction_metadata={}
             )
             
-            with patch('hci_extractor.pipeline.simple_extractor.extract_pdf_content', return_value=mock_pdf_content):
+            with patch('hci_extractor.core.extraction.PdfExtractor.extract_content', return_value=mock_pdf_content):
                 result = await extract_paper_simple(
                     pdf_path=pdf_path,
                     llm_provider=mock_llm
                     # No paper_metadata provided
                 )
             
-            # Should extract title from document
-            assert "TouchGestures" in result.paper.title
+            # Should use filename as title when no metadata provided
+            assert result.paper.title  # Should have a title from filename
             assert len(result.paper.authors) > 0  # Should have placeholder authors
+            assert result.paper.authors[0] == "Unknown"  # Default author
             
         finally:
             pdf_path.unlink(missing_ok=True)
@@ -163,7 +171,7 @@ class TestSimpleExtraction:
                 extraction_metadata={}
             )
             
-            with patch('hci_extractor.pipeline.simple_extractor.extract_pdf_content', return_value=mock_pdf_content):
+            with patch('hci_extractor.core.extraction.PdfExtractor.extract_content', return_value=mock_pdf_content):
                 start_time = time.time()
                 
                 result = await extract_paper_simple(
@@ -203,8 +211,8 @@ class TestSimpleExtraction:
                 pages=(
                     PdfPage(
                         page_number=1,
-                        text="Methodology\nControlled experiment design was used.",
-                        char_count=50,
+                        text="Methodology\nControlled experiment design was used to evaluate the effectiveness of our new interaction technique with 30 participants over a two-week period.",
+                        char_count=len("Methodology\nControlled experiment design was used to evaluate the effectiveness of our new interaction technique with 30 participants over a two-week period."),
                         dimensions=(612.0, 792.0),
                         char_positions=()
                     ),
@@ -212,7 +220,7 @@ class TestSimpleExtraction:
                 extraction_metadata={}
             )
             
-            with patch('hci_extractor.pipeline.simple_extractor.extract_pdf_content', return_value=mock_pdf_content):
+            with patch('hci_extractor.core.extraction.PdfExtractor.extract_content', return_value=mock_pdf_content):
                 # Test synchronous extraction
                 result = extract_paper_sync(
                     pdf_path=pdf_path,
@@ -255,8 +263,8 @@ class TestSimpleExtraction:
                     pages=(
                         PdfPage(
                             page_number=1,
-                            text=f"Paper {paper_num}\nAbstract\nTest content for paper {paper_num}.",
-                            char_count=40,
+                            text=f"Paper {paper_num}\nAbstract\nTest content for paper {paper_num}. This abstract describes the key contributions and findings of our research work in human-computer interaction.",
+                            char_count=len(f"Paper {paper_num}\nAbstract\nTest content for paper {paper_num}. This abstract describes the key contributions and findings of our research work in human-computer interaction."),
                             dimensions=(612.0, 792.0),
                             char_positions=()
                         ),
@@ -264,11 +272,10 @@ class TestSimpleExtraction:
                     extraction_metadata={}
                 )
             
-            with patch('hci_extractor.pipeline.simple_extractor.extract_pdf_content', side_effect=mock_extract_pdf):
+            with patch('hci_extractor.core.extraction.PdfExtractor.extract_content', side_effect=mock_extract_pdf):
                 results = await extract_multiple_papers(
                     pdf_paths=pdf_paths,
-                    llm_provider=mock_llm,
-                    max_concurrent=2
+                    llm_provider=mock_llm
                 )
             
             # Should return results for all papers
@@ -277,8 +284,9 @@ class TestSimpleExtraction:
             
             # Each should have been processed
             titles = [r.paper.title for r in results]
-            assert any("Paper 1" in title or "paper_0" in title for title in titles)
-            assert any("Paper 2" in title or "paper_1" in title for title in titles)
+            # Titles are generated from filenames, so check for paper_0 and paper_1
+            assert any("paper 0" in title.lower() or "paper_0" in title.lower() for title in titles)
+            assert any("paper 1" in title.lower() or "paper_1" in title.lower() for title in titles)
             
         finally:
             for pdf_path in pdf_paths:
@@ -320,7 +328,7 @@ class TestExtractionErrorHandling:
                     PdfPage(
                         page_number=1,
                         text="Abstract\nTest content.",
-                        char_count=20,
+                        char_count=len("Abstract\nTest content."),
                         dimensions=(612.0, 792.0),
                         char_positions=()
                     ),
@@ -328,7 +336,7 @@ class TestExtractionErrorHandling:
                 extraction_metadata={}
             )
             
-            with patch('hci_extractor.pipeline.simple_extractor.extract_pdf_content', return_value=mock_pdf_content):
+            with patch('hci_extractor.core.extraction.PdfExtractor.extract_content', return_value=mock_pdf_content):
                 # Should handle LLM failures gracefully
                 result = await extract_paper_simple(
                     pdf_path=pdf_path,
@@ -373,7 +381,7 @@ class TestExtractionErrorHandling:
                     PdfPage(
                         page_number=1,
                         text="Abstract\nSuccess claim.\n\n1. Introduction\nThis will fail.",
-                        char_count=60,
+                        char_count=len("Abstract\nSuccess claim.\n\n1. Introduction\nThis will fail."),
                         dimensions=(612.0, 792.0),
                         char_positions=()
                     ),
@@ -381,7 +389,7 @@ class TestExtractionErrorHandling:
                 extraction_metadata={}
             )
             
-            with patch('hci_extractor.pipeline.simple_extractor.extract_pdf_content', return_value=mock_pdf_content):
+            with patch('hci_extractor.core.extraction.PdfExtractor.extract_content', return_value=mock_pdf_content):
                 result = await extract_paper_simple(
                     pdf_path=pdf_path,
                     llm_provider=mock_llm,

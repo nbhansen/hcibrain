@@ -1,0 +1,16 @@
+{
+  "batch_info": {
+    "input_directory": "test_batch_input",
+    "output_directory": "test_batch_output",
+    "total_files": 1,
+    "successful": 1,
+    "failed": 0,
+    "max_concurrent": 2,
+    "filter_pattern": "*.pdf",
+    "skip_errors": false
+  },
+  "processed_files": [
+    "test_batch_input/autisticadults.pdf"
+  ],
+  "failed_files": []
+}

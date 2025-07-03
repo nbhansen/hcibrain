@@ -3,7 +3,7 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Dict, Literal, Optional, Union
 
 
 @dataclass(frozen=True)
@@ -197,7 +197,7 @@ class Paper:
     def create_with_auto_id(
         cls,
         title: str,
-        authors: tuple[str, ...] | list[str],
+        authors: Union[tuple[str, ...], list[str]],
         venue: Optional[str] = None,
         year: Optional[int] = None,
         doi: Optional[str] = None,
@@ -307,7 +307,7 @@ class ExtractionResult:
     @property
     def elements_by_section(self) -> dict[str, int]:
         """Return count of elements by section."""
-        counts = {}
+        counts: Dict[str, int] = {}
         for element in self.elements:
             counts[element.section] = counts.get(element.section, 0) + 1
         return counts

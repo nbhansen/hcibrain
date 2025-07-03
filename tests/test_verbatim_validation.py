@@ -10,13 +10,13 @@ exactly as written in the source document with no paraphrasing or modification.
 import pytest
 from typing import List
 
-from hci_extractor.models import (
+from hci_extractor.core.models import (
     PdfContent,
     PdfPage,
     ExtractedElement,
     Paper,
 )
-from hci_extractor.pipeline import validate_extracted_elements
+from hci_extractor.core.analysis import validate_extracted_elements
 
 
 class TestVerbatimAccuracy:
