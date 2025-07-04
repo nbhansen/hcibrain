@@ -1,6 +1,7 @@
 """Text normalization with reversible transformations for academic content."""
 
 import re
+import types
 from typing import List, Tuple
 
 from hci_extractor.core.models import TextTransformation
@@ -33,7 +34,7 @@ class TextNormalizer:
                 original_text=raw_text,
                 cleaned_text=raw_text,
                 transformations=(),
-                char_mapping={},
+                char_mapping=types.MappingProxyType({}),
             )
 
         transformations: List[str] = []
@@ -67,7 +68,7 @@ class TextNormalizer:
             original_text=raw_text,
             cleaned_text=current_text,
             transformations=tuple(transformations),
-            char_mapping=char_mapping,
+            char_mapping=types.MappingProxyType(char_mapping),
         )
 
     def _fix_hyphenation(

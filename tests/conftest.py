@@ -1,7 +1,9 @@
 """Pytest configuration and fixtures."""
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 
 @pytest.fixture
 def sample_data_dir():

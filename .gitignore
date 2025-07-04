@@ -34,3 +34,19 @@ Thumbs.db
 data/
 output/
 *.pdf
+
+# Test outputs
+test_results.*
+analysis.csv
+batch_export.csv
+fixed_results.json
+results
+test_batch_input/
+test_batch_output/
+
+# Development files
+codereview*.md
+
+# Cache directories
+.mypy_cache/
+.ruff_cache/

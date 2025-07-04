@@ -2,6 +2,7 @@
 
 import logging
 
+
 def setup_logging(verbose: bool = False) -> None:
     """Configure logging for the application."""
     level = logging.DEBUG if verbose else logging.INFO

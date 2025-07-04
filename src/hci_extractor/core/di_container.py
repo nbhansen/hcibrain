@@ -144,17 +144,7 @@ class DIContainer:
         self._resolving.clear()
 
 
-# Application-level container instance - centralized service management
-# All services are registered and resolved through this container
-_container: Optional[DIContainer] = None
-
-
-def get_container() -> DIContainer:
-    """Get the global DI container."""
-    global _container
-    if _container is None:
-        _container = DIContainer()
-    return _container
+# No global state - container must be passed explicitly through dependency injection
 
 
 def configure_services(container: DIContainer) -> None:
@@ -170,9 +160,17 @@ def configure_services(container: DIContainer) -> None:
         PaperSummaryService,
     )
 
-    # Register configuration as singleton
+    # Register configuration service and configuration as singletons
+    from hci_extractor.infrastructure.configuration_service import ConfigurationService
+    
+    container.register_singleton(ConfigurationService, ConfigurationService)
+    
+    def create_configuration(config_service: ConfigurationService) -> ExtractorConfig:
+        env_config = config_service.load_from_environment()
+        return ExtractorConfig.from_environment_configuration(env_config, config_service)
+    
     container.register_factory(
-        ExtractorConfig, lambda: ExtractorConfig.from_env(), ServiceLifetime.SINGLETON
+        ExtractorConfig, create_configuration, ServiceLifetime.SINGLETON
     )
 
     # Register event bus as singleton
@@ -199,8 +197,14 @@ def configure_services(container: DIContainer) -> None:
     def create_gemini_provider(
         config: ExtractorConfig, event_bus: EventBus, prompt_manager: PromptManager
     ) -> GeminiProvider:
+        from hci_extractor.providers.provider_config import ExtractorConfigurationAdapter
+        
+        # Create provider-specific configuration adapter
+        config_adapter = ExtractorConfigurationAdapter(config)
+        provider_config = config_adapter.get_gemini_config()
+        
         return GeminiProvider(
-            config=config, event_bus=event_bus, prompt_manager=prompt_manager
+            provider_config=provider_config, event_bus=event_bus, prompt_manager=prompt_manager
         )
 
     # Register as both the concrete type and the interface
@@ -237,8 +241,8 @@ def configure_services(container: DIContainer) -> None:
     container.register_factory(PaperSummaryService, create_paper_summary_service)
 
 
-def setup_container() -> DIContainer:
-    """Set up and configure the DI container."""
-    container = get_container()
+def create_configured_container() -> DIContainer:
+    """Create and configure a new DI container."""
+    container = DIContainer()
     configure_services(container)
     return container

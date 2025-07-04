@@ -9,10 +9,7 @@ with appropriate settings for their specific use case.
 from dataclasses import dataclass, replace
 from typing import Any, Dict, Optional
 
-from hci_extractor.core.config import (
-    ExtractorConfig,
-    get_config,
-)
+from hci_extractor.core.config import ExtractorConfig
 
 
 @dataclass(frozen=True)
@@ -210,7 +207,7 @@ def apply_profile_to_config(
         New ExtractorConfig with profile settings applied
     """
     if base_config is None:
-        base_config = get_config()
+        base_config = ExtractorConfig.from_env()
 
     # Build override dictionary in the expected nested structure
     overrides: Dict[str, Any] = {}

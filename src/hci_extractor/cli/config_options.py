@@ -20,7 +20,7 @@ class CliConfigOption:
 
     cli_name: str  # CLI argument name (e.g., --chunk-size)
     config_path: str  # Path in config object (e.g., "analysis.chunk_size")
-    cli_type: Type  # Click type for argument parsing
+    cli_type: Any  # Click type for argument parsing
     default_description: str  # Description of default value
     help_text: str  # Help text for CLI help
     validator: Optional[Callable[[Any], Any]] = None  # Optional validation function
@@ -236,8 +236,6 @@ def add_config_arguments(
 
         # Apply the decorator to the parser
         parser = click_option(parser)
-
-    return parser
 
 
 def get_config_path_value(config: ExtractorConfig, path: str) -> Any:

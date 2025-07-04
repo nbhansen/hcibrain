@@ -27,18 +27,20 @@ from hci_extractor.cli.config_profiles import (
     get_profile_comparison,
     recommend_profile_for_use_case,
 )
+from hci_extractor.cli.cli_configuration_service import get_cli_container_factory
 from hci_extractor.cli.progress import ProgressTracker
 from hci_extractor.core.analysis import extract_paper_simple
-from hci_extractor.core.config import set_config
+from hci_extractor.core.config import ExtractorConfig
+from hci_extractor.core.di_container import DIContainer
 from hci_extractor.core.events import (
     BatchProcessingCompleted,
     BatchProcessingStarted,
     ConfigurationLoaded,
-    get_event_bus,
+    EventBus,
 )
 from hci_extractor.core.extraction import PdfExtractor, TextNormalizer
 from hci_extractor.core.models import LLMError, PdfError
-from hci_extractor.providers import GeminiProvider
+from hci_extractor.providers import GeminiProvider, LLMProvider
 from hci_extractor.utils.logging import setup_logging
 from hci_extractor.utils.user_error_translator import (
     create_user_friendly_exception,
@@ -51,20 +53,10 @@ load_dotenv()
 __version__ = "0.1.0"
 
 
-def get_llm_provider() -> GeminiProvider:
-    """Get configured LLM provider with API key validation."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        from hci_extractor.core.models.exceptions import ApiKeyError
+# CLI configuration service setup functions removed - use get_cli_container_factory() directly
 
-        error = ApiKeyError("GEMINI_API_KEY environment variable is required")
-        context = {
-            "operation": "llm_provider_initialization",
-            "provider": "gemini",
-            "setup_url": "https://makersuite.google.com/app/apikey",
-        }
-        raise create_user_friendly_exception(error, context)
-    return GeminiProvider(api_key=api_key)
+
+# get_llm_provider() function removed - use DI container instead
 
 
 def validate_and_show_config_options(ctx: click.Context) -> None:
@@ -192,9 +184,9 @@ def _show_debug_config_info() -> None:
 
     # Show configuration resolution
     try:
-        from hci_extractor.core.config import get_config
-
-        config = get_config()
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config(ctx)
+        config = container.resolve(ExtractorConfig)
         click.echo("\n⚙️ Final Configuration:")
         click.echo(f"   chunk_size: {config.analysis.chunk_size}")
         click.echo(f"   timeout: {config.analysis.section_timeout_seconds}s")
@@ -366,7 +358,7 @@ def diagnose() -> None:
     click.echo("=" * 30)
     click.echo()
 
-    diagnostic_results = []
+    diagnostic_results: list[tuple[str, str, Optional[str]]] = []
 
     # Check 1: Virtual Environment
     click.echo("1. " + click.style("Virtual Environment", bold=True))
@@ -388,9 +380,11 @@ def diagnose() -> None:
     click.echo("2. " + click.style("API Key Configuration", bold=True))
     api_key = os.getenv("GEMINI_API_KEY")
     if api_key and api_key != "your-api-key-here":
-        # Test the API key
+        # Test the API key using DI container
         try:
-            get_llm_provider()
+            container_factory = get_cli_container_factory()
+            container = container_factory.create_container_with_cli_config()
+            llm_provider = container.resolve(LLMProvider)  # type: ignore  # type: ignore
             click.echo("   ✅ API key found and provider initialized")
             diagnostic_results.append(("API Key", "✅ OK", None))
         except Exception as e:
@@ -408,9 +402,9 @@ def diagnose() -> None:
     # Check 3: Configuration Validation
     click.echo("3. " + click.style("Configuration Validation", bold=True))
     try:
-        from hci_extractor.core.config import get_config
-
-        config = get_config()
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config()
+        config = container.resolve(ExtractorConfig)
         click.echo("   ✅ Configuration loaded successfully")
         click.echo(f"   📊 Chunk size: {config.analysis.chunk_size}")
         click.echo(f"   ⏱️  Timeout: {config.analysis.section_timeout_seconds}s")
@@ -481,7 +475,9 @@ def test_config(dry_run: bool, profile: Optional[str]) -> None:
     click.echo()
 
     try:
-        # Load configuration
+        # Set up DI container with optional profile configuration
+        ctx = click.get_current_context()
+
         if profile:
             profile_obj = get_profile(profile)
             if not profile_obj:
@@ -491,16 +487,16 @@ def test_config(dry_run: bool, profile: Optional[str]) -> None:
             click.echo(f"📝 {profile_obj.description}")
             click.echo()
 
-            # Apply profile
-            from hci_extractor.cli.config_profiles import apply_profile_to_config
-            from hci_extractor.core.config import set_config
-
+            # Apply profile to base configuration and store in context
             config = apply_profile_to_config(profile_obj)
-            set_config(config)
-        else:
-            from hci_extractor.core.config import get_config
+            if ctx.meta is None:
+                ctx.meta = {}
+            ctx.meta["profile_config"] = config
 
-            config = get_config()
+        # Set up DI container with configuration from CLI context
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config(ctx)
+        config = container.resolve(ExtractorConfig)
 
         # Display current configuration
         click.echo("📊 " + click.style("Current Configuration:", bold=True))
@@ -568,7 +564,9 @@ def test_config(dry_run: bool, profile: Optional[str]) -> None:
             # Test API connectivity
             click.echo("🌐 " + click.style("API Connectivity Test:", bold=True))
             try:
-                get_llm_provider()
+                container_factory = get_cli_container_factory()
+                container = container_factory.create_container_with_cli_config()
+                container.resolve(LLMProvider)  # type: ignore
                 click.echo("   ✅ LLM provider initialized successfully")
                 click.echo("   💡 API test completed successfully")
 
@@ -828,19 +826,31 @@ def setup() -> None:
 def _test_api_key(api_key: str, progress: ProgressTracker) -> bool:
     """Test if API key works by making a minimal API call."""
     try:
-
         progress.info("Testing API key...")
 
-        # Create provider with the API key
-        provider = GeminiProvider(api_key=api_key)
+        # Test the API key by temporarily setting environment and resolving provider
+        original_key = os.getenv("GEMINI_API_KEY")
+        try:
+            os.environ["GEMINI_API_KEY"] = api_key
 
-        # Make a simple test call using the async method
-        async def test_call() -> Dict[str, Any]:
-            return await provider._make_api_request("Say 'test' in one word only.")
+            # Use DI container to create provider with the test API key
+            container_factory = get_cli_container_factory()
+            container = container_factory.create_container_with_cli_config()
+            provider = container.resolve(LLMProvider)  # type: ignore
 
-        test_response = asyncio.run(test_call())
+            # Make a simple test call using the async method
+            async def test_call() -> Dict[str, Any]:
+                return await provider._make_api_request("Say 'test' in one word only.")
 
-        return bool(test_response and isinstance(test_response, dict))
+            test_response = asyncio.run(test_call())
+
+            return bool(test_response and isinstance(test_response, dict))
+        finally:
+            # Restore original API key
+            if original_key is not None:
+                os.environ["GEMINI_API_KEY"] = original_key
+            elif "GEMINI_API_KEY" in os.environ:
+                del os.environ["GEMINI_API_KEY"]
 
     except Exception as e:
         progress.warning(f"API key test failed: {e}")
@@ -874,13 +884,19 @@ def _run_test_extraction(
 ) -> Optional[Dict[str, Any]]:
     """Run a quick test extraction to verify everything works."""
     try:
-        # Get LLM provider
-        llm_provider = get_llm_provider()
+        # Get dependencies from DI container
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config()
+        config = container.resolve(ExtractorConfig)
+        event_bus = container.resolve(EventBus)
+        llm_provider = container.resolve(LLMProvider)  # type: ignore
 
         # Run extraction
         result = asyncio.run(
             extract_paper_simple(
                 pdf_path=pdf_path,
+                config=config,
+                event_bus=event_bus,
                 llm_provider=llm_provider,
                 progress_callback=None,  # Skip progress for test
             )
@@ -954,7 +970,7 @@ def doctor() -> None:
     missing_deps = []
 
     try:
-        import PyMuPDF
+        import PyMuPDF  # type: ignore
 
         click.echo("✅ PyMuPDF (PDF processing)")
     except ImportError:
@@ -1099,7 +1115,10 @@ def parse(pdf_path: Path, output: Optional[Path], normalize: bool) -> None:
     """Extract text content from a PDF file."""
     try:
         # Initialize extractor
-        extractor = PdfExtractor()
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config()
+        config = container.resolve(ExtractorConfig)
+        extractor = PdfExtractor(config=config)
 
         # Extract PDF content
         click.echo(f"Extracting content from {pdf_path}...")
@@ -1213,9 +1232,14 @@ def validate(
     _check_virtual_environment()
 
     try:
-        # Apply configuration overrides from CLI arguments
-        config = create_config_from_click_context(click.get_current_context())
-        set_config(config)
+        # Set up DI container with configuration from CLI context
+        ctx = click.get_current_context()
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config(ctx)
+
+        # Resolve dependencies
+        config = container.resolve(ExtractorConfig)
+        extractor = container.resolve(PdfExtractor)
 
         # Show configuration info if verbose
         if config.log_level == "DEBUG":
@@ -1224,8 +1248,6 @@ def validate(
                 f"max_file_size={config.extraction.max_file_size_mb}MB, "
                 f"normalize_text={config.extraction.normalize_text}"
             )
-
-        extractor = PdfExtractor()
 
         click.echo(f"Validating {pdf_path}...")
 
@@ -1249,7 +1271,7 @@ def validate(
         context = {
             "operation": "pdf_validation",
             "file_path": str(pdf_path),
-            "file_size": pdf_path.stat().st_size if pdf_path.exists() else 0,
+            "file_size": str(pdf_path.stat().st_size) if pdf_path.exists() else "0",
         }
         formatted_error = format_error_for_cli(
             e, context, verbose=config.log_level == "DEBUG"
@@ -1407,10 +1429,10 @@ analysis.
     # Check virtual environment
     _check_virtual_environment()
 
-    # Show debug configuration if requested
-    _show_debug_config_info()
-
     try:
+        # Get CLI context and set up DI container
+        ctx = click.get_current_context()
+
         # Handle profile selection first
         if profile:
             profile_obj = get_profile(profile)
@@ -1427,15 +1449,22 @@ analysis.
 
             # Apply profile to base configuration
             base_config = apply_profile_to_config(profile_obj)
-            set_config(base_config)
+            # Store in context for DI container
+            if ctx.meta is None:
+                ctx.meta = {}
+            ctx.meta["profile_config"] = base_config
 
         # Validate configuration options
-        ctx = click.get_current_context()
         validate_and_show_config_options(ctx)
 
-        # Apply any additional CLI overrides on top of profile
-        config = create_config_from_click_context(ctx)
-        set_config(config)
+        # Set up DI container with configuration from CLI context
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config(ctx)
+
+        # Resolve dependencies
+        config = container.resolve(ExtractorConfig)
+        llm_provider = container.resolve(LLMProvider)  # type: ignore
+        event_bus = container.resolve(EventBus)
 
         # Show configuration info if verbose
         if config.log_level == "DEBUG":
@@ -1450,8 +1479,7 @@ analysis.
         progress = ProgressTracker()
 
         # Initialize LLM provider
-        progress.info("Initializing LLM provider...")
-        llm_provider = get_llm_provider()
+        progress.info("LLM provider initialized via dependency injection")
 
         # Prepare paper metadata
         paper_metadata: Dict[str, Any] = {}
@@ -1469,15 +1497,15 @@ analysis.
         # Start single paper progress tracking
         paper_name = pdf_path.stem
         progress.start_batch(1)
-        progress.start_paper(
-            paper_name, 6
-        )  # Typical paper has ~6 sections
+        progress.start_paper(paper_name, 6)  # Typical paper has ~6 sections
 
-        # Run async extraction
+        # Run async extraction with dependency injection
         result = asyncio.run(
             extract_paper_simple(
                 pdf_path=pdf_path,
                 llm_provider=llm_provider,
+                config=config,
+                event_bus=event_bus,
                 paper_metadata=paper_metadata,
                 progress_callback=progress,
             )
@@ -1499,6 +1527,14 @@ analysis.
                 "elements_by_section": result.elements_by_section,
                 "average_confidence": result.average_confidence,
                 "created_at": result.created_at.isoformat(),
+                # Paper summary for manual comparison
+                "paper_summary": result.extraction_metadata.get("paper_summary"),
+                "paper_summary_confidence": result.extraction_metadata.get(
+                    "paper_summary_confidence"
+                ),
+                "paper_summary_sources": result.extraction_metadata.get(
+                    "paper_summary_sources"
+                ),
             },
             "extracted_elements": [
                 {
@@ -1509,6 +1545,12 @@ analysis.
                     "confidence": element.confidence,
                     "evidence_type": element.evidence_type,
                     "page_number": element.page_number,
+                    # Optional context fields for manual comparison
+                    "supporting_evidence": element.supporting_evidence,
+                    "methodology_context": element.methodology_context,
+                    "study_population": element.study_population,
+                    "limitations": element.limitations,
+                    "surrounding_context": element.surrounding_context,
                 }
                 for element in result.elements
             ],
@@ -1572,7 +1614,7 @@ analysis.
             "operation": "paper_extraction",
             "file_path": str(pdf_path),
             "paper_title": title or "Unknown",
-            "profile_used": profile,
+            "profile_used": profile or "default",
         }
         formatted_error = format_error_for_cli(
             e, context, verbose=config.log_level == "DEBUG"
@@ -1583,7 +1625,7 @@ analysis.
         context = {
             "operation": "paper_extraction",
             "file_path": str(pdf_path),
-            "file_size": pdf_path.stat().st_size if pdf_path.exists() else 0,
+            "file_size": str(pdf_path.stat().st_size) if pdf_path.exists() else "0",
         }
         formatted_error = format_error_for_cli(
             e, context, verbose=config.log_level == "DEBUG"
@@ -1594,7 +1636,7 @@ analysis.
         context = {
             "operation": "paper_extraction",
             "file_path": str(pdf_path),
-            "profile_used": profile,
+            "profile_used": profile or "default",
         }
         formatted_error = format_error_for_cli(
             e, context, verbose=config.log_level == "DEBUG"
@@ -1734,6 +1776,9 @@ output directory."""
     _check_virtual_environment()
 
     try:
+        # Get CLI context and set up DI container
+        ctx = click.get_current_context()
+
         # Handle profile selection first
         if profile:
             profile_obj = get_profile(profile)
@@ -1751,16 +1796,22 @@ output directory."""
 
             # Apply profile to base configuration
             base_config = apply_profile_to_config(profile_obj)
-            set_config(base_config)
+            # Store in context for DI container
+            if ctx.meta is None:
+                ctx.meta = {}
+            ctx.meta["profile_config"] = base_config
 
-        # Apply configuration overrides from CLI arguments
-        config = create_config_from_click_context(click.get_current_context())
-        set_config(config)
+        # Set up DI container with configuration from CLI context
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config(ctx)
+
+        # Resolve dependencies
+        config = container.resolve(ExtractorConfig)
+        llm_provider = container.resolve(LLMProvider)  # type: ignore
+        event_bus = container.resolve(EventBus)
 
         # Publish configuration loaded event
-        event_bus = get_event_bus()
         cli_overrides = []
-        ctx = click.get_current_context()
         for param, value in ctx.params.items():
             if value is not None:
                 cli_overrides.append(f"{param}={value}")
@@ -1802,9 +1853,8 @@ output directory."""
         click.echo(f"📂 Output directory: {output_dir}")
         click.echo(f"⚡ Max concurrent operations: {max_concurrent}")
 
-        # Initialize LLM provider
-        click.echo("🔑 Initializing LLM provider...")
-        llm_provider = get_llm_provider()
+        # LLM provider already resolved from DI container above
+        click.echo("🔑 Using LLM provider from DI container...")
 
         # Publish batch processing started event
         import time
@@ -1838,6 +1888,8 @@ output directory."""
                 # Extract elements
                 result = await extract_paper_simple(
                     pdf_path=pdf_path,
+                    config=config,
+                    event_bus=event_bus,
                     llm_provider=llm_provider,
                     progress_callback=progress,
                 )
@@ -1952,9 +2004,7 @@ output directory."""
 
         # Display final summary
         click.echo("\n--- 📊 Batch Processing Complete ---")
-        click.echo(
-            f"✅ Processed: {successful_extractions}/{len(pdf_files)} files"
-        )
+        click.echo(f"✅ Processed: {successful_extractions}/{len(pdf_files)} files")
         if failed_extractions:
             click.echo(f"❌ Failed: {len(failed_extractions)} files")
             for pdf_path, error in failed_extractions[:3]:  # Show first 3 errors
@@ -1974,7 +2024,7 @@ output directory."""
             "input_directory": str(input_dir),
             "output_directory": str(output_dir),
             "max_concurrent": max_concurrent,
-            "profile_used": profile,
+            "profile_used": profile or "default",
         }
         formatted_error = format_error_for_cli(
             e, context, verbose=config.log_level == "DEBUG"
@@ -2039,9 +2089,13 @@ def export(
     _check_virtual_environment()
 
     try:
-        # Apply configuration overrides from CLI arguments
-        config = create_config_from_click_context(click.get_current_context())
-        set_config(config)
+        # Set up DI container with configuration from CLI context
+        ctx = click.get_current_context()
+        container_factory = get_cli_container_factory()
+        container = container_factory.create_container_with_cli_config(ctx)
+
+        # Resolve dependencies
+        config = container.resolve(ExtractorConfig)
 
         # Show configuration info if verbose
         if config.log_level == "DEBUG":
@@ -2066,6 +2120,7 @@ def export(
                     data = json.load(f)
 
                 paper_info = data.get("paper", {})
+                extraction_summary = data.get("extraction_summary", {})
                 elements = data.get("extracted_elements", [])
 
                 # Apply filters
@@ -2095,6 +2150,13 @@ def export(
                             "paper_venue": paper_info.get("venue", ""),
                             "paper_year": paper_info.get("year", ""),
                             "source_file": result_file.stem.replace("_extraction", ""),
+                            # Paper summary fields
+                            "paper_summary": extraction_summary.get(
+                                "paper_summary", ""
+                            ),
+                            "paper_summary_confidence": extraction_summary.get(
+                                "paper_summary_confidence", ""
+                            ),
                         }
                     )
                     filtered_elements.append(element_with_paper)
@@ -2151,11 +2213,16 @@ def _export_to_csv(elements: List[Dict[str, Any]]) -> str:
 
     # Ensure consistent ordering
     ordered_fields = [
+        # Paper metadata
         "paper_title",
         "paper_authors",
         "paper_venue",
         "paper_year",
         "source_file",
+        # Paper summary fields
+        "paper_summary",
+        "paper_summary_confidence",
+        # Element core fields
         "element_type",
         "evidence_type",
         "section",
@@ -2163,6 +2230,12 @@ def _export_to_csv(elements: List[Dict[str, Any]]) -> str:
         "confidence",
         "page_number",
         "element_id",
+        # Optional context fields for manual comparison
+        "supporting_evidence",
+        "methodology_context",
+        "study_population",
+        "limitations",
+        "surrounding_context",
     ]
 
     # Add any additional fields not in the ordered list
@@ -2225,6 +2298,15 @@ def _export_to_markdown(
         lines.append(f"## {paper_title}")
         lines.append("")
 
+        # Add paper summary if available
+        if paper_elements:
+            first_element = paper_elements[0]
+            paper_summary = first_element.get("paper_summary", "")
+            if paper_summary:
+                lines.append("**Summary:**")
+                lines.append(f"*{paper_summary}*")
+                lines.append("")
+
         # Group by element type
         elements_by_type: Dict[str, List[Dict[str, Any]]] = {}
         for element in paper_elements:
@@ -2261,6 +2343,7 @@ def _export_single_paper_to_csv(papers_data: List[Dict[str, Any]]) -> str:
 
     for paper_data in papers_data:
         paper_info = paper_data.get("paper", {})
+        extraction_summary = paper_data.get("extraction_summary", {})
         elements = paper_data.get("extracted_elements", [])
 
         # Add paper information to each element
@@ -2273,6 +2356,11 @@ def _export_single_paper_to_csv(papers_data: List[Dict[str, Any]]) -> str:
                     "paper_venue": paper_info.get("venue", ""),
                     "paper_year": paper_info.get("year", ""),
                     "source_file": paper_info.get("file_path", ""),
+                    # Paper summary fields
+                    "paper_summary": extraction_summary.get("paper_summary", ""),
+                    "paper_summary_confidence": extraction_summary.get(
+                        "paper_summary_confidence", ""
+                    ),
                 }
             )
             all_elements.append(element_with_paper)
@@ -2287,6 +2375,7 @@ def _export_single_paper_to_markdown(papers_data: List[Dict[str, Any]]) -> str:
 
     for paper_data in papers_data:
         paper_info = paper_data.get("paper", {})
+        extraction_summary = paper_data.get("extraction_summary", {})
         papers_info.append(paper_info)
         elements = paper_data.get("extracted_elements", [])
 
@@ -2300,6 +2389,11 @@ def _export_single_paper_to_markdown(papers_data: List[Dict[str, Any]]) -> str:
                     "paper_venue": paper_info.get("venue", ""),
                     "paper_year": paper_info.get("year", ""),
                     "source_file": paper_info.get("file_path", ""),
+                    # Paper summary fields
+                    "paper_summary": extraction_summary.get("paper_summary", ""),
+                    "paper_summary_confidence": extraction_summary.get(
+                        "paper_summary_confidence", ""
+                    ),
                 }
             )
             all_elements.append(element_with_paper)

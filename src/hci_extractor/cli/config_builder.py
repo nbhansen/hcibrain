@@ -21,10 +21,7 @@ from hci_extractor.cli.config_options import (
     set_config_path_value,
     validate_cli_value,
 )
-from hci_extractor.core.config import (
-    ExtractorConfig,
-    get_config,
-)
+from hci_extractor.core.config import ExtractorConfig
 
 
 class ConfigurationBuilder:
@@ -42,7 +39,7 @@ class ConfigurationBuilder:
         Args:
             base_config: Base configuration to build upon (defaults to global config)
         """
-        self._base_config = base_config or get_config()
+        self._base_config = base_config or ExtractorConfig.from_env()
         self._overrides: Dict[str, Any] = {}
 
     def with_cli_args(self, args: argparse.Namespace) -> "ConfigurationBuilder":
@@ -308,7 +305,7 @@ def create_config_from_click_context(ctx: Any) -> ExtractorConfig:
         return merge_configurations(cli_args=args)
 
     # Fallback to base configuration
-    return get_config()
+    return ExtractorConfig.from_env()
 
 
 def validate_configuration(config: ExtractorConfig) -> ExtractorConfig:

@@ -1,5 +1,5 @@
 """User interface components for HCI extractor."""
 
-from .progress import ProgressTracker, ExtractionProgress
+from .progress import ExtractionProgress, ProgressTracker
 
 __all__ = ["ProgressTracker", "ExtractionProgress"]

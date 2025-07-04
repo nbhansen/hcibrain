@@ -5,7 +5,10 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
+from hci_extractor.core.events import EventBus
 from hci_extractor.core.models import LLMError, LLMValidationError, RateLimitError
+from hci_extractor.providers.provider_config import LLMProviderConfig
+from hci_extractor.utils.retry_handler import RetryHandler, RetryPolicy, RetryStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -13,14 +16,41 @@ logger = logging.getLogger(__name__)
 class LLMProvider(ABC):
     """Abstract base class for LLM providers."""
 
-    def __init__(self, rate_limit_delay: float = 1.0, max_retries: int = 3):
-        """Initialize provider with configuration.
-        
-        Note: rate_limit_delay is deprecated. Rate limiting should be handled
-        by the specific provider implementation or external rate limiter.
+    def __init__(
+        self,
+        provider_config: LLMProviderConfig,
+        event_bus: EventBus,
+        retry_handler: Optional[RetryHandler] = None,
+    ):
+        """Initialize provider with injected dependencies.
+
+        Args:
+            provider_config: Provider-specific configuration
+            event_bus: Event bus for publishing events
+            retry_handler: Optional retry handler (will create default if not provided)
         """
-        self.rate_limit_delay = rate_limit_delay  # Kept for backwards compatibility
-        self.max_retries = max_retries
+        self._provider_config = provider_config
+        self._event_bus = event_bus
+
+        # Create retry handler if not provided
+        if retry_handler is None:
+            retry_policy = RetryPolicy(
+                max_attempts=provider_config.max_attempts,
+                strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
+                initial_delay_seconds=1.0,
+                backoff_multiplier=2.0,
+                max_delay_seconds=30.0,
+                retryable_exceptions=(LLMError, RateLimitError, asyncio.TimeoutError),
+                non_retryable_exceptions=(LLMValidationError, ValueError, TypeError),
+            )
+            self._retry_handler = RetryHandler(
+                policy=retry_policy,
+                operation_name=f"{self.__class__.__name__}_api_request",
+                publish_events=True,
+                event_bus=event_bus,
+            )
+        else:
+            self._retry_handler = retry_handler
 
     @abstractmethod
     async def analyze_section(
@@ -31,19 +61,47 @@ class LLMProvider(ABC):
     ) -> List[Dict[str, Any]]:
         """
         Analyze a paper section and return extracted elements.
-        
+
         Args:
             section_text: The text content of the section
             section_type: Type of section (e.g., 'abstract', 'introduction')
             context: Additional context for analysis (paper metadata, etc.)
-            
+
         Returns:
             List of dictionaries representing extracted elements with fields:
             - element_type: "claim", "finding", or "method"
             - text: Exact verbatim text from the section
             - evidence_type: "quantitative", "qualitative", "theoretical", or "unknown"
             - confidence: Float between 0.0 and 1.0
-            
+
+        Raises:
+            LLMError: For general API or processing errors
+            RateLimitError: When rate limits are exceeded
+            LLMValidationError: When response format is invalid
+        """
+        pass
+
+    @abstractmethod
+    async def generate_paper_summary(
+        self,
+        abstract_text: str,
+        introduction_text: str,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Generate paper summary from abstract and introduction sections.
+
+        Args:
+            abstract_text: The text content of the abstract section
+            introduction_text: The text content of the introduction section
+            context: Additional context for analysis (paper metadata, etc.)
+
+        Returns:
+            Dictionary containing:
+            - summary: Concise 2-3 sentence summary of the paper
+            - confidence: Float between 0.0 and 1.0
+            - source_sections: List of sections used for summary
+
         Raises:
             LLMError: For general API or processing errors
             RateLimitError: When rate limits are exceeded
@@ -55,32 +113,30 @@ class LLMProvider(ABC):
     def validate_response(self, response: Dict[str, Any]) -> bool:
         """
         Validate LLM response format and content.
-        
+
         Args:
             response: Raw response from LLM API
-            
+
         Returns:
             True if response is valid, False otherwise
-            
+
         Raises:
             LLMValidationError: If response format is invalid
         """
         pass
 
     @abstractmethod
-    async def _make_api_request(
-        self, prompt: str, **kwargs: Any
-    ) -> Dict[str, Any]:
+    async def _make_api_request(self, prompt: str, **kwargs: Any) -> Dict[str, Any]:
         """
         Make the actual API request to the LLM provider.
-        
+
         Args:
             prompt: The prompt to send to the LLM
             **kwargs: Provider-specific parameters
-            
+
         Returns:
             Raw response from the API
-            
+
         Raises:
             LLMError: For API errors
             RateLimitError: For rate limit issues
@@ -89,77 +145,79 @@ class LLMProvider(ABC):
 
     async def _enforce_rate_limit(self) -> None:
         """Enforce rate limiting between requests.
-        
+
         Deprecated: This method is kept for backwards compatibility but does nothing.
         Rate limiting should be handled by the specific provider implementation.
         """
         logger.debug("Rate limiting is deprecated in base LLMProvider")
         pass
 
+    async def execute_with_retry(
+        self, operation: Any, *args: Any, **kwargs: Any
+    ) -> Any:
+        """Execute operation with retry logic using the unified RetryHandler.
+
+        This is the preferred method for new code. Use _retry_with_backoff for \
+compatibility.
+
+        Args:
+            operation: Async function to execute
+            *args, **kwargs: Arguments to pass to operation
+
+        Returns:
+            Result of successful operation
+
+        Raises:
+            LLMError: If all retries are exhausted
+        """
+        return await self._retry_with_backoff(operation, *args, **kwargs)
+
     async def _retry_with_backoff(
         self, operation: Any, *args: Any, **kwargs: Any
     ) -> Any:
         """
-        Execute operation with exponential backoff retry logic.
-        
+        Execute operation with unified retry handler logic.
+
+        This method maintains backward compatibility while using the new RetryHandler.
+
         Args:
             operation: Async function to execute
             *args, **kwargs: Arguments to pass to operation
-            
+
         Returns:
             Result of successful operation
-            
+
         Raises:
             LLMError: If all retries are exhausted
         """
-        last_exception: Optional[Exception] = None
 
-        for attempt in range(self.max_retries):
-            try:
-                return await operation(*args, **kwargs)
+        # Use the unified retry handler
+        async def operation_wrapper() -> Any:
+            return await operation(*args, **kwargs)
 
-            except RateLimitError as e:
-                last_exception = e
-                if e.retry_after:
-                    delay = e.retry_after
-                else:
-                    delay = 2**attempt  # Exponential backoff
+        result = await self._retry_handler.execute_with_retry(operation_wrapper)
 
-                logger.warning(
-                    f"Rate limit hit (attempt {attempt + 1}/{self.max_retries}), "
-                    f"retrying in {delay:.2f} seconds"
+        if result.success:
+            return result.value
+        else:
+            # Convert retry handler error to LLMError for backward compatibility
+            if result.error:
+                raise LLMError(
+                    f"LLM operation failed after {result.attempts_made} attempts"
+                ) from result.error
+            else:
+                raise LLMError(
+                    f"LLM operation failed after {result.attempts_made} attempts"
                 )
-                await asyncio.sleep(delay)
-
-            except LLMError as e:
-                last_exception = LLMError(str(e))
-                if attempt < self.max_retries - 1:
-                    delay = 2**attempt
-                    logger.warning(
-                        f"LLM error (attempt {attempt + 1}/{self.max_retries}): {e}, "
-                        f"retrying in {delay:.2f} seconds"
-                    )
-                    await asyncio.sleep(delay)
-                else:
-                    raise
-
-        # All retries exhausted
-        raise LLMError(f"All {self.max_retries} retries exhausted") from last_exception
 
     def get_rate_limit_delay(self) -> float:
-        """Return the current rate limit delay in seconds."""
-        return self.rate_limit_delay
-
-    def set_rate_limit_delay(self, delay: float) -> None:
-        """Update the rate limit delay."""
-        if delay < 0:
-            raise ValueError("Rate limit delay must be non-negative")
-        self.rate_limit_delay = delay
+        """Get the current rate limit delay from configuration."""
+        return self._provider_config.rate_limit_delay
 
     def get_usage_stats(self) -> Dict[str, Any]:
         """
         Return usage statistics for the provider.
-        
+
         Returns:
             Dictionary with usage information (requests, tokens, costs, etc.)
         """
@@ -170,3 +228,7 @@ class LLMProvider(ABC):
             "tokens_used": 0,
             "estimated_cost": 0.0,
         }
+
+    def get_retry_policy(self) -> RetryPolicy:
+        """Get the current retry policy for this provider."""
+        return self._retry_handler._policy

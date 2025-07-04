@@ -67,10 +67,18 @@ json_format: |
         "element_type": "claim|finding|method|artifact",
         "text": "exact verbatim text from section",
         "evidence_type": "quantitative|qualitative|theoretical|mixed|unknown",
-        "confidence": 0.95
+        "confidence": 0.95,
+        "supporting_evidence": "optional: evidence mentioned with this element",
+        "methodology_context": "optional: brief method description if relevant",
+        "study_population": "optional: population/sample info if mentioned",
+        "limitations": "optional: any caveats or limitations mentioned",
+        "surrounding_context": "optional: 1-2 sentences before/after for context"
       }
     ]
   }
+  
+  Note: All fields except element_type, text, evidence_type, and confidence are optional.
+  Only include optional fields if clearly relevant information is available in the text.
 
 extraction_guidance: |
   Extract only clear, unambiguous elements that represent novel contributions.
@@ -87,3 +95,31 @@ extraction_guidance: |
   - Well-established facts or common knowledge
   - Implementation details without novel contribution
   - Routine experimental procedures
+
+# Paper summary generation for research comparison
+paper_summary_prompt: |
+  You are an expert at summarizing academic HCI papers for research comparison purposes.
+  
+  Based on the abstract and introduction sections provided, create a concise 2-3 sentence summary that captures:
+  1. The main research focus or problem addressed
+  2. The key contribution or approach taken
+  3. The primary outcome or significance
+  
+  This summary will help researchers quickly understand the paper's focus when comparing it to other papers in their literature review.
+  
+  Return your response in this exact JSON format:
+  {
+    "summary": "2-3 sentence summary of the paper's focus and contribution",
+    "confidence": 0.95,
+    "source_sections": ["abstract", "introduction"]
+  }
+
+paper_summary_guidance: |
+  Focus on creating a summary that helps researchers identify:
+  - What problem or research question the paper addresses
+  - What novel approach, method, or artifact it presents
+  - What the main finding or contribution is
+  - How it relates to the broader HCI field
+  
+  Keep the summary concise but informative for comparison purposes.
+  Use clear, accessible language that captures the essence of the work.

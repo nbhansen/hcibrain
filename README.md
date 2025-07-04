@@ -154,8 +154,10 @@ python -m hci_extractor batch papers_folder/ results_folder/
 # Export batch results to CSV for analysis
 python -m hci_extractor export results_folder/ --format csv --output analysis.csv
 
-# Troubleshooting
-python -m hci_extractor doctor  # Diagnose setup issues
+# System diagnostics and troubleshooting
+python -m hci_extractor diagnose    # System health check
+python -m hci_extractor test-config # Test configuration
+python -m hci_extractor doctor      # Comprehensive diagnostics
 ```
 
 ## 📊 Features
@@ -195,6 +197,11 @@ python -m hci_extractor quickstart
 
 # Interactive guided setup (if you have issues)
 python -m hci_extractor setup
+
+# Use configuration profiles for different scenarios
+python -m hci_extractor extract paper.pdf --profile thorough
+python -m hci_extractor extract paper.pdf --profile quick_scan
+python -m hci_extractor extract paper.pdf --profile precision
 ```
 
 ### Batch Processing
@@ -216,6 +223,86 @@ python -m hci_extractor export results/ --format csv --min-confidence 0.8 --outp
 
 # Export specific element types
 python -m hci_extractor export results/ --format csv --element-type claim --output claims.csv
+```
+
+## ⚙️ Configuration & Profiles
+
+### Configuration Profiles
+Use pre-configured profiles optimized for different research scenarios:
+
+```bash
+# View available profiles
+python -m hci_extractor profiles
+
+# Get personalized recommendations
+python -m hci_extractor recommend
+
+# Use profiles
+python -m hci_extractor extract paper.pdf --profile thorough      # Systematic reviews
+python -m hci_extractor extract paper.pdf --profile quick_scan    # Fast preliminary analysis
+python -m hci_extractor extract paper.pdf --profile precision     # Maximum accuracy
+python -m hci_extractor extract paper.pdf --profile high_volume   # Batch processing 50+ papers
+python -m hci_extractor extract paper.pdf --profile budget_conscious  # Minimize API costs
+```
+
+### Advanced Configuration
+Customize processing parameters for specific needs:
+
+```bash
+# Adjust processing parameters
+python -m hci_extractor extract paper.pdf \
+  --chunk-size 15000 \
+  --timeout 90 \
+  --max-retries 5 \
+  --temperature 0.1
+
+# Control batch processing
+python -m hci_extractor batch papers/ results/ \
+  --max-concurrent 5 \
+  --profile high_volume
+
+# Environment variables (persistent configuration)
+export HCI_CHUNK_SIZE=12000
+export HCI_TIMEOUT=75
+export HCI_MAX_RETRIES=3
+export HCI_TEMPERATURE=0.1
+```
+
+### Configuration Options
+| Parameter | Description | Default | Profile Impact |
+|-----------|-------------|---------|----------------|
+| `--chunk-size` | Text processing chunk size (characters) | 10000 | Fewer API calls vs token usage |
+| `--timeout` | LLM request timeout (seconds) | 60 | Large sections or slow connections |
+| `--max-retries` | Maximum retry attempts | 3 | Reliability vs processing time |
+| `--temperature` | LLM creativity (0.0-1.0) | 0.1 | Consistency vs variation |
+| `--max-concurrent` | Concurrent operations | 3 | Speed vs API rate limits |
+| `--profile` | Use predefined configuration | none | Scenario-optimized settings |
+
+### Environment Variables
+Set persistent configuration using environment variables:
+
+```bash
+# API Configuration
+GEMINI_API_KEY=your-api-key-here
+
+# Processing Configuration
+HCI_CHUNK_SIZE=10000
+HCI_TIMEOUT=60
+HCI_MAX_RETRIES=3
+HCI_TEMPERATURE=0.1
+HCI_MAX_CONCURRENT=3
+
+# File Processing
+HCI_MAX_FILE_SIZE_MB=50
+HCI_EXTRACTION_TIMEOUT=30
+HCI_NORMALIZE_TEXT=true
+
+# Retry Configuration
+HCI_RETRY_DELAY=2.0
+HCI_RETRY_MAX_DELAY=30.0
+
+# Logging
+HCI_LOG_LEVEL=INFO
 ```
 
 ## 📋 Output Format
@@ -319,6 +406,69 @@ mypy src/  # Zero errors!
 - **R/Python**: Structured data for statistical analysis
 - **Reference managers**: File paths link to source documents
 - **Writing tools**: Verbatim quotes with page citations
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**API Key Issues:**
+```bash
+# Check if API key is configured
+python -m hci_extractor diagnose
+
+# Test API connectivity
+python -m hci_extractor test-config
+
+# Set API key
+echo "GEMINI_API_KEY=your-key-here" > .env
+```
+
+**Processing Issues:**
+```bash
+# Validate PDF before processing
+python -m hci_extractor validate paper.pdf
+
+# Run comprehensive system check
+python -m hci_extractor doctor
+
+# Use debug configuration
+python -m hci_extractor extract paper.pdf --log-level DEBUG
+```
+
+**Performance Issues:**
+```bash
+# Reduce concurrency for slower systems
+python -m hci_extractor batch papers/ results/ --max-concurrent 1
+
+# Use budget-conscious profile
+python -m hci_extractor extract paper.pdf --profile budget_conscious
+
+# Increase timeout for large papers
+python -m hci_extractor extract paper.pdf --timeout 120
+```
+
+### Error Recovery
+The system includes automatic error recovery:
+- **JSON Recovery**: Fixes malformed LLM responses automatically
+- **Smart Retries**: Automatically retries based on error type
+- **Graceful Degradation**: Continues processing even with partial failures
+- **User-Friendly Errors**: Technical errors translated to actionable guidance
+
+### Getting Help
+```bash
+# View all available commands
+python -m hci_extractor --help
+
+# Get help for specific commands
+python -m hci_extractor extract --help
+python -m hci_extractor batch --help
+
+# View configuration options
+python -m hci_extractor config
+
+# Interactive troubleshooting
+python -m hci_extractor quickstart
+```
 
 ## 📄 License
 

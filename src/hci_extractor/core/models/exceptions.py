@@ -9,7 +9,7 @@ from typing import Optional
 
 class HciExtractorError(Exception):
     """Base exception for all HCI extractor operations.
-    
+
     All exceptions in the HCI extractor system inherit from this base class
     to provide consistent error handling patterns.
     """
@@ -19,7 +19,7 @@ class HciExtractorError(Exception):
 
 class ProcessingError(HciExtractorError):
     """Issues during document or data processing.
-    
+
     Base class for all processing-related errors including PDF extraction,
     text normalization, and LLM analysis.
     """
@@ -30,7 +30,7 @@ class ProcessingError(HciExtractorError):
 # PDF Processing Exceptions
 class PdfError(ProcessingError):
     """PDF-specific processing issues.
-    
+
     Base class for all PDF-related errors during extraction and analysis.
     """
 
@@ -39,7 +39,7 @@ class PdfError(ProcessingError):
 
 class PasswordProtectedError(PdfError):
     """PDF requires password for access.
-    
+
     Raised when attempting to process a password-protected PDF without
     providing the correct password.
     """
@@ -49,7 +49,7 @@ class PasswordProtectedError(PdfError):
 
 class CorruptedFileError(PdfError):
     """PDF file is corrupted or unreadable.
-    
+
     Raised when the PDF file cannot be opened or read due to corruption
     or invalid file format.
     """
@@ -59,7 +59,7 @@ class CorruptedFileError(PdfError):
 
 class NoTextLayerError(PdfError):
     """PDF contains only images, no extractable text.
-    
+
     Raised when the PDF appears to be scanned images without a text layer
     that can be extracted programmatically.
     """
@@ -69,7 +69,7 @@ class NoTextLayerError(PdfError):
 
 class ExtractionQualityError(PdfError):
     """Extracted text quality below acceptable threshold.
-    
+
     Raised when PDF extraction succeeds but the resulting text is too short,
     garbled, or otherwise of insufficient quality for analysis.
     """
@@ -80,7 +80,7 @@ class ExtractionQualityError(PdfError):
 # LLM Processing Exceptions
 class LLMError(ProcessingError):
     """LLM-specific processing issues.
-    
+
     Base class for all errors related to LLM providers, API calls,
     and response processing.
     """
@@ -90,14 +90,14 @@ class LLMError(ProcessingError):
 
 class RateLimitError(LLMError):
     """LLM rate limit exceeded.
-    
+
     Raised when the LLM provider's rate limits are exceeded and requests
     need to be retried after a delay.
     """
 
     def __init__(self, message: str, retry_after: Optional[float] = None):
         """Initialize with optional retry delay information.
-        
+
         Args:
             message: Error description
             retry_after: Suggested delay in seconds before retry
@@ -108,7 +108,7 @@ class RateLimitError(LLMError):
 
 class LLMValidationError(LLMError):
     """LLM response validation failed.
-    
+
     Raised when the LLM response format is invalid, cannot be parsed,
     or doesn't match expected structure.
     """
@@ -118,7 +118,7 @@ class LLMValidationError(LLMError):
 
 class ApiKeyError(LLMError):
     """LLM API key authentication failed.
-    
+
     Raised when the provided API key is invalid, expired, or missing
     required permissions.
     """
@@ -128,7 +128,7 @@ class ApiKeyError(LLMError):
 
 class ModelNotFoundError(LLMError):
     """Requested LLM model is not available.
-    
+
     Raised when the specified model name is not found or not accessible
     with the current API key.
     """
@@ -138,7 +138,7 @@ class ModelNotFoundError(LLMError):
 
 class ContentFilterError(LLMError):
     """Content blocked by LLM safety filters.
-    
+
     Raised when the LLM provider's safety filters prevent processing
     of the submitted content.
     """
@@ -149,7 +149,7 @@ class ContentFilterError(LLMError):
 # Data Processing Exceptions
 class DataError(ProcessingError):
     """Data validation and integrity issues.
-    
+
     Base class for errors related to data model validation,
     serialization, and integrity checks.
     """
@@ -159,7 +159,7 @@ class DataError(ProcessingError):
 
 class SerializationError(DataError):
     """Data serialization/deserialization failed.
-    
+
     Raised when converting data to/from JSON, CSV, or other formats fails.
     """
 
@@ -168,7 +168,7 @@ class SerializationError(DataError):
 
 class DataValidationError(DataError):
     """Data validation failed.
-    
+
     Raised when data doesn't meet required format, type, or business rules.
     """
 
@@ -178,7 +178,7 @@ class DataValidationError(DataError):
 # Configuration and Environment Exceptions
 class ConfigurationError(HciExtractorError):
     """Configuration or environment setup issues.
-    
+
     Raised when required configuration is missing, invalid, or
     environment setup is incomplete.
     """
@@ -188,7 +188,7 @@ class ConfigurationError(HciExtractorError):
 
 class DependencyError(ConfigurationError):
     """Required dependency is missing or incompatible.
-    
+
     Raised when optional dependencies are required for specific functionality
     but are not installed or are incompatible versions.
     """

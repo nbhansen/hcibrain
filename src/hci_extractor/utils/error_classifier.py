@@ -9,7 +9,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from hci_extractor.core.models.exceptions import (
     ApiKeyError,
@@ -60,11 +60,11 @@ class ErrorClassification:
     is_retriable: bool
     retry_strategy: Optional[str] = None
     user_message: Optional[str] = None
-    remediation_steps: List[str] = None
+    remediation_steps: Optional[List[str]] = None
     confidence: float = 0.0  # 0.0-1.0 confidence in classification
-    metadata: Dict[str, Any] = None
+    metadata: Optional[Dict[str, Any]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.remediation_steps is None:
             object.__setattr__(self, "remediation_steps", [])
         if self.metadata is None:
@@ -74,7 +74,7 @@ class ErrorClassification:
 class ErrorClassifier:
     """Intelligent error classification system."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._classification_rules = self._build_classification_rules()
         self._pattern_matchers = self._build_pattern_matchers()
 
@@ -167,8 +167,10 @@ class ErrorClassifier:
             return message
 
         # Combine information from both classifications
-        combined_metadata = {**base.metadata, **message.metadata}
-        combined_steps = list(set(base.remediation_steps + message.remediation_steps))
+        combined_metadata = {**(base.metadata or {}), **(message.metadata or {})}
+        combined_steps = list(
+            set((base.remediation_steps or []) + (message.remediation_steps or []))
+        )
 
         return ErrorClassification(
             category=message.category if message.confidence > 0.7 else base.category,
@@ -364,12 +366,13 @@ class ErrorClassifier:
             ),
         }
 
-    def _build_pattern_matchers(self) -> Dict[str, callable]:
+    def _build_pattern_matchers(
+        self,
+    ) -> Dict[str, Callable[[Exception, str, Dict[str, Any]], ErrorClassification]]:
         """Build pattern matchers for message-based classification."""
         return {
             # Network and connectivity issues
-            r"connection.*(?:timeout|refused|reset|failed)": \
-            self._classify_network_error,
+            r"connection.*(?:timeout|refused|reset|failed)": self._classify_network_error,
             r"(?:network|socket|ssl).*error": self._classify_network_error,
             r"dns.*(?:resolution|lookup).*failed": self._classify_network_error,
             # Memory and resource issues
@@ -723,4 +726,4 @@ def get_remediation_steps(
         List of remediation steps
     """
     classification = classify_error(error, context)
-    return classification.remediation_steps
+    return classification.remediation_steps or []

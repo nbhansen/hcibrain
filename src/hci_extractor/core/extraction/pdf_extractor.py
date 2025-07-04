@@ -1,13 +1,14 @@
 """PDF text extraction with character-level positioning."""
 
 import logging
+import types
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import fitz  # PyMuPDF
 
-from hci_extractor.core.config import ExtractorConfig, get_config
+from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.models import (
     CharacterPosition,
     CorruptedFileError,
@@ -25,16 +26,14 @@ logger = logging.getLogger(__name__)
 class PdfExtractor:
     """Extract text from PDFs with character-level positioning."""
 
-    def __init__(self, config: Optional[ExtractorConfig] = None, min_text_length: Optional[int] = None):
+    def __init__(self, config: ExtractorConfig):
         """Initialize extractor with configuration.
-        
+
         Args:
-            config: Optional configuration object
-            min_text_length: Override for minimum text length (deprecated, use config)
+            config: Configuration object (required)
         """
-        self.config = config or get_config()
-        # Support legacy min_text_length parameter for backwards compatibility
-        self.min_text_length = min_text_length or 100  # Will be replaced by config later
+        self.config = config
+        self.min_text_length = 100  # Minimum text length to consider valid
 
     def extract_content(self, file_path: Path) -> PdfContent:
         """Extract complete PDF content with positioning data."""
@@ -89,7 +88,7 @@ class PdfExtractor:
                 file_path=str(file_path),
                 total_pages=len(pages),
                 pages=tuple(pages),
-                extraction_metadata=metadata,
+                extraction_metadata=types.MappingProxyType(metadata),
                 created_at=extraction_start,
             )
 

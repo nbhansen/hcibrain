@@ -6,26 +6,28 @@ from environment variables, ensuring all settings are centralized and
 easily configurable without code changes.
 """
 
-import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from hci_extractor.infrastructure.configuration_service import EnvironmentConfiguration, ConfigurationService
 
 
 @dataclass(frozen=True)
 class ExtractionConfig:
     """Configuration for PDF extraction operations."""
-    
+
     max_file_size_mb: int = 50
     timeout_seconds: float = 30.0
     normalize_text: bool = True
     extract_positions: bool = False  # Character positions are memory-intensive
-    
+
 
 @dataclass(frozen=True)
 class AnalysisConfig:
     """Configuration for LLM analysis operations."""
-    
+
     chunk_size: int = 10000
     chunk_overlap: int = 500
     max_concurrent_sections: int = 3
@@ -33,145 +35,172 @@ class AnalysisConfig:
     min_section_length: int = 50
     temperature: float = 0.1
     max_output_tokens: int = 4000
-    
+
 
 @dataclass(frozen=True)
 class RetryConfig:
     """Configuration for retry behavior."""
-    
+
     max_attempts: int = 3
     initial_delay_seconds: float = 2.0
     backoff_multiplier: float = 2.0
     max_delay_seconds: float = 30.0
-    
+
 
 @dataclass(frozen=True)
 class CacheConfig:
     """Configuration for caching behavior."""
-    
+
     enabled: bool = False
     directory: Optional[Path] = None
     ttl_seconds: int = 3600
     max_size_mb: int = 1000
-    
+
+
+@dataclass(frozen=True)
+class ApiConfig:
+    """Configuration for API settings."""
+
+    gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+    rate_limit_delay: float = 1.0
+    timeout_seconds: float = 30.0
+
 
 @dataclass(frozen=True)
 class ExportConfig:
     """Configuration for export operations."""
-    
+
     include_metadata: bool = True
     include_confidence: bool = True
     min_confidence_threshold: float = 0.0
     timestamp_format: str = "%Y-%m-%d %H:%M:%S"
-    
+
 
 @dataclass(frozen=True)
 class ExtractorConfig:
     """Main configuration object containing all sub-configurations."""
-    
+
     extraction: ExtractionConfig
     analysis: AnalysisConfig
+    api: ApiConfig
     retry: RetryConfig
     cache: CacheConfig
     export: ExportConfig
     prompts_directory: Path
     log_level: str = "INFO"
-    
+
     @classmethod
     def from_env(cls) -> "ExtractorConfig":
         """
-        Create configuration from environment variables.
-        
+        Create configuration from environment variables using infrastructure service.
+
         Environment variables follow the pattern: HCI_<SECTION>_<SETTING>
         For example: HCI_ANALYSIS_CHUNK_SIZE=8000
         """
-        # Determine prompts directory
-        prompts_dir = os.getenv("HCI_PROMPTS_DIR")
-        if prompts_dir:
-            prompts_path = Path(prompts_dir)
-        else:
-            # Default to prompts directory relative to package
-            prompts_path = Path(__file__).parent.parent.parent / "prompts"
+        from hci_extractor.infrastructure.configuration_service import ConfigurationService
         
-        return cls(
-            extraction=ExtractionConfig(
-                max_file_size_mb=int(os.getenv("HCI_EXTRACTION_MAX_FILE_SIZE_MB", "50")),
-                timeout_seconds=float(os.getenv("HCI_EXTRACTION_TIMEOUT_SECONDS", "30.0")),
-                normalize_text=os.getenv("HCI_EXTRACTION_NORMALIZE_TEXT", "true").lower() == "true",
-                extract_positions=os.getenv("HCI_EXTRACTION_EXTRACT_POSITIONS", "false").lower() == "true",
-            ),
-            analysis=AnalysisConfig(
-                chunk_size=int(os.getenv("HCI_ANALYSIS_CHUNK_SIZE", "10000")),
-                chunk_overlap=int(os.getenv("HCI_ANALYSIS_CHUNK_OVERLAP", "500")),
-                max_concurrent_sections=int(os.getenv("HCI_ANALYSIS_MAX_CONCURRENT", "3")),
-                section_timeout_seconds=float(os.getenv("HCI_ANALYSIS_SECTION_TIMEOUT", "60.0")),
-                min_section_length=int(os.getenv("HCI_ANALYSIS_MIN_SECTION_LENGTH", "50")),
-                temperature=float(os.getenv("HCI_ANALYSIS_TEMPERATURE", "0.1")),
-                max_output_tokens=int(os.getenv("HCI_ANALYSIS_MAX_OUTPUT_TOKENS", "4000")),
-            ),
-            retry=RetryConfig(
-                max_attempts=int(os.getenv("HCI_RETRY_MAX_ATTEMPTS", "3")),
-                initial_delay_seconds=float(os.getenv("HCI_RETRY_INITIAL_DELAY", "2.0")),
-                backoff_multiplier=float(os.getenv("HCI_RETRY_BACKOFF_MULTIPLIER", "2.0")),
-                max_delay_seconds=float(os.getenv("HCI_RETRY_MAX_DELAY", "30.0")),
-            ),
-            cache=CacheConfig(
-                enabled=os.getenv("HCI_CACHE_ENABLED", "false").lower() == "true",
-                directory=Path(os.getenv("HCI_CACHE_DIR")) if os.getenv("HCI_CACHE_DIR") else None,
-                ttl_seconds=int(os.getenv("HCI_CACHE_TTL_SECONDS", "3600")),
-                max_size_mb=int(os.getenv("HCI_CACHE_MAX_SIZE_MB", "1000")),
-            ),
-            export=ExportConfig(
-                include_metadata=os.getenv("HCI_EXPORT_INCLUDE_METADATA", "true").lower() == "true",
-                include_confidence=os.getenv("HCI_EXPORT_INCLUDE_CONFIDENCE", "true").lower() == "true",
-                min_confidence_threshold=float(os.getenv("HCI_EXPORT_MIN_CONFIDENCE", "0.0")),
-                timestamp_format=os.getenv("HCI_EXPORT_TIMESTAMP_FORMAT", "%Y-%m-%d %H:%M:%S"),
-            ),
-            prompts_directory=prompts_path,
-            log_level=os.getenv("HCI_LOG_LEVEL", "INFO"),
-        )
+        config_service = ConfigurationService()
+        env_config = config_service.load_from_environment()
+        
+        return cls.from_environment_configuration(env_config, config_service)
     
     @classmethod
-    def for_testing(cls, **overrides) -> "ExtractorConfig":
+    def from_environment_configuration(
+        cls, 
+        env_config: "EnvironmentConfiguration", 
+        config_service: "ConfigurationService"
+    ) -> "ExtractorConfig":
+        """
+        Create configuration from environment configuration object.
+        
+        This method separates domain logic from infrastructure concerns.
+        """
+        return cls(
+            extraction=ExtractionConfig(
+                max_file_size_mb=int(env_config.extraction_max_file_size_mb),
+                timeout_seconds=float(env_config.extraction_timeout_seconds),
+                normalize_text=env_config.extraction_normalize_text.lower() == "true",
+                extract_positions=env_config.extraction_extract_positions.lower() == "true",
+            ),
+            analysis=AnalysisConfig(
+                chunk_size=int(env_config.analysis_chunk_size),
+                chunk_overlap=int(env_config.analysis_chunk_overlap),
+                max_concurrent_sections=int(env_config.analysis_max_concurrent),
+                section_timeout_seconds=float(env_config.analysis_section_timeout),
+                min_section_length=int(env_config.analysis_min_section_length),
+                temperature=float(env_config.analysis_temperature),
+                max_output_tokens=int(env_config.analysis_max_output_tokens),
+            ),
+            api=ApiConfig(
+                gemini_api_key=env_config.gemini_api_key,
+                openai_api_key=env_config.openai_api_key,
+                anthropic_api_key=env_config.anthropic_api_key,
+                rate_limit_delay=float(env_config.api_rate_limit_delay),
+                timeout_seconds=float(env_config.api_timeout_seconds),
+            ),
+            retry=RetryConfig(
+                max_attempts=int(env_config.retry_max_attempts),
+                initial_delay_seconds=float(env_config.retry_initial_delay),
+                backoff_multiplier=float(env_config.retry_backoff_multiplier),
+                max_delay_seconds=float(env_config.retry_max_delay),
+            ),
+            cache=CacheConfig(
+                enabled=env_config.cache_enabled.lower() == "true",
+                directory=config_service.get_cache_directory(env_config),
+                ttl_seconds=int(env_config.cache_ttl_seconds),
+                max_size_mb=int(env_config.cache_max_size_mb),
+            ),
+            export=ExportConfig(
+                include_metadata=env_config.export_include_metadata.lower() == "true",
+                include_confidence=env_config.export_include_confidence.lower() == "true",
+                min_confidence_threshold=float(env_config.export_min_confidence),
+                timestamp_format=env_config.export_timestamp_format,
+            ),
+            prompts_directory=config_service.get_prompts_directory(env_config),
+            log_level=env_config.log_level,
+        )
+
+    @classmethod
+    def for_testing(cls, **overrides: Any) -> "ExtractorConfig":
         """
         Create configuration suitable for testing.
-        
+
         Provides sensible defaults for tests and allows overriding specific values.
         """
-        defaults = {
-            "extraction": ExtractionConfig(max_file_size_mb=10, timeout_seconds=5.0),
-            "analysis": AnalysisConfig(chunk_size=1000, max_concurrent_sections=1),
-            "retry": RetryConfig(max_attempts=1, initial_delay_seconds=0.1),
-            "cache": CacheConfig(enabled=False),
-            "export": ExportConfig(),
-            "prompts_directory": Path("/tmp/test_prompts"),
-            "log_level": "DEBUG",
-        }
-        defaults.update(overrides)
-        return cls(**defaults)
+        # Use proper typed construction instead of dictionary unpacking
+        extraction = overrides.get(
+            "extraction", ExtractionConfig(max_file_size_mb=10, timeout_seconds=5.0)
+        )
+        analysis = overrides.get(
+            "analysis", AnalysisConfig(chunk_size=1000, max_concurrent_sections=1)
+        )
+        api = overrides.get(
+            "api", ApiConfig(gemini_api_key="test-key", rate_limit_delay=0.1)
+        )
+        retry = overrides.get(
+            "retry", RetryConfig(max_attempts=1, initial_delay_seconds=0.1)
+        )
+        cache = overrides.get("cache", CacheConfig(enabled=False))
+        export = overrides.get("export", ExportConfig())
+        prompts_directory = overrides.get(
+            "prompts_directory", Path("/tmp/test_prompts")
+        )
+        log_level = overrides.get("log_level", "DEBUG")
+
+        return cls(
+            extraction=extraction,
+            analysis=analysis,
+            api=api,
+            retry=retry,
+            cache=cache,
+            export=export,
+            prompts_directory=prompts_directory,
+            log_level=log_level,
+        )
 
 
-# Global configuration instance
-_config: Optional[ExtractorConfig] = None
-
-
-def get_config() -> ExtractorConfig:
-    """
-    Get the global configuration instance.
-    
-    Creates the configuration from environment on first call.
-    """
-    global _config
-    if _config is None:
-        _config = ExtractorConfig.from_env()
-    return _config
-
-
-def set_config(config: ExtractorConfig) -> None:
-    """
-    Set the global configuration instance.
-    
-    Useful for testing or overriding configuration.
-    """
-    global _config
-    _config = config
+# Note: ExtractorConfig is now managed by the DI container
+# Use container.resolve(ExtractorConfig) to get the instance
+# This removes the global state violation

@@ -6,11 +6,11 @@ from typing import Any, Dict, List, Optional
 
 import google.generativeai as genai
 
-from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.events import EventBus
 from hci_extractor.core.models import LLMError, LLMValidationError, RateLimitError
 from hci_extractor.prompts import PromptManager
 from hci_extractor.providers.base import LLMProvider
+from hci_extractor.providers.provider_config import LLMProviderConfig
 from hci_extractor.core.domain.transformers import ResponseParser
 from hci_extractor.utils.retry_handler import RetryPolicy, RetryStrategy
 
@@ -22,7 +22,7 @@ class GeminiProvider(LLMProvider):
 
     def __init__(
         self,
-        config: ExtractorConfig,
+        provider_config: LLMProviderConfig,
         event_bus: EventBus,
         prompt_manager: Optional[PromptManager] = None,
         model_name: str = "gemini-1.5-flash",
@@ -31,18 +31,19 @@ class GeminiProvider(LLMProvider):
         Initialize Gemini provider.
 
         Args:
-            config: Configuration object with all settings including API key
+            provider_config: Provider-specific configuration
             event_bus: Event bus for publishing events
             prompt_manager: PromptManager instance for prompt templates
             model_name: Gemini model to use
         """
-        super().__init__(config, event_bus)
+        # Initialize base class with provider-specific configuration
+        super().__init__(provider_config, event_bus)
 
         # Initialize PromptManager for this provider
         self.prompt_manager = prompt_manager or PromptManager()
 
-        # Get API key from configuration
-        self.api_key = config.api.gemini_api_key
+        # Get API key from provider configuration
+        self.api_key = provider_config.api_key
         if not self.api_key:
             raise LLMError(
                 "Gemini API key not found in configuration. "
@@ -58,14 +59,14 @@ class GeminiProvider(LLMProvider):
 
         # Generation configuration optimized for academic analysis
         self.generation_config = genai.types.GenerationConfig(
-            temperature=self._config.analysis.temperature,
-            max_output_tokens=self._config.analysis.max_output_tokens,
+            temperature=provider_config.temperature,
+            max_output_tokens=provider_config.max_output_tokens,
             response_mime_type="application/json",  # Force JSON output
         )
 
         # Configure Gemini-specific retry policy
         gemini_retry_policy = RetryPolicy(
-            max_attempts=self._config.retry.max_attempts,
+            max_attempts=provider_config.max_attempts,
             strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
             initial_delay_seconds=1.0,
             backoff_multiplier=2.0,
@@ -105,7 +106,8 @@ class GeminiProvider(LLMProvider):
             raw_text = response.get("raw_response", "")
             response_data = ResponseParser.parse_analysis_response(raw_text)
 
-            return response_data.get("elements", [])
+            elements = response_data.get("elements", [])
+            return elements if isinstance(elements, list) else []
 
         except Exception as e:
             logger.error(f"Gemini API error for section {section_type}: {e}")

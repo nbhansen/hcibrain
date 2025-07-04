@@ -1,5 +1,6 @@
 """Immutable data models for PDF content extraction."""
 
+import types
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -55,7 +56,9 @@ class PdfContent:
     file_path: str
     total_pages: int
     pages: tuple[PdfPage, ...]
-    extraction_metadata: dict[str, Any] = field(default_factory=dict)
+    extraction_metadata: types.MappingProxyType[str, Any] = field(
+        default_factory=lambda: types.MappingProxyType({})
+    )
     created_at: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self) -> None:
@@ -99,7 +102,9 @@ class TextTransformation:
     original_text: str
     cleaned_text: str
     transformations: tuple[str, ...] = ()
-    char_mapping: dict[int, int] = field(default_factory=dict)
+    char_mapping: types.MappingProxyType[int, int] = field(
+        default_factory=lambda: types.MappingProxyType({})
+    )
 
     def reverse_lookup(self, cleaned_position: int) -> int:
         """Map cleaned text position back to original."""
@@ -114,7 +119,7 @@ class TextTransformation:
 @dataclass(frozen=True)
 class DetectedSection:
     """Immutable representation of a detected paper section."""
-    
+
     section_id: str
     section_type: str
     title: str
@@ -124,7 +129,7 @@ class DetectedSection:
     confidence: float
     char_start: int
     char_end: int
-    
+
     def __post_init__(self) -> None:
         """Validate detected section data."""
         if not self.section_id:
@@ -143,7 +148,7 @@ class DetectedSection:
             raise ValueError("Character start must be >= 0")
         if self.char_end <= self.char_start:
             raise ValueError("Character end must be > character start")
-    
+
     @classmethod
     def create_with_auto_id(
         cls,
@@ -207,7 +212,7 @@ class Paper:
         # Convert list to tuple for immutability
         if isinstance(authors, list):
             authors = tuple(authors)
-        
+
         return cls(
             paper_id=str(uuid.uuid4()),
             title=title,
@@ -231,6 +236,12 @@ class ExtractedElement:
     confidence: float
     evidence_type: Literal["quantitative", "qualitative", "theoretical", "unknown"]
     page_number: Optional[int] = None
+    # Optional context fields for enhanced manual comparison
+    supporting_evidence: Optional[str] = None
+    methodology_context: Optional[str] = None
+    study_population: Optional[str] = None
+    limitations: Optional[str] = None
+    surrounding_context: Optional[str] = None
 
     def __post_init__(self) -> None:
         """Validate extracted element data."""
@@ -257,6 +268,11 @@ class ExtractedElement:
         confidence: float,
         evidence_type: Literal["quantitative", "qualitative", "theoretical", "unknown"],
         page_number: Optional[int] = None,
+        supporting_evidence: Optional[str] = None,
+        methodology_context: Optional[str] = None,
+        study_population: Optional[str] = None,
+        limitations: Optional[str] = None,
+        surrounding_context: Optional[str] = None,
     ) -> "ExtractedElement":
         """Create an ExtractedElement with automatically generated UUID."""
         return cls(
@@ -268,6 +284,11 @@ class ExtractedElement:
             confidence=confidence,
             evidence_type=evidence_type,
             page_number=page_number,
+            supporting_evidence=supporting_evidence,
+            methodology_context=methodology_context,
+            study_population=study_population,
+            limitations=limitations,
+            surrounding_context=surrounding_context,
         )
 
 
@@ -277,7 +298,9 @@ class ExtractionResult:
 
     paper: Paper
     elements: tuple[ExtractedElement, ...]
-    extraction_metadata: dict[str, Any] = field(default_factory=dict)
+    extraction_metadata: types.MappingProxyType[str, Any] = field(
+        default_factory=lambda: types.MappingProxyType({})
+    )
     created_at: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self) -> None:
@@ -317,9 +340,7 @@ class ExtractionResult:
         """Return average confidence score across all elements."""
         if not self.elements:
             return 0.0
-        return sum(element.confidence for element in self.elements) / len(
-            self.elements
-        )
+        return sum(element.confidence for element in self.elements) / len(self.elements)
 
     def filter_by_confidence(self, min_confidence: float) -> "ExtractionResult":
         """Return new ExtractionResult with elements above confidence threshold."""
@@ -334,7 +355,8 @@ class ExtractionResult:
         )
 
     def filter_by_type(
-        self, element_types: tuple[Literal["claim", "finding", "method", "artifact"], ...]
+        self,
+        element_types: tuple[Literal["claim", "finding", "method", "artifact"], ...],
     ) -> "ExtractionResult":
         """Return new ExtractionResult with only specified element types."""
         filtered_elements = tuple(

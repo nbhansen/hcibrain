@@ -78,7 +78,7 @@ class SectionAnalysisService:
                     paper_id=paper_id or "unknown",
                     section_type=section_type,
                     section_size_chars=len(section_text),
-                    chunk_count=1,  # TODO: Support chunking in future
+                    chunk_count=1,  # Chunking not implemented in simple extractor
                 )
             )
 

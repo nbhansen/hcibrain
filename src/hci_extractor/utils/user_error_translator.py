@@ -8,7 +8,7 @@ users understand what went wrong and how to fix it.
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import click
 
@@ -38,22 +38,16 @@ class UserErrorMessage:
     title: str
     message: str
     severity: MessageSeverity
-    remediation_steps: List[str]
+    remediation_steps: Tuple[str, ...]
     technical_details: Optional[str] = None
-    quick_fixes: List[str] = None
-    related_docs: List[str] = None
-
-    def __post_init__(self):
-        if self.quick_fixes is None:
-            object.__setattr__(self, "quick_fixes", [])
-        if self.related_docs is None:
-            object.__setattr__(self, "related_docs", [])
+    quick_fixes: Tuple[str, ...] = ()
+    related_docs: Tuple[str, ...] = ()
 
 
 class UserErrorTranslator:
     """Translates technical errors into user-friendly messages."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._severity_mapping = {
             ErrorSeverity.LOW: MessageSeverity.WARNING,
             ErrorSeverity.MEDIUM: MessageSeverity.ERROR,
@@ -132,7 +126,7 @@ class UserErrorTranslator:
             title=title,
             message=context_details,
             severity=severity,
-            remediation_steps=classification.remediation_steps,
+            remediation_steps=tuple(classification.remediation_steps or []),
             technical_details=f"{type(error).__name__}: {str(error)}",
             quick_fixes=quick_fixes,
             related_docs=related_docs,
@@ -219,7 +213,7 @@ class UserErrorTranslator:
 
     def _generate_quick_fixes(
         self, classification: ErrorClassification, context: Optional[Dict[str, Any]]
-    ) -> List[str]:
+    ) -> Tuple[str, ...]:
         """Generate quick fix suggestions based on error classification."""
 
         quick_fixes = []
@@ -280,36 +274,36 @@ class UserErrorTranslator:
             if "section_size" in context and context["section_size"] > 15000:
                 quick_fixes.append("Large section detected - try reducing --chunk-size")
 
-        return quick_fixes[:3]  # Limit to 3 most relevant fixes
+        return tuple(quick_fixes[:3])  # Limit to 3 most relevant fixes
 
-    def _get_related_docs(self, category: ErrorCategory) -> List[str]:
+    def _get_related_docs(self, category: ErrorCategory) -> Tuple[str, ...]:
         """Get related documentation links for the error category."""
 
         docs = {
-            ErrorCategory.CONFIGURATION: [
+            ErrorCategory.CONFIGURATION: (
                 "Configuration Guide: hci-extractor config",
                 "Environment Variables: Set HCI_* variables",
                 "Profile Selection: hci-extractor profiles",
-            ],
-            ErrorCategory.API_PROVIDER: [
+            ),
+            ErrorCategory.API_PROVIDER: (
                 "API Setup Guide: Getting your API key",
                 "Rate Limits: Understanding API quotas",
                 "Troubleshooting: Network and API issues",
-            ],
-            ErrorCategory.DOCUMENT_QUALITY: [
+            ),
+            ErrorCategory.DOCUMENT_QUALITY: (
                 "Supported Formats: PDF requirements",
                 "Document Validation: hci-extractor validate",
                 "Quality Issues: Common PDF problems",
-            ],
-            ErrorCategory.SYSTEM_RESOURCE: [
+            ),
+            ErrorCategory.SYSTEM_RESOURCE: (
                 "Performance Tuning: Optimizing memory usage",
                 "Configuration: Reducing resource requirements",
                 "System Requirements: Minimum specifications",
-            ],
+            ),
         }
 
         return docs.get(
-            category, ["General Troubleshooting: Common issues and solutions"]
+            category, ("General Troubleshooting: Common issues and solutions",)
         )
 
     def format_for_cli(self, user_message: UserErrorMessage) -> str:
