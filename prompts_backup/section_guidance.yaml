@@ -1,0 +1,142 @@
+# Section-specific guidance for HCI paper analysis
+# Based on IMRaD structure and HCI paper conventions
+
+sections:
+  abstract:
+    focus: "Primary contribution and key findings"
+    guidance: |
+      Focus on the paper's central claim (contribution) and most significant findings.
+      Extract only the most important statements that represent novel contributions.
+      Look for:
+      - The main contribution claim
+      - Key empirical findings
+      - Novel artifacts or methods introduced
+    avoid: "Background context, motivation details, detailed methodology"
+    
+  introduction:
+    focus: "Research gap, contribution claim, and theoretical foundations"
+    guidance: |
+      Look for the research gap identification and the paper's primary contribution claim.
+      Extract:
+      - Problem statements and research questions
+      - The stated contribution (what's novel)
+      - Theoretical frameworks being extended or challenged
+      - Design principles or guidelines proposed
+    avoid: "Extensive background, routine motivation, literature summaries"
+    
+  related_work:
+    focus: "Knowledge gaps and limitations in existing research"
+    guidance: |
+      Extract claims about existing research limitations and identified gaps.
+      Look for:
+      - Critiques of existing approaches (knowledge-contesting)
+      - Identified limitations in current methods or artifacts
+      - Gaps that this work addresses
+      - Comparative claims about existing systems
+    avoid: "Routine literature summaries, background descriptions"
+    
+  methodology:
+    focus: "Novel methods and research approaches"
+    guidance: |
+      Focus on new or adapted methodologies that represent contributions.
+      Extract:
+      - Novel research methods or techniques
+      - Innovative evaluation approaches
+      - New data collection or analysis procedures
+      - Methodological contributions (e.g., "Wizard of Oz" method)
+    avoid: "Standard procedures, routine experimental setups, well-established methods"
+    
+  methods:
+    focus: "Novel methods and research approaches"
+    guidance: |
+      Focus on new or adapted methodologies that represent contributions.
+      Extract:
+      - Novel research methods or techniques
+      - Innovative evaluation approaches
+      - New data collection or analysis procedures
+      - Methodological contributions (e.g., "Wizard of Oz" method)
+    avoid: "Standard procedures, routine experimental setups, well-established methods"
+    
+  design:
+    focus: "Novel artifacts and design contributions"
+    guidance: |
+      Extract claims about design innovations and artifact capabilities.
+      Look for:
+      - Novel interaction techniques
+      - Design principles or guidelines
+      - System capabilities and features
+      - Design rationales and decisions
+    avoid: "Implementation details, routine design choices"
+    
+  implementation:
+    focus: "Technical contributions and novel solutions"
+    guidance: |
+      Focus on technical innovations rather than routine implementation.
+      Extract:
+      - Novel technical approaches
+      - Innovative solutions to technical challenges
+      - Performance achievements
+      - Technical design principles
+    avoid: "Routine coding details, standard implementation choices"
+    
+  results:
+    focus: "Empirical findings and artifact performance"
+    guidance: |
+      Extract specific findings, outcomes, and performance results.
+      Look for:
+      - User study results and behavioral observations
+      - Performance measurements and comparisons
+      - Usability findings and interaction patterns
+      - Artifact evaluation results
+    avoid: "Raw data presentation, routine statistical procedures"
+    
+  evaluation:
+    focus: "Assessment results and validation findings"
+    guidance: |
+      Extract findings from evaluation studies and validation efforts.
+      Look for:
+      - User performance results
+      - Usability and user experience findings
+      - Comparative evaluation results
+      - Validation of design claims
+    avoid: "Evaluation methodology details, routine procedures"
+    
+  discussion:
+    focus: "Interpretation, implications, and contribution claims"
+    guidance: |
+      Look for interpretations of results and explicit contribution claims.
+      Extract:
+      - Claims about the meaning and significance of results
+      - Implications for design or theory
+      - Explicit statements of contribution
+      - Future research directions identified
+    avoid: "Routine limitations acknowledgments, implementation details"
+    
+  conclusion:
+    focus: "Primary contributions and key findings summary"
+    guidance: |
+      Extract final statements of contribution and key findings.
+      Look for:
+      - Summary of primary contribution
+      - Key findings and their significance
+      - Claims about broader impact
+      - Future work that builds on contributions
+    avoid: "Routine summaries, acknowledgments"
+    
+  conclusions:
+    focus: "Primary contributions and key findings summary"
+    guidance: |
+      Extract final statements of contribution and key findings.
+      Look for:
+      - Summary of primary contribution
+      - Key findings and their significance
+      - Claims about broader impact
+      - Future work that builds on contributions
+    avoid: "Routine summaries, acknowledgments"
+
+default_guidance:
+  focus: "Novel contributions and significant findings"
+  guidance: |
+    Extract claims, findings, methods, and artifacts based on their contribution to HCI knowledge.
+    Focus on novelty and significance rather than routine content.
+  avoid: "Background information, routine procedures, well-established facts"

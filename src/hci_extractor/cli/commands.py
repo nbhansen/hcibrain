@@ -46,6 +46,7 @@ from hci_extractor.utils.user_error_translator import (
     create_user_friendly_exception,
     format_error_for_cli,
 )
+from hci_extractor.web.app import create_app
 
 # Load environment variables from .env file
 load_dotenv()
@@ -1638,9 +1639,11 @@ analysis.
             "file_path": str(pdf_path),
             "profile_used": profile or "default",
         }
-        formatted_error = format_error_for_cli(
-            e, context, verbose=config.log_level == "DEBUG"
-        )
+        # Use DEBUG as default if config wasn't loaded yet
+        verbose = False
+        if "config" in locals():
+            verbose = config.log_level == "DEBUG"
+        formatted_error = format_error_for_cli(e, context, verbose=verbose)
         click.echo(formatted_error, err=True)
         raise click.Abort()
 
@@ -2582,3 +2585,67 @@ def _quickstart_troubleshooting() -> None:
     click.echo("python -m hci_extractor setup    # Guided configuration")
     click.echo("python -m hci_extractor --help   # All available commands")
     click.echo()
+
+
+@cli.command()
+@click.option(
+    "--host",
+    default="127.0.0.1",
+    help="Host to bind the server to",
+    show_default=True,
+)
+@click.option(
+    "--port",
+    default=8000,
+    type=int,
+    help="Port to bind the server to",
+    show_default=True,
+)
+@click.option(
+    "--reload",
+    is_flag=True,
+    help="Enable auto-reload for development",
+)
+def serve(host: str, port: int, reload: bool) -> None:
+    """Start the web UI server."""
+    try:
+        import uvicorn
+        from hci_extractor.web.app import app
+
+        click.echo()
+        click.echo(
+            "🌐 " + click.style("Starting HCI Extractor Web UI", bold=True, fg="green")
+        )
+        click.echo("=" * 40)
+        click.echo()
+        click.echo(f"📍 Server will start at: http://{host}:{port}")
+        click.echo(f"📋 API docs available at: http://{host}:{port}/docs")
+        click.echo(f"🔍 Alternative docs at: http://{host}:{port}/redoc")
+        click.echo()
+
+        if reload:
+            click.echo("🔄 Auto-reload enabled for development")
+            click.echo()
+
+        click.echo("💡 Press Ctrl+C to stop the server")
+        click.echo()
+
+        # Start the server
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            reload=reload,
+        )
+
+    except ImportError:
+        click.echo("❌ " + click.style("Error: uvicorn not installed", fg="red"))
+        click.echo("Install web dependencies with: pip install 'hci_extractor[web]'")
+        raise click.Abort()
+    except Exception as e:
+        from hci_extractor.utils.user_error_translator import format_error_for_cli
+
+        context = {"operation": "web_server_start"}
+        formatted_error = format_error_for_cli(e, context, verbose=True)
+        click.echo(formatted_error, err=True)
+        raise click.Abort()

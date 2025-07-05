@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 *.so
@@ -8,6 +9,9 @@ build/
 develop-eggs/
 dist/
 *.egg-info/
+/docs
+.claude
+
 
 # Virtual Environment
 venv/

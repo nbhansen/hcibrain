@@ -108,6 +108,7 @@ class LLMSectionProcessor(SectionProcessor):
             policy=self._retry_policy,
             operation_name="section_processing",
             publish_events=True,
+            event_bus=self.event_bus,
         )
 
     async def process_section(

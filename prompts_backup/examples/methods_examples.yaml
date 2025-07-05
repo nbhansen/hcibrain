@@ -1,0 +1,85 @@
+# Few-shot examples for methods section analysis
+# Focus on novel methodological contributions, not routine procedures
+
+examples:
+  - section_text: |
+      "We employed a mixed-methods approach combining controlled experiments with ethnographic observation. To address the challenge of measuring authentic social interaction in laboratory settings, we developed the 'Social Interaction Authenticity Protocol' (SIAP). This protocol uses a combination of physiological sensors, behavioral coding, and post-hoc interviews to validate that laboratory interactions reflect real-world social dynamics. The protocol was validated through a pilot study with 12 participants."
+    
+    expected_extraction:
+      elements:
+        - element_type: "method"
+          text: "Social Interaction Authenticity Protocol' (SIAP)"
+          evidence_type: "mixed"
+          confidence: 0.95
+        
+        - element_type: "method"
+          text: "protocol uses a combination of physiological sensors, behavioral coding, and post-hoc interviews to validate that laboratory interactions reflect real-world social dynamics"
+          evidence_type: "mixed"
+          confidence: 0.90
+
+  - section_text: |
+      "Participants were recruited through university mailing lists and completed informed consent procedures. The study used a standard 2x2 factorial design with interface type (touchscreen vs. voice) and task complexity (simple vs. complex) as independent variables. Data was collected using established usability metrics including task completion time, error rate, and subjective satisfaction scores measured on a 7-point Likert scale."
+    
+    expected_extraction:
+      elements: []
+    
+    explanation: "This describes routine experimental procedures without novel methodological contributions"
+
+  - section_text: |
+      "To evaluate design ideas rapidly in early development stages, we created the 'Rapid Persona Iteration Method' (RPIM). This method combines traditional persona development with daily micro-interviews lasting 2-3 minutes each. Designers interview 3-5 users daily for one week, updating personas in real-time based on emerging insights. This approach reduces persona development time from weeks to days while maintaining accuracy."
+    
+    expected_extraction:
+      elements:
+        - element_type: "method"
+          text: "Rapid Persona Iteration Method' (RPIM)"
+          evidence_type: "qualitative"
+          confidence: 0.95
+        
+        - element_type: "method"
+          text: "combines traditional persona development with daily micro-interviews lasting 2-3 minutes each"
+          evidence_type: "qualitative"
+          confidence: 0.90
+        
+        - element_type: "finding"
+          text: "reduces persona development time from weeks to days while maintaining accuracy"
+          evidence_type: "quantitative"
+          confidence: 0.85
+
+  - section_text: |
+      "We used the Wizard of Oz technique to simulate AI capabilities that were not yet implemented. The wizard (researcher) was positioned in an adjacent room and controlled the system responses through a custom interface. This allowed us to test user reactions to AI features before full implementation. Standard questionnaires were administered after each session to measure user acceptance and trust."
+    
+    expected_extraction:
+      elements: []
+    
+    explanation: "This describes the use of an existing method (Wizard of Oz) and standard procedures, not a novel methodological contribution"
+
+  - section_text: |
+      "Traditional think-aloud protocols often interrupt natural interaction flow. We developed 'Retrospective Think-Aloud with Micro-Cues' (RTA-MC), where users perform tasks normally while micro-sensors capture interaction moments of interest. Immediately after task completion, users review these captured moments and provide verbal reflections. This preserves natural interaction while still capturing thought processes."
+    
+    expected_extraction:
+      elements:
+        - element_type: "claim"
+          text: "Traditional think-aloud protocols often interrupt natural interaction flow"
+          evidence_type: "theoretical"
+          confidence: 0.85
+        
+        - element_type: "method"
+          text: "Retrospective Think-Aloud with Micro-Cues' (RTA-MC), where users perform tasks normally while micro-sensors capture interaction moments of interest"
+          evidence_type: "mixed"
+          confidence: 0.95
+        
+        - element_type: "claim"
+          text: "preserves natural interaction while still capturing thought processes"
+          evidence_type: "theoretical"
+          confidence: 0.80
+
+guidance_notes: |
+  When analyzing methods sections:
+  1. Focus on novel methodological contributions, not routine procedures
+  2. Look for new evaluation techniques, research methods, or experimental designs
+  3. Extract methods that could be reused by other researchers
+  4. Identify adaptations of existing methods that represent contributions
+  5. Distinguish between method description and method innovation
+  6. Avoid extracting standard procedures (recruitment, consent, standard metrics)
+  7. Look for claims about methodological advantages or limitations addressed
+  8. Pay attention to validation of new methods

@@ -285,12 +285,13 @@ def merge_configurations(
     return builder.build()
 
 
-def create_config_from_click_context(ctx: Any) -> ExtractorConfig:
+def create_config_from_click_context(ctx: Any, base_config: Optional[ExtractorConfig] = None) -> ExtractorConfig:
     """
     Create configuration from Click context.
 
     Args:
         ctx: Click context containing parsed arguments
+        base_config: Base configuration to override (optional)
 
     Returns:
         ExtractorConfig with CLI overrides applied
@@ -302,10 +303,10 @@ def create_config_from_click_context(ctx: Any) -> ExtractorConfig:
         for key, value in ctx.params.items():
             setattr(args, key, value)
 
-        return merge_configurations(cli_args=args)
+        return merge_configurations(cli_args=args, base_config=base_config)
 
     # Fallback to base configuration
-    return ExtractorConfig.from_env()
+    return base_config or ExtractorConfig.from_env()
 
 
 def validate_configuration(config: ExtractorConfig) -> ExtractorConfig:
