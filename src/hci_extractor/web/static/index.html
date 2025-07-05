@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCI Paper Extractor</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HCI Paper Extractor</h1>
+            <p>Extract structured content from academic papers</p>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section id="upload-section" class="upload-section">
+                <div id="drop-zone" class="drop-zone">
+                    <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <h2>Drop your PDF here</h2>
+                    <p>or click to browse</p>
+                    <input type="file" id="file-input" accept=".pdf" hidden>
+                </div>
+            </section>
+
+            <!-- Progress Section -->
+            <section id="progress-section" class="progress-section hidden">
+                <h2>Processing your paper...</h2>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <p id="progress-text" class="progress-text">Uploading...</p>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="results-section hidden">
+                <div class="paper-info">
+                    <h2 id="paper-title">Paper Title</h2>
+                    <p id="paper-authors" class="authors"></p>
+                    <p id="paper-venue" class="venue"></p>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-card">
+                        <h3>Total Elements</h3>
+                        <p id="total-elements" class="stat">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Processing Time</h3>
+                        <p id="processing-time" class="stat">0s</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Average Confidence</h3>
+                        <p id="avg-confidence" class="stat">0%</p>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <label>
+                        Filter by type:
+                        <select id="type-filter">
+                            <option value="">All types</option>
+                            <option value="claim">Claims</option>
+                            <option value="finding">Findings</option>
+                            <option value="method">Methods</option>
+                            <option value="artifact">Artifacts</option>
+                        </select>
+                    </label>
+                    <label>
+                        Filter by section:
+                        <select id="section-filter">
+                            <option value="">All sections</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div id="elements-list" class="elements-list">
+                    <!-- Elements will be populated here -->
+                </div>
+
+                <button id="new-extraction" class="button">Extract Another Paper</button>
+            </section>
+
+            <!-- Error Section -->
+            <section id="error-section" class="error-section hidden">
+                <div class="error-content">
+                    <h2>Oops! Something went wrong</h2>
+                    <p id="error-message"></p>
+                    <button id="try-again" class="button">Try Again</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Powered by HCI Paper Extractor | <a href="/docs" target="_blank">API Documentation</a></p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

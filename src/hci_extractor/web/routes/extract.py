@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from hci_extractor.core.analysis import extract_paper_simple
 from hci_extractor.core.config import ExtractorConfig
@@ -28,6 +28,69 @@ from hci_extractor.web.models.responses import (
 
 
 router = APIRouter()
+
+
+@router.post("/extract/simple", response_model=ExtractionResponse)
+async def extract_pdf_simple(
+    file: UploadFile = File(...),
+    config: ExtractorConfig = Depends(get_extractor_config),
+    llm_provider: LLMProvider = Depends(get_llm_provider),
+    event_bus: EventBus = Depends(get_event_bus),
+) -> ExtractionResponse:
+    """
+    Simple PDF extraction endpoint - just upload a file.
+    
+    Args:
+        file: PDF file to extract
+        
+    Returns:
+        Extraction results with all detected elements
+    """
+    # Validate file
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+    
+    # Check file size
+    if hasattr(file, "size") and file.size:
+        max_size = config.extraction.max_file_size_mb * 1024 * 1024
+        if file.size > max_size:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. Maximum size: {config.extraction.max_file_size_mb}MB",
+            )
+    
+    # Save uploaded file to temporary location
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+        content = await file.read()
+        temp_file.write(content)
+        temp_file_path = Path(temp_file.name)
+    
+    try:
+        # Extract using existing business logic
+        start_time = time.time()
+        result = await extract_paper_simple(
+            pdf_path=temp_file_path,
+            llm_provider=llm_provider,
+            config=config,
+            event_bus=event_bus,
+            paper_metadata={},  # Empty metadata
+            progress_callback=None,
+        )
+        processing_time = time.time() - start_time
+        
+        # Convert to API response format
+        response = _convert_extraction_result_to_response(
+            result, processing_time, file.filename
+        )
+        
+        return response
+        
+    finally:
+        # Clean up temporary file
+        try:
+            temp_file_path.unlink()
+        except OSError:
+            pass  # File might have been already deleted
 
 
 def _convert_extraction_result_to_response(
@@ -115,7 +178,10 @@ def _convert_extraction_result_to_response(
 @router.post("/extract", response_model=ExtractionResponse)
 async def extract_pdf(
     file: UploadFile = File(...),
-    paper_metadata: Optional[PaperMetadata] = None,
+    title: Optional[str] = Form(None),
+    authors: Optional[str] = Form(None),
+    venue: Optional[str] = Form(None),
+    year: Optional[int] = Form(None),
     config: ExtractorConfig = Depends(get_extractor_config),
     llm_provider: LLMProvider = Depends(get_llm_provider),
     event_bus: EventBus = Depends(get_event_bus),
@@ -125,7 +191,10 @@ async def extract_pdf(
 
     Args:
         file: PDF file upload
-        paper_metadata: Optional paper metadata (title, authors, etc.)
+        title: Optional paper title
+        authors: Optional comma-separated list of authors
+        venue: Optional publication venue
+        year: Optional publication year
         config: Extractor configuration
         llm_provider: LLM provider for extraction
         event_bus: Event bus for progress tracking
@@ -158,15 +227,15 @@ async def extract_pdf(
     try:
         # Prepare paper metadata
         metadata: Dict[str, Any] = {}
-        if paper_metadata:
-            if paper_metadata.title:
-                metadata["title"] = paper_metadata.title
-            if paper_metadata.authors:
-                metadata["authors"] = paper_metadata.authors
-            if paper_metadata.venue:
-                metadata["venue"] = paper_metadata.venue
-            if paper_metadata.year:
-                metadata["year"] = paper_metadata.year
+        if title:
+            metadata["title"] = title
+        if authors:
+            # Convert comma-separated string to list
+            metadata["authors"] = [a.strip() for a in authors.split(",")]
+        if venue:
+            metadata["venue"] = venue
+        if year:
+            metadata["year"] = year
 
         # Extract using existing business logic
         start_time = time.time()
