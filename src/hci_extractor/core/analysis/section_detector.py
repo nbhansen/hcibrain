@@ -8,7 +8,7 @@ returning immutable DetectedSection objects.
 
 import logging
 import re
-from typing import Optional, Tuple
+from typing import Tuple
 
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.models import DetectedSection, PdfContent

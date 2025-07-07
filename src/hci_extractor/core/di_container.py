@@ -1,8 +1,6 @@
 """Dependency injection container for the HCI extractor."""
 
-import asyncio
 import logging
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union
 

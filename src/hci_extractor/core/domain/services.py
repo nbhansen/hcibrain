@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.events import (
@@ -11,7 +11,7 @@ from hci_extractor.core.events import (
     SectionProcessingStarted,
 )
 from hci_extractor.core.metrics import LLMMetricsContext
-from hci_extractor.core.domain.transformers import ElementTransformer, ResponseParser
+from hci_extractor.core.domain.transformers import ElementTransformer
 from hci_extractor.providers.base import LLMProvider
 
 logger = logging.getLogger(__name__)

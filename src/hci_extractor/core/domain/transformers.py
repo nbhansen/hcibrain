@@ -3,7 +3,6 @@
 import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
-from types import MappingProxyType
 
 from hci_extractor.core.models import LLMValidationError
 from hci_extractor.utils import JsonRecoveryOptions, recover_json

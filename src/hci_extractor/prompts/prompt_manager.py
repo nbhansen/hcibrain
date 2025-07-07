@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 class PromptLoadError(HciExtractorError):
     """Error loading or parsing prompt templates."""
 
-    pass
+    def __init__(self, message: str = "Prompt loading failed"):
+        super().__init__(message)
 
 
 class PromptManager:
@@ -46,7 +47,7 @@ class PromptManager:
         self.prompts_dir = Path(prompts_dir)
 
         if not self.prompts_dir.exists():
-            raise PromptLoadError(f"Prompts directory not found: {self.prompts_dir}")
+            raise PromptLoadError()
 
         # Cache for loaded prompt data
         self._base_prompts: Optional[Dict[str, Any]] = None
@@ -112,7 +113,7 @@ class PromptManager:
             return prompt
 
         except Exception as e:
-            raise PromptLoadError(f"Failed to build analysis prompt: {e}") from e
+            raise PromptLoadError() from e
 
     def _load_base_prompts(self) -> Dict[str, Any]:
         """Load base prompt templates."""
@@ -156,11 +157,11 @@ class PromptManager:
                 data = yaml.safe_load(f)
                 return data if isinstance(data, dict) else {}
         except FileNotFoundError:
-            raise PromptLoadError(f"Prompt file not found: {file_path}")
+            raise PromptLoadError()
         except yaml.YAMLError as e:
-            raise PromptLoadError(f"Invalid YAML in {file_path}: {e}")
+            raise PromptLoadError() from e
         except Exception as e:
-            raise PromptLoadError(f"Error loading {file_path}: {e}")
+            raise PromptLoadError() from e
 
     def _build_context_info(self, context: Optional[Dict[str, Any]]) -> str:
         """Build context information string from context dictionary."""
@@ -359,7 +360,7 @@ class PromptManager:
             return "\n\n".join(prompt_parts)
 
         except Exception as e:
-            raise PromptLoadError(f"Failed to build paper summary prompt: {e}") from e
+            raise PromptLoadError() from e
 
     def reload_prompts(self) -> None:
         """Reload all prompt templates from disk."""

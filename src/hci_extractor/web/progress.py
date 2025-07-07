@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from fastapi import WebSocket
@@ -106,8 +106,10 @@ class WebSocketProgressHandler(EventHandler):
 
             message = self._map_event_to_progress(event)
             if message:
-                # Schedule the async call in the event loop
-                asyncio.create_task(self.manager.send_progress(self.session_id, message))
+                # Schedule the async call in the event loop and store reference
+                task = asyncio.create_task(self.manager.send_progress(self.session_id, message))
+                # Add error handling for the task
+                task.add_done_callback(lambda t: logger.error(f"Progress send error: {t.exception()}") if t.exception() else None)
 
         except Exception as e:
             logger.error(f"Error handling event in WebSocket handler: {e}")

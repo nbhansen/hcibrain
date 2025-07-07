@@ -4,20 +4,23 @@ import logging
 import types
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import fitz  # PyMuPDF
 
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.models import (
     CharacterPosition,
+    PdfContent,
+    PdfPage,
+)
+from hci_extractor.core.models.exceptions import (
     CorruptedFileError,
     ExtractionQualityError,
+    FileNotFoundError,
+    InvalidFileTypeError,
     NoTextLayerError,
     PasswordProtectedError,
-    PdfContent,
     PdfError,
-    PdfPage,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,20 +43,20 @@ class PdfExtractor:
         logger.info(f"Starting extraction for {file_path}")
 
         if not file_path.exists():
-            raise PdfError(f"File not found: {file_path}")
+            raise FileNotFoundError()
 
         if not file_path.suffix.lower() == ".pdf":
-            raise PdfError(f"Not a PDF file: {file_path}")
+            raise InvalidFileTypeError()
 
         try:
             doc = fitz.open(str(file_path))
         except fitz.FileDataError as e:
             if "password" in str(e).lower():
-                raise PasswordProtectedError(f"PDF requires password: {file_path}")
+                raise PasswordProtectedError()
             else:
-                raise CorruptedFileError(f"Cannot open PDF: {e}")
+                raise CorruptedFileError()
         except Exception as e:
-            raise PdfError(f"Unexpected error opening PDF: {e}")
+            raise PdfError() from e
 
         try:
             pages = []
@@ -65,15 +68,12 @@ class PdfExtractor:
                 pages.append(pdf_page)
 
             if not pages:
-                raise ExtractionQualityError("No pages extracted from PDF")
+                raise ExtractionQualityError()
 
             # Check overall text quality
             total_text = "\n".join(page.text for page in pages)
             if len(total_text.strip()) < self.min_text_length:
-                raise NoTextLayerError(
-                    f"Insufficient text extracted ({len(total_text)} chars). "
-                    "PDF may be scanned images without text layer."
-                )
+                raise NoTextLayerError()
 
             extraction_time = (datetime.now() - extraction_start).total_seconds()
 

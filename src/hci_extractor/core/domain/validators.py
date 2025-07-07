@@ -1,8 +1,18 @@
 """Domain validators for HCI extractor - pure business logic validation."""
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict
 
-from hci_extractor.core.models import LLMValidationError
+from hci_extractor.core.models.exceptions import (
+    ElementFormatError,
+    InvalidConfidenceError,
+    InvalidElementTypeError,
+    InvalidEvidenceTypeError,
+    InvalidTextError,
+    LLMValidationError,
+    MissingRequiredFieldError,
+    ResponseFieldError,
+    ResponseFormatError,
+)
 
 
 class ElementValidator:
@@ -28,40 +38,32 @@ class ElementValidator:
             LLMValidationError: If validation fails
         """
         if not isinstance(element, dict):
-            raise LLMValidationError(f"Element {index} must be a dictionary")
+            raise ElementFormatError()
 
         # Check required fields
         required_fields = ["element_type", "text", "evidence_type", "confidence"]
         for field in required_fields:
             if field not in element:
-                raise LLMValidationError(
-                    f"Element {index} missing required field: {field}"
-                )
+                raise MissingRequiredFieldError()
 
         # Validate element_type
         if element["element_type"] not in cls.VALID_ELEMENT_TYPES:
-            raise LLMValidationError(
-                f"Element {index} has invalid element_type: {element['element_type']}"
-            )
+            raise InvalidElementTypeError()
 
         # Validate evidence_type
         if element["evidence_type"] not in cls.VALID_EVIDENCE_TYPES:
-            raise LLMValidationError(
-                f"Element {index} has invalid evidence_type: {element['evidence_type']}"
-            )
+            raise InvalidEvidenceTypeError()
 
         # Validate confidence
         if not isinstance(element["confidence"], (int, float)):
-            raise LLMValidationError(f"Element {index} confidence must be numeric")
+            raise InvalidConfidenceError()
 
         if not 0.0 <= element["confidence"] <= 1.0:
-            raise LLMValidationError(
-                f"Element {index} confidence must be between 0.0 and 1.0"
-            )
+            raise InvalidConfidenceError()
 
         # Validate text
         if not isinstance(element["text"], str) or not element["text"].strip():
-            raise LLMValidationError(f"Element {index} text must be non-empty string")
+            raise InvalidTextError()
 
     @classmethod
     def validate_response(cls, response: Dict[str, Any]) -> None:
@@ -75,14 +77,14 @@ class ElementValidator:
             LLMValidationError: If validation fails
         """
         if not isinstance(response, dict):
-            raise LLMValidationError("Response must be a dictionary")
+            raise ResponseFormatError()
 
         if "elements" not in response:
-            raise LLMValidationError("Response must contain 'elements' field")
+            raise ResponseFieldError()
 
         elements = response["elements"]
         if not isinstance(elements, list):
-            raise LLMValidationError("Elements must be a list")
+            raise ResponseFieldError()
 
         # Validate each element
         for i, element in enumerate(elements):
@@ -118,27 +120,25 @@ class SummaryValidator:
             LLMValidationError: If validation fails
         """
         if not isinstance(response, dict):
-            raise LLMValidationError("Summary response must be a dictionary")
+            raise ResponseFormatError()
 
         # Check required fields
         required_fields = ["summary", "confidence", "source_sections"]
         for field in required_fields:
             if field not in response:
-                raise LLMValidationError(
-                    f"Summary response missing required field: {field}"
-                )
+                raise MissingRequiredFieldError()
 
         # Validate summary text
         if not isinstance(response["summary"], str):
-            raise LLMValidationError("Summary must be a string")
+            raise InvalidTextError()
 
         # Validate confidence
         if not isinstance(response["confidence"], (int, float)):
-            raise LLMValidationError("Summary confidence must be numeric")
+            raise InvalidConfidenceError()
 
         if not 0.0 <= response["confidence"] <= 1.0:
-            raise LLMValidationError("Summary confidence must be between 0.0 and 1.0")
+            raise InvalidConfidenceError()
 
         # Validate source sections
         if not isinstance(response["source_sections"], list):
-            raise LLMValidationError("Source sections must be a list")
+            raise ResponseFieldError()

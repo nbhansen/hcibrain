@@ -1,6 +1,5 @@
 """PDF extraction endpoints."""
 
-import asyncio
 import tempfile
 import time
 from pathlib import Path
@@ -18,7 +17,6 @@ from hci_extractor.web.dependencies import (
     get_extractor_config,
     get_llm_provider,
 )
-from hci_extractor.web.models.requests import PaperMetadata
 from hci_extractor.web.models.responses import (
     ExtractionResponse,
     ExtractionSummary,

@@ -8,7 +8,7 @@ users understand what went wrong and how to fix it.
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import click
 

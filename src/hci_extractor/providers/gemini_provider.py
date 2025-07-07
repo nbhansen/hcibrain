@@ -1,13 +1,22 @@
 """Gemini API provider implementation."""
 
-import json
 import logging
 from typing import Any, Dict, List, Optional
 
 import google.generativeai as genai
 
 from hci_extractor.core.events import EventBus
-from hci_extractor.core.models import LLMError, LLMValidationError, RateLimitError
+from hci_extractor.core.models.exceptions import (
+    EmptyResponseError,
+    GeminiApiError,
+    GeminiAuthenticationError,
+    GeminiSafetyFilterError,
+    LLMError,
+    LLMValidationError,
+    MissingApiKeyError,
+    ProviderInitializationError,
+    RateLimitError,
+)
 from hci_extractor.prompts import PromptManager
 from hci_extractor.providers.base import LLMProvider
 from hci_extractor.providers.provider_config import LLMProviderConfig
@@ -45,17 +54,14 @@ class GeminiProvider(LLMProvider):
         # Get API key from provider configuration
         self.api_key = provider_config.api_key
         if not self.api_key:
-            raise LLMError(
-                "Gemini API key not found in configuration. "
-                "Set GEMINI_API_KEY environment variable or provide in config."
-            )
+            raise MissingApiKeyError()
 
         # Configure Gemini
         try:
             genai.configure(api_key=self.api_key)  # type: ignore[attr-defined]
             self.model = genai.GenerativeModel(model_name)  # type: ignore[attr-defined]
         except Exception as e:
-            raise LLMError(f"Failed to initialize Gemini model: {e}")
+            raise ProviderInitializationError() from e
 
         # Generation configuration optimized for academic analysis
         self.generation_config = genai.types.GenerationConfig(
@@ -114,7 +120,7 @@ class GeminiProvider(LLMProvider):
             if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
                 raise
             else:
-                raise LLMError(f"Gemini API error: {e}")
+                raise GeminiApiError()
 
     async def generate_paper_summary(
         self,
@@ -149,7 +155,7 @@ class GeminiProvider(LLMProvider):
             if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
                 raise
             else:
-                raise LLMError(f"Gemini API error: {e}")
+                raise GeminiApiError()
 
     async def _make_api_request(self, prompt: str, **kwargs: Any) -> Dict[str, Any]:
         """Make API request to Gemini - pure infrastructure operation."""
@@ -161,7 +167,7 @@ class GeminiProvider(LLMProvider):
 
             # Check for successful response
             if not response.text:
-                raise LLMError("Empty response from Gemini API")
+                raise EmptyResponseError()
 
             # Return raw text - domain layer will handle parsing
             return {"raw_response": response.text}
@@ -171,13 +177,13 @@ class GeminiProvider(LLMProvider):
             error_msg = str(e).lower()
 
             if "quota" in error_msg or "rate limit" in error_msg:
-                raise RateLimitError(f"Gemini rate limit exceeded: {e}")
+                raise RateLimitError()
             elif "invalid api key" in error_msg or "authentication" in error_msg:
-                raise LLMError(f"Gemini authentication error: {e}")
+                raise GeminiAuthenticationError()
             elif "blocked" in error_msg or "safety" in error_msg:
-                raise LLMError(f"Gemini safety filter triggered: {e}")
+                raise GeminiSafetyFilterError()
             else:
-                raise LLMError(f"Gemini API error: {e}")
+                raise GeminiApiError()
 
     def validate_response(self, response: Dict[str, Any]) -> bool:
         """Basic response validation - delegates to domain layer."""

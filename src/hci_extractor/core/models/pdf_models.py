@@ -6,6 +6,16 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Literal, Optional, Union
 
+from hci_extractor.core.models.exceptions import (
+    InvalidBoundingBox,
+    InvalidCharacterPosition,
+    InvalidConfidenceScore,
+    InvalidDimensions,
+    InvalidElementData,
+    InvalidPageNumber,
+    TextLengthMismatch,
+)
+
 
 @dataclass(frozen=True)
 class CharacterPosition:
@@ -20,11 +30,11 @@ class CharacterPosition:
     def __post_init__(self) -> None:
         """Validate character position data."""
         if self.char_index < 0:
-            raise ValueError("Character index must be >= 0")
+            raise InvalidCharacterPosition()
         if self.page_number < 1:
-            raise ValueError("Page number must be >= 1")
+            raise InvalidPageNumber()
         if len(self.bbox) != 4:
-            raise ValueError("Bbox must have exactly 4 coordinates")
+            raise InvalidBoundingBox()
 
 
 @dataclass(frozen=True)
@@ -40,13 +50,13 @@ class PdfPage:
     def __post_init__(self) -> None:
         """Validate page data integrity."""
         if self.page_number < 1:
-            raise ValueError("Page number must be >= 1")
+            raise InvalidPageNumber()
         if len(self.text) != self.char_count:
-            raise ValueError("Text length must match char_count")
+            raise TextLengthMismatch()
         if len(self.dimensions) != 2:
-            raise ValueError("Dimensions must be (width, height)")
+            raise InvalidDimensions()
         if self.dimensions[0] <= 0 or self.dimensions[1] <= 0:
-            raise ValueError("Dimensions must be positive")
+            raise InvalidDimensions()
 
 
 @dataclass(frozen=True)
@@ -64,11 +74,11 @@ class PdfContent:
     def __post_init__(self) -> None:
         """Validate PDF content integrity."""
         if self.total_pages != len(self.pages):
-            raise ValueError("Total pages must match pages tuple length")
+            raise InvalidElementData()
         if self.total_pages < 1:
-            raise ValueError("PDF must have at least 1 page")
+            raise InvalidElementData()
         if not self.file_path:
-            raise ValueError("File path cannot be empty")
+            raise InvalidElementData()
 
     @property
     def full_text(self) -> str:
@@ -83,7 +93,7 @@ class PdfContent:
     def get_text_at_position(self, char_index: int) -> tuple[str, int]:
         """Return character and page number at global character index."""
         if char_index < 0 or char_index >= self.total_chars:
-            raise IndexError("Character index out of range")
+            raise InvalidCharacterPosition()
 
         current_index = 0
         for page in self.pages:
@@ -92,7 +102,7 @@ class PdfContent:
                 return page.text[local_index], page.page_number
             current_index += page.char_count
 
-        raise IndexError("Character index out of range")
+        raise InvalidCharacterPosition()
 
 
 @dataclass(frozen=True)
@@ -113,7 +123,7 @@ class TextTransformation:
     def __post_init__(self) -> None:
         """Validate transformation data."""
         if not self.original_text and not self.cleaned_text:
-            raise ValueError("At least one text field must be non-empty")
+            raise InvalidElementData()
 
 
 @dataclass(frozen=True)
@@ -133,21 +143,21 @@ class DetectedSection:
     def __post_init__(self) -> None:
         """Validate detected section data."""
         if not self.section_id:
-            raise ValueError("Section ID cannot be empty")
+            raise InvalidElementData()
         if not self.section_type:
-            raise ValueError("Section type cannot be empty")
+            raise InvalidElementData()
         if not self.text.strip():
-            raise ValueError("Section text cannot be empty")
+            raise InvalidElementData()
         if self.start_page < 1:
-            raise ValueError("Start page must be >= 1")
+            raise InvalidPageNumber()
         if self.end_page < self.start_page:
-            raise ValueError("End page must be >= start page")
+            raise InvalidPageNumber()
         if not 0.0 <= self.confidence <= 1.0:
-            raise ValueError("Confidence must be between 0.0 and 1.0")
+            raise InvalidConfidenceScore()
         if self.char_start < 0:
-            raise ValueError("Character start must be >= 0")
+            raise InvalidCharacterPosition()
         if self.char_end <= self.char_start:
-            raise ValueError("Character end must be > character start")
+            raise InvalidCharacterPosition()
 
     @classmethod
     def create_with_auto_id(
@@ -190,13 +200,13 @@ class Paper:
     def __post_init__(self) -> None:
         """Validate paper data."""
         if not self.paper_id:
-            raise ValueError("Paper ID cannot be empty")
+            raise InvalidElementData()
         if not self.title:
-            raise ValueError("Title cannot be empty")
+            raise InvalidElementData()
         if not self.authors:
-            raise ValueError("Authors cannot be empty")
+            raise InvalidElementData()
         if self.year is not None and (self.year < 1900 or self.year > 2030):
-            raise ValueError("Year must be between 1900 and 2030")
+            raise InvalidElementData()
 
     @classmethod
     def create_with_auto_id(
@@ -246,17 +256,17 @@ class ExtractedElement:
     def __post_init__(self) -> None:
         """Validate extracted element data."""
         if not self.element_id:
-            raise ValueError("Element ID cannot be empty")
+            raise InvalidElementData()
         if not self.paper_id:
-            raise ValueError("Paper ID cannot be empty")
+            raise InvalidElementData()
         if not self.text.strip():
-            raise ValueError("Text cannot be empty")
+            raise InvalidElementData()
         if not self.section:
-            raise ValueError("Section cannot be empty")
+            raise InvalidElementData()
         if not 0.0 <= self.confidence <= 1.0:
-            raise ValueError("Confidence must be between 0.0 and 1.0")
+            raise InvalidConfidenceScore()
         if self.page_number is not None and self.page_number < 1:
-            raise ValueError("Page number must be >= 1")
+            raise InvalidPageNumber()
 
     @classmethod
     def create_with_auto_id(
@@ -306,13 +316,11 @@ class ExtractionResult:
     def __post_init__(self) -> None:
         """Validate extraction result data."""
         if not isinstance(self.paper, Paper):
-            raise ValueError("Paper must be a Paper instance")
+            raise InvalidElementData()
         # Verify all elements belong to this paper
         for element in self.elements:
             if element.paper_id != self.paper.paper_id:
-                raise ValueError(
-                    f"Element {element.element_id} belongs to different paper"
-                )
+                raise InvalidElementData()
 
     @property
     def total_elements(self) -> int:

@@ -7,7 +7,7 @@ command-line interface and the internal configuration system.
 """
 
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any, Callable, Dict, Optional
 
 import click
 
@@ -205,7 +205,7 @@ def get_low_priority_options() -> Dict[str, CliConfigOption]:
 
 def add_config_arguments(
     parser: click.Command,
-    priorities: list[str] = ["high"],
+    priorities: Optional[list[str]] = None,
     command_specific: Optional[Dict[str, CliConfigOption]] = None,
 ) -> None:
     """
@@ -217,6 +217,9 @@ def add_config_arguments(
         command_specific: Optional command-specific configuration options
     """
     # Get options for specified priorities
+    if priorities is None:
+        priorities = ["high"]
+    
     options_to_add = {}
     for priority in priorities:
         options_to_add.update(get_options_by_priority(priority))
@@ -315,7 +318,7 @@ def validate_cli_value(option: CliConfigOption, value: Any) -> Any:
     except Exception as e:
         raise click.BadParameter(
             f"Invalid value for {option.cli_name}: {value}. {str(e)}"
-        )
+        ) from e
 
 
 # Command-specific option sets for different CLI commands

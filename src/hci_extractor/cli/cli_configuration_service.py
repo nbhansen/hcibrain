@@ -7,6 +7,7 @@ import click
 from hci_extractor.cli.config_builder import create_config_from_click_context
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.di_container import DIContainer, create_configured_container
+from hci_extractor.core.models.exceptions import InvalidParameterError
 
 
 class CLIConfigurationService:
@@ -60,13 +61,13 @@ class CLIConfigurationService:
         """
         # Basic validation - extend as needed
         if config.analysis.chunk_size <= 0:
-            raise ValueError("Chunk size must be positive")
+            raise InvalidParameterError()
         
         if config.analysis.max_concurrent_sections <= 0:
-            raise ValueError("Max concurrent sections must be positive")
+            raise InvalidParameterError()
         
         if config.retry.max_attempts <= 0:
-            raise ValueError("Max retry attempts must be positive")
+            raise InvalidParameterError()
         
         return True
 

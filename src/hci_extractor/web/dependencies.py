@@ -1,7 +1,7 @@
 """FastAPI dependencies that bridge to existing DI container."""
 
 from functools import lru_cache
-from typing import Any, cast
+from typing import cast
 
 from fastapi import Depends
 
