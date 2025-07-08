@@ -1,0 +1,63 @@
+"""Core data models for the HCI Extractor."""
+
+from .exceptions import (
+    ApiKeyError,
+    ConfigurationError,
+    ContentFilterError,
+    CorruptedFileError,
+    DataError,
+    DataValidationError,
+    DependencyError,
+    ExtractionQualityError,
+    HciExtractorError,
+    LLMError,
+    LLMValidationError,
+    ModelNotFoundError,
+    NoTextLayerError,
+    PasswordProtectedError,
+    PdfError,
+    ProcessingError,
+    RateLimitError,
+    SerializationError,
+)
+from .pdf_models import (
+    CharacterPosition,
+    DetectedSection,
+    ExtractedElement,
+    ExtractionResult,
+    Paper,
+    PdfContent,
+    PdfPage,
+    TextTransformation,
+)
+
+__all__ = [
+    "ApiKeyError",
+    # PDF Models
+    "CharacterPosition",
+    "ConfigurationError",
+    "ContentFilterError",
+    "CorruptedFileError",
+    "DataError",
+    "DataValidationError",
+    "DependencyError",
+    "DetectedSection",
+    "ExtractedElement",
+    "ExtractionQualityError",
+    "ExtractionResult",
+    # Exceptions
+    "HciExtractorError",
+    "LLMError",
+    "LLMValidationError",
+    "ModelNotFoundError",
+    "NoTextLayerError",
+    "Paper",
+    "PasswordProtectedError",
+    "PdfContent",
+    "PdfError",
+    "PdfPage",
+    "ProcessingError",
+    "RateLimitError",
+    "SerializationError",
+    "TextTransformation",
+]

@@ -18,8 +18,8 @@ venv/
 .venv/
 env/
 
-# Environment variables
-.env
+# Configuration with secrets
+config.yaml
 
 # IDE
 .vscode/

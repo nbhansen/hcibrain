@@ -1,0 +1,15 @@
+
+> nextjs-shadcn-base@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.26
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1305ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1323ms (713 modules)
+🔧 Debug - API functions: { extractPdfWithCoordinates: 'function', isFunction: true }
+ GET / 200 in 1557ms
+ ✓ Compiled in 329ms (353 modules)
+[?25h

@@ -1,0 +1,142 @@
+# Section-specific guidance for HCI paper analysis
+# Based on IMRaD structure and HCI paper conventions
+
+sections:
+  abstract:
+    focus: "Research goals, methods, and key results"
+    guidance: |
+      Focus on the paper's research objectives, novel approaches, and significant findings.
+      Extract only the most important statements that represent novel contributions.
+      Look for:
+      - Goals: Research questions or objectives
+      - Methods: Novel approaches or systems built
+      - Results: Key empirical findings or outcomes
+    avoid: "Background context, motivation details, detailed methodology"
+    
+  introduction:
+    focus: "Research goals and problem statements"
+    guidance: |
+      Look for research objectives, questions, and problem identification.
+      Extract:
+      - Goals: Problem statements and research questions
+      - Goals: Research objectives and hypotheses
+      - Methods: High-level approach or solution strategy
+      - Goals: Design objectives or intended outcomes
+    avoid: "Extensive background, routine motivation, literature summaries"
+    
+  related_work:
+    focus: "Research gaps and goals"
+    guidance: |
+      Extract research gaps and goals that emerge from literature analysis.
+      Look for:
+      - Goals: Identified gaps or problems to address
+      - Goals: Limitations of existing approaches
+      - Methods: Brief mentions of proposed solutions
+      - Results: Comparative performance claims
+    avoid: "Routine literature summaries, background descriptions"
+    
+  methodology:
+    focus: "Novel methods and research approaches"
+    guidance: |
+      Focus on new or adapted methodologies that represent contributions.
+      Extract:
+      - Novel research methods or techniques
+      - Innovative evaluation approaches
+      - New data collection or analysis procedures
+      - Methodological contributions (e.g., "Wizard of Oz" method)
+    avoid: "Standard procedures, routine experimental setups, well-established methods"
+    
+  methods:
+    focus: "Novel methods and research approaches"
+    guidance: |
+      Focus on new or adapted methodologies that represent contributions.
+      Extract:
+      - Novel research methods or techniques
+      - Innovative evaluation approaches
+      - New data collection or analysis procedures
+      - Methodological contributions (e.g., "Wizard of Oz" method)
+    avoid: "Standard procedures, routine experimental setups, well-established methods"
+    
+  design:
+    focus: "Design methods and approaches"
+    guidance: |
+      Extract design methods, systems built, and approaches taken.
+      Look for:
+      - Methods: Novel interaction techniques
+      - Methods: Systems or prototypes developed
+      - Goals: Design objectives or principles
+      - Methods: Design processes or frameworks
+    avoid: "Implementation details, routine design choices"
+    
+  implementation:
+    focus: "Technical contributions and novel solutions"
+    guidance: |
+      Focus on technical innovations rather than routine implementation.
+      Extract:
+      - Novel technical approaches
+      - Innovative solutions to technical challenges
+      - Performance achievements
+      - Technical design principles
+    avoid: "Routine coding details, standard implementation choices"
+    
+  results:
+    focus: "Empirical findings and outcomes"
+    guidance: |
+      Extract specific findings, outcomes, and performance results.
+      Look for:
+      - Results: User study findings and observations
+      - Results: Performance metrics and comparisons
+      - Results: Usability findings and patterns
+      - Results: Statistical outcomes and effect sizes
+    avoid: "Raw data presentation, routine statistical procedures"
+    
+  evaluation:
+    focus: "Assessment results and validation findings"
+    guidance: |
+      Extract findings from evaluation studies and validation efforts.
+      Look for:
+      - User performance results
+      - Usability and user experience findings
+      - Comparative evaluation results
+      - Validation of design claims
+    avoid: "Evaluation methodology details, routine procedures"
+    
+  discussion:
+    focus: "Result interpretation and future goals"
+    guidance: |
+      Look for result interpretations and future research directions.
+      Extract:
+      - Results: Interpretations and implications of findings
+      - Goals: Future research directions or questions
+      - Results: Broader impact or significance claims
+      - Methods: Proposed improvements or extensions
+    avoid: "Routine limitations acknowledgments, implementation details"
+    
+  conclusion:
+    focus: "Summary of goals, methods, and results"
+    guidance: |
+      Extract final summaries of research achievements.
+      Look for:
+      - Goals: Research objectives achieved
+      - Methods: Key approaches or systems developed
+      - Results: Primary findings and outcomes
+      - Goals: Future work directions
+    avoid: "Routine summaries, acknowledgments"
+    
+  conclusions:
+    focus: "Primary contributions and key findings summary"
+    guidance: |
+      Extract final statements of contribution and key findings.
+      Look for:
+      - Summary of primary contribution
+      - Key findings and their significance
+      - Claims about broader impact
+      - Future work that builds on contributions
+    avoid: "Routine summaries, acknowledgments"
+
+default_guidance:
+  focus: "Research goals, methods, and results"
+  guidance: |
+    Extract goals, methods, and results based on their contribution to HCI knowledge.
+    Focus on novelty and significance rather than routine content.
+  avoid: "Background information, routine procedures, well-established facts"

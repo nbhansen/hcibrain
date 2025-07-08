@@ -1,0 +1,77 @@
+# Few-shot examples for abstract analysis
+# These examples show how to identify contributions and findings in HCI abstracts
+
+examples:
+  - section_text: |
+      "We present TouchGestures, a novel interaction technique that enables users to perform complex multi-touch gestures with 40% fewer errors than standard touch interfaces. Through a controlled study with 24 participants, we found that users completed tasks 23% faster using TouchGestures compared to conventional touch input. Our system introduces three new gesture recognition algorithms that improve accuracy while reducing computational overhead by 15%. The results suggest that TouchGestures could significantly enhance mobile interaction design."
+    
+    expected_extraction:
+      elements:
+        - element_type: "method"
+          text: "TouchGestures, a novel interaction technique that enables users to perform complex multi-touch gestures with 40% fewer errors than standard touch interfaces"
+          evidence_type: "quantitative"
+          confidence: 0.95
+        
+        - element_type: "result"
+          text: "users completed tasks 23% faster using TouchGestures compared to conventional touch input"
+          evidence_type: "quantitative"
+          confidence: 0.95
+        
+        - element_type: "method"
+          text: "three new gesture recognition algorithms that improve accuracy while reducing computational overhead by 15%"
+          evidence_type: "quantitative"
+          confidence: 0.90
+        
+        - element_type: "goal"
+          text: "TouchGestures could significantly enhance mobile interaction design"
+          evidence_type: "mixed"
+          confidence: 0.80
+
+  - section_text: |
+      "Previous research has shown that virtual reality training can improve performance, but existing systems lack adaptive feedback mechanisms. We developed AdaptVR, a training system that dynamically adjusts difficulty based on user performance. In a study with 32 medical students, AdaptVR improved training outcomes by 35% compared to static VR training. Our contribution is a novel adaptive algorithm that personalizes VR experiences in real-time."
+    
+    expected_extraction:
+      elements:
+        - element_type: "goal"
+          text: "existing systems lack adaptive feedback mechanisms"
+          evidence_type: "theoretical"
+          confidence: 0.85
+        
+        - element_type: "method"
+          text: "AdaptVR, a training system that dynamically adjusts difficulty based on user performance"
+          evidence_type: "mixed"
+          confidence: 0.95
+        
+        - element_type: "result"
+          text: "AdaptVR improved training outcomes by 35% compared to static VR training"
+          evidence_type: "quantitative"
+          confidence: 0.95
+        
+        - element_type: "method"
+          text: "novel adaptive algorithm that personalizes VR experiences in real-time"
+          evidence_type: "theoretical"
+          confidence: 0.90
+
+  - section_text: |
+      "This paper reviews 150 studies on accessibility in mobile applications published between 2015-2023. Our analysis reveals three critical gaps in current accessibility research: limited focus on cognitive disabilities, insufficient evaluation with real users, and lack of cross-platform consistency guidelines. We propose a unified framework for mobile accessibility evaluation that addresses these limitations."
+    
+    expected_extraction:
+      elements:
+        - element_type: "result"
+          text: "three critical gaps in current accessibility research: limited focus on cognitive disabilities, insufficient evaluation with real users, and lack of cross-platform consistency guidelines"
+          evidence_type: "qualitative"
+          confidence: 0.90
+        
+        - element_type: "method"
+          text: "unified framework for mobile accessibility evaluation that addresses these limitations"
+          evidence_type: "theoretical"
+          confidence: 0.85
+
+guidance_notes: |
+  When analyzing abstracts:
+  1. Goals: Look for research questions, hypotheses, or problems being addressed
+  2. Methods: Identify novel approaches, systems built, or evaluation techniques
+  3. Results: Extract empirical findings, performance metrics, or user feedback
+  4. Focus on statements that represent knowledge advancement, not background information
+  5. Pay attention to comparative claims (better than, faster than, more accurate than)
+  6. Look for gap identification in existing research as goals

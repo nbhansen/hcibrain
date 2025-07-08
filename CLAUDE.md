@@ -9,6 +9,12 @@ ALL hook issues are BLOCKING - EVERYTHING must be ✅ GREEN!
 No errors. No formatting issues. No linting problems. Zero tolerance.
 These are not suggestions. Fix ALL issues before continuing.
 
+**Required Tools - BOTH Must Pass:**
+- 🐍 **Python**: `ruff check` + `ruff format --check` (backend)
+- 🔧 **TypeScript**: `biome check` (frontend)
+
+ALL Biome and Ruff issues are BLOCKING - same zero tolerance policy.
+
 ## CRITICAL WORKFLOW - ALWAYS FOLLOW THIS!
 Research → Plan → Implement
 NEVER JUMP STRAIGHT TO CODING! Always follow this sequence:
@@ -77,14 +83,34 @@ Our code is complete when:
 
 ## Project Structure
 ```
-src/           # Source code
-tests/         # Test files
+src/           # Backend Python code
+tests/         # Backend test files
 docs/          # Documentation
+academic-paper-skimming-assistant/  # Frontend Next.js app
 ```
+
+## TypeScript Standards (Frontend)
+
+### FORBIDDEN - NEVER DO THESE:
+- NO mutating props or state directly
+- NO `any` type usage (use `unknown` or proper types)
+- NO `console.log` in production code
+- NO inline styles (use Tailwind CSS classes)
+- NO hardcoded strings for user-facing text
+- NO component logic in JSX return statements
+
+### Required Standards:
+- Use proper TypeScript interfaces for all data structures
+- Implement error boundaries for all major components
+- Use React hooks correctly (no rules of hooks violations)
+- Follow Next.js App Router patterns
+- Use Tailwind CSS utility classes consistently
+- Type all component props and function parameters
+- Use `const assertions` for immutable data: `as const`
 
 ## Hexagonal Architecture Enforcement
 
-**CRITICAL: Follow ARCHITECTURE-VISION.md strictly!**
+**CRITICAL: Follow ARCHITECTURE.md strictly!**
 
 ### 🚨 ARCHITECTURE VIOLATIONS TO AVOID:
 

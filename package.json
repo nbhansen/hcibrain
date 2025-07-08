@@ -1,0 +1,46 @@
+{
+  "name": "hcibrain-monorepo",
+  "version": "1.0.0",
+  "description": "HCIBrain Paper Skimming Assistant - Complete Full-Stack Application",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "./hcibrain.sh",
+    "start": "./hcibrain.sh",
+    "stop": "./hcibrain.sh stop",
+    "status": "./hcibrain.sh status",
+    "lint": "./hcibrain.sh lint",
+    "backend:dev": "cd packages/backend && source venv/bin/activate && uvicorn src.hci_extractor.web.app:app --host 0.0.0.0 --port 8000 --reload",
+    "frontend:dev": "cd packages/frontend && npm run dev",
+    "frontend:build": "cd packages/frontend && npm run build",
+    "backend:lint": "cd packages/backend && source venv/bin/activate && python -m ruff check src/",
+    "frontend:lint": "cd packages/frontend && npm run check",
+    "test": "cd packages/backend && source venv/bin/activate && python -m pytest tests/",
+    "setup": "./setup_config.sh"
+  },
+  "keywords": [
+    "hci",
+    "research",
+    "paper-analysis",
+    "ai",
+    "pdf-extraction",
+    "highlights",
+    "academic",
+    "nextjs",
+    "fastapi",
+    "typescript",
+    "python"
+  ],
+  "author": "HCIBrain Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/hcibrain.git"
+  }
+}

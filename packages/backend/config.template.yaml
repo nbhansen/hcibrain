@@ -1,0 +1,73 @@
+# HCIBrain Configuration Template
+# Copy this file to config.yaml and configure your settings
+
+# API Configuration
+api:
+  # Google Gemini API key (required for paper extraction)
+  # Get your key at: https://aistudio.google.com/app/apikey
+  gemini_api_key: "your-gemini-api-key-here"
+  
+  # Optional API keys for other providers
+  openai_api_key: null
+  anthropic_api_key: null
+  
+  # Rate limiting and timeouts
+  rate_limit_delay: 1.0
+  timeout_seconds: 30.0
+
+# PDF Extraction Configuration
+extraction:
+  # Maximum file size in MB
+  max_file_size_mb: 50
+  
+  # Timeout for PDF processing
+  timeout_seconds: 30.0
+  
+  # Text normalization settings
+  normalize_text: true
+  extract_positions: true  # Enable for coordinate mapping
+
+# LLM Analysis Configuration
+analysis:
+  # Text chunking settings
+  chunk_size: 10000
+  chunk_overlap: 500
+  
+  # Concurrency and performance
+  max_concurrent_sections: 3
+  section_timeout_seconds: 60.0
+  min_section_length: 50
+  
+  # LLM parameters
+  model_name: "gemini-1.5-flash"  # Options: gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp
+  temperature: 0.1
+  max_output_tokens: 4000
+
+# Retry Configuration
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  backoff_multiplier: 2.0
+  max_delay_seconds: 30.0
+
+# Cache Configuration
+cache:
+  enabled: false
+  directory: null
+  ttl_seconds: 3600
+  max_size_mb: 1000
+
+# Export Configuration
+export:
+  include_metadata: true
+  include_confidence: true
+  min_confidence_threshold: 0.0
+  timestamp_format: "%Y-%m-%d %H:%M:%S"
+
+# General Configuration
+general:
+  # Directory containing prompt templates
+  prompts_directory: "prompts"
+  
+  # Logging level
+  log_level: "INFO"
