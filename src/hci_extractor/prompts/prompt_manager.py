@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from ..core.models import HciExtractorError
+from hci_extractor.core.models import HciExtractorError
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class PromptManager:
         self._examples_cache: Dict[str, str] = {}
 
         logger.info(
-            f"PromptManager initialized with prompts directory: {self.prompts_dir}"
+            f"PromptManager initialized with prompts directory: {self.prompts_dir}",
         )
 
     def get_analysis_prompt(
@@ -89,7 +89,7 @@ class PromptManager:
 
             # Get section-specific guidance
             section_info = section_guidance["sections"].get(
-                section_type.lower(), section_guidance["default_guidance"]
+                section_type.lower(), section_guidance["default_guidance"],
             )
 
             # Build context information
@@ -101,7 +101,7 @@ class PromptManager:
                 examples_text = self._load_examples_for_section(section_type)
 
             # Compose the complete prompt
-            prompt = self._compose_prompt(
+            return self._compose_prompt(
                 base_prompts=base_prompts,
                 section_info=section_info,
                 section_text=section_text,
@@ -110,7 +110,6 @@ class PromptManager:
                 examples_text=examples_text,
             )
 
-            return prompt
 
         except Exception as e:
             raise PromptLoadError() from e
@@ -153,7 +152,7 @@ class PromptManager:
     def _load_yaml_file(self, file_path: Path) -> Dict[str, Any]:
         """Load and parse a YAML file."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with file_path.open("r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return data if isinstance(data, dict) else {}
         except FileNotFoundError:
@@ -258,7 +257,7 @@ class PromptManager:
         prompt_parts.append(f"\nSECTION TYPE: {section_type}")
         prompt_parts.append(f"FOCUS: {section_info.get('focus', 'General analysis')}")
         prompt_parts.append(
-            f"GUIDANCE: {section_info.get('guidance', 'Extract relevant elements.')}"
+            f"GUIDANCE: {section_info.get('guidance', 'Extract relevant elements.')}",
         )
 
         if "avoid" in section_info:
@@ -291,7 +290,7 @@ class PromptManager:
             section_guidance = self._load_section_guidance()
             return list(section_guidance["sections"].keys())
         except Exception as e:
-            logger.error(f"Failed to get available sections: {e}")
+            logger.exception("Failed to get available sections")
             return []
 
     def get_available_examples(self) -> List[str]:

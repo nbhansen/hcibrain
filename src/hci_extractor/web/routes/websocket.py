@@ -43,7 +43,7 @@ async def progress_websocket(
             try:
                 data = await websocket.receive_text()
                 logger.debug(
-                    f"Received WebSocket message for session {session_id}: {data}"
+                    f"Received WebSocket message for session {session_id}: {data}",
                 )
 
                 # Handle client messages if needed
@@ -54,7 +54,7 @@ async def progress_websocket(
                 logger.info(f"WebSocket disconnected for session {session_id}")
                 break
             except Exception as e:
-                logger.error(f"Error in WebSocket loop for session {session_id}: {e}")
+                logger.exception(f"Error in WebSocket loop for session {session_id}")
                 break
 
     finally:

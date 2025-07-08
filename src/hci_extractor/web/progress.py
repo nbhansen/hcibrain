@@ -68,7 +68,7 @@ class WebSocketManager:
             try:
                 await websocket.send_json(message.model_dump())
             except Exception as e:
-                logger.error(f"Error sending progress to {session_id}: {e}")
+                logger.exception(f"Error sending progress to {session_id}")
                 self.disconnect(session_id)
 
     def create_session_id(self) -> str:
@@ -100,7 +100,7 @@ class WebSocketProgressHandler(EventHandler):
             # Map different event types to progress messages
             if (
                 hasattr(event, "operation_id")
-                and getattr(event, "operation_id") != self.session_id
+                and event.operation_id != self.session_id
             ):
                 return  # Not for this session
 
@@ -112,7 +112,7 @@ class WebSocketProgressHandler(EventHandler):
                 task.add_done_callback(lambda t: logger.error(f"Progress send error: {t.exception()}") if t.exception() else None)
 
         except Exception as e:
-            logger.error(f"Error handling event in WebSocket handler: {e}")
+            logger.exception("Error handling event in WebSocket handler")
 
     def _map_event_to_progress(self, event: DomainEvent) -> Optional[ProgressMessage]:
         """
@@ -136,7 +136,7 @@ class WebSocketProgressHandler(EventHandler):
                 data={"event": event_name},
             )
 
-        elif event_name == "SectionDetected":
+        if event_name == "SectionDetected":
             self.progress = 0.1
             return ProgressMessage(
                 session_id=self.session_id,
@@ -149,7 +149,7 @@ class WebSocketProgressHandler(EventHandler):
                 },
             )
 
-        elif event_name == "SectionProcessingStarted":
+        if event_name == "SectionProcessingStarted":
             return ProgressMessage(
                 session_id=self.session_id,
                 status="processing",
@@ -158,7 +158,7 @@ class WebSocketProgressHandler(EventHandler):
                 data={"event": event_name},
             )
 
-        elif event_name == "SectionProcessingCompleted":
+        if event_name == "SectionProcessingCompleted":
             # Update progress based on completed sections
             self.progress = min(0.9, self.progress + 0.15)
             return ProgressMessage(
@@ -172,7 +172,7 @@ class WebSocketProgressHandler(EventHandler):
                 },
             )
 
-        elif event_name == "PaperProcessingCompleted":
+        if event_name == "PaperProcessingCompleted":
             return ProgressMessage(
                 session_id=self.session_id,
                 status="completed",
@@ -184,7 +184,7 @@ class WebSocketProgressHandler(EventHandler):
                 },
             )
 
-        elif event_name == "ExtractionFailed":
+        if event_name == "ExtractionFailed":
             return ProgressMessage(
                 session_id=self.session_id,
                 status="failed",

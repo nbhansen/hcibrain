@@ -91,14 +91,14 @@ async def extract_paper_simple(
             paper_title=paper.title,
             file_path=str(pdf_path),
             file_size_bytes=file_size,
-        )
+        ),
     )
 
     # Publish extraction started event (for backward compatibility)
     event_bus.publish(
         ExtractionStarted(
-            pdf_path=str(pdf_path), paper_id=paper.paper_id, file_size_bytes=file_size
-        )
+            pdf_path=str(pdf_path), paper_id=paper.paper_id, file_size_bytes=file_size,
+        ),
     )
 
     try:
@@ -115,7 +115,7 @@ async def extract_paper_simple(
                 total_steps=4,
                 step_name="pdf_extraction",
                 percentage_complete=25.0,
-            )
+            ),
         )
 
         logger.info("📄 Extracting PDF content...")
@@ -123,7 +123,7 @@ async def extract_paper_simple(
         pdf_content = pdf_extractor.extract_content(pdf_path)
         logger.info(
             f"✅ Extracted {pdf_content.total_pages} pages, "
-            f"{pdf_content.total_chars} characters"
+            f"{pdf_content.total_chars} characters",
         )
 
         if progress_callback:
@@ -145,14 +145,14 @@ async def extract_paper_simple(
                 total_steps=4,
                 step_name="section_detection",
                 percentage_complete=50.0,
-            )
+            ),
         )
 
         logger.info("🔍 Detecting paper sections...")
         sections = detect_sections(pdf_content, config)
         logger.info(
             f"✅ Detected {len(sections)} sections: "
-            f"{[s.section_type for s in sections]}"
+            f"{[s.section_type for s in sections]}",
         )
 
         # Publish section detected event
@@ -161,7 +161,7 @@ async def extract_paper_simple(
                 paper_id=paper.paper_id,
                 section_count=len(sections),
                 section_types=tuple(s.section_type for s in sections),
-            )
+            ),
         )
 
         if progress_callback:
@@ -185,7 +185,7 @@ async def extract_paper_simple(
 
         # Step 3.5: Generate paper summary from abstract and introduction
         paper_summary = await _generate_paper_summary(
-            sections, llm_provider, paper.paper_id
+            sections, llm_provider, paper.paper_id,
         )
 
         # Step 4: Process sections with LLM
@@ -201,7 +201,7 @@ async def extract_paper_simple(
                 total_steps=4,
                 step_name="llm_analysis",
                 percentage_complete=75.0,
-            )
+            ),
         )
 
         logger.info("🤖 Processing sections with LLM...")
@@ -255,7 +255,7 @@ async def extract_paper_simple(
                 total_steps=4,
                 step_name="completed",
                 percentage_complete=100.0,
-            )
+            ),
         )
 
         # Publish paper processing completed event
@@ -267,7 +267,7 @@ async def extract_paper_simple(
                 sections_processed=len(sections),
                 duration_seconds=total_duration,
                 success=True,
-            )
+            ),
         )
 
         # Publish extraction completed event (for backward compatibility)
@@ -277,17 +277,17 @@ async def extract_paper_simple(
                 pages_extracted=pdf_content.total_pages,
                 characters_extracted=pdf_content.total_chars,
                 duration_seconds=total_duration,
-            )
+            ),
         )
 
         logger.info(
             f"🎉 Extraction complete! Found {len(all_elements)} elements "
-            f"from {len(sections)} sections"
+            f"from {len(sections)} sections",
         )
         return result
 
     except PdfError as e:
-        logger.error(f"PDF processing failed: {e}")
+        logger.exception("PDF processing failed")
 
         # Publish paper processing completed with failure
         event_bus.publish(
@@ -299,18 +299,18 @@ async def extract_paper_simple(
                 duration_seconds=time.time() - start_time,
                 success=False,
                 error_message=str(e),
-            )
+            ),
         )
 
         # Publish extraction failed event (for backward compatibility)
         event_bus.publish(
             ExtractionFailed(
-                pdf_path=str(pdf_path), error_type="PdfError", error_message=str(e)
-            )
+                pdf_path=str(pdf_path), error_type="PdfError", error_message=str(e),
+            ),
         )
         raise
     except LLMError as e:
-        logger.error(f"LLM processing failed: {e}")
+        logger.exception("LLM processing failed")
 
         # Publish paper processing completed with failure
         event_bus.publish(
@@ -322,18 +322,18 @@ async def extract_paper_simple(
                 duration_seconds=time.time() - start_time,
                 success=False,
                 error_message=str(e),
-            )
+            ),
         )
 
         # Publish extraction failed event (for backward compatibility)
         event_bus.publish(
             ExtractionFailed(
-                pdf_path=str(pdf_path), error_type="LLMError", error_message=str(e)
-            )
+                pdf_path=str(pdf_path), error_type="LLMError", error_message=str(e),
+            ),
         )
         raise
     except Exception as e:
-        logger.error(f"Unexpected error during extraction: {e}")
+        logger.exception("Unexpected error during extraction")
 
         # Publish paper processing completed with failure
         event_bus.publish(
@@ -345,7 +345,7 @@ async def extract_paper_simple(
                 duration_seconds=time.time() - start_time,
                 success=False,
                 error_message=str(e),
-            )
+            ),
         )
 
         # Publish extraction failed event (for backward compatibility)
@@ -354,13 +354,13 @@ async def extract_paper_simple(
                 pdf_path=str(pdf_path),
                 error_type=type(e).__name__,
                 error_message=str(e),
-            )
+            ),
         )
         raise LLMError(f"Extraction failed: {e}")
 
 
 def _create_paper_from_metadata(
-    pdf_path: Path, metadata: Optional[Dict[str, Any]]
+    pdf_path: Path, metadata: Optional[Dict[str, Any]],
 ) -> Paper:
     """Create Paper object from metadata or defaults."""
     if metadata:
@@ -379,13 +379,12 @@ def _create_paper_from_metadata(
             doi=metadata.get("doi"),
             file_path=str(pdf_path),
         )
-    else:
-        # Default paper from filename
-        return Paper.create_with_auto_id(
-            title=pdf_path.stem.replace("_", " ").replace("-", " ").title(),
-            authors=("Unknown",),
-            file_path=str(pdf_path),
-        )
+    # Default paper from filename
+    return Paper.create_with_auto_id(
+        title=pdf_path.stem.replace("_", " ").replace("-", " ").title(),
+        authors=("Unknown",),
+        file_path=str(pdf_path),
+    )
 
 
 async def extract_multiple_papers(
@@ -419,7 +418,7 @@ async def extract_multiple_papers(
             output_directory="memory",  # In-memory results
             max_concurrent=1,  # Sequential processing for simplicity
             filter_pattern="*.pdf",
-        )
+        ),
     )
 
     results = []
@@ -442,7 +441,7 @@ async def extract_multiple_papers(
                     total_steps=len(pdf_paths),
                     step_name=f"processing_{pdf_path.stem}",
                     percentage_complete=((i + 1) / len(pdf_paths)) * 100.0,
-                )
+                ),
             )
 
             # Extract this paper
@@ -458,13 +457,13 @@ async def extract_multiple_papers(
             results.append(result)
             successful_count += 1
             logger.info(
-                f"✅ Completed paper {i+1}/{len(pdf_paths)}: {result.paper.title}"
+                f"✅ Completed paper {i+1}/{len(pdf_paths)}: {result.paper.title}",
             )
 
         except Exception as e:
             failed_count += 1
-            logger.error(
-                f"❌ Failed to process paper {i+1}/{len(pdf_paths)} ({pdf_path}): {e}"
+            logger.exception(
+                f"❌ Failed to process paper {i+1}/{len(pdf_paths)} ({pdf_path})",
             )
             # Continue with other papers - don't let one failure stop the batch
             continue
@@ -485,7 +484,7 @@ async def extract_multiple_papers(
             failed_papers=failed_count,
             duration_seconds=total_duration,
             average_elements_per_paper=average_elements,
-        )
+        ),
     )
 
     logger.info(f"🎉 Batch complete: {len(results)}/{len(pdf_paths)} papers processed")
@@ -493,7 +492,7 @@ async def extract_multiple_papers(
 
 
 async def _generate_paper_summary(
-    sections: tuple[Any, ...], llm_provider: LLMProvider, paper_id: str
+    sections: tuple[Any, ...], llm_provider: LLMProvider, paper_id: str,
 ) -> Optional[Dict[str, Any]]:
     """
     Generate paper summary from abstract and introduction sections.
@@ -521,7 +520,7 @@ async def _generate_paper_summary(
         if not abstract_text.strip() and not introduction_text.strip():
             logger.debug(
                 f"No abstract or introduction found for paper {paper_id} - "
-                "skipping summary"
+                "skipping summary",
             )
             return None
 
@@ -543,9 +542,8 @@ async def _generate_paper_summary(
                 "paper_summary_confidence": summary_data.get("confidence", 0.0),
                 "paper_summary_sources": summary_data.get("source_sections", []),
             }
-        else:
-            logger.warning(f"Empty summary generated for paper {paper_id}")
-            return None
+        logger.warning(f"Empty summary generated for paper {paper_id}")
+        return None
 
     except Exception as e:
         logger.warning(f"Failed to generate paper summary for {paper_id}: {e}")
@@ -574,6 +572,6 @@ def extract_paper_sync(
     """
     return asyncio.run(
         extract_paper_simple(
-            pdf_path, llm_provider, config, event_bus, paper_metadata, progress_callback
-        )
+            pdf_path, llm_provider, config, event_bus, paper_metadata, progress_callback,
+        ),
     )

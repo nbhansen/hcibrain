@@ -62,7 +62,6 @@ class SectionProcessor(ABC):
         Raises:
             LLMError: If processing fails
         """
-        pass
 
 
 class LLMSectionProcessor(SectionProcessor):
@@ -74,7 +73,7 @@ class LLMSectionProcessor(SectionProcessor):
     """
 
     def __init__(
-        self, llm_provider: LLMProvider, config: ExtractorConfig, event_bus: EventBus, chunk_size: int = 8000, chunk_overlap: int = 200
+        self, llm_provider: LLMProvider, config: ExtractorConfig, event_bus: EventBus, chunk_size: int = 8000, chunk_overlap: int = 200,
     ):
         """
         Initialize with injected dependencies.
@@ -125,7 +124,7 @@ class LLMSectionProcessor(SectionProcessor):
         """
         logger.info(
             f"Processing {section.section_type} section "
-            f"({len(section.text)} chars) from paper {paper.paper_id}"
+            f"({len(section.text)} chars) from paper {paper.paper_id}",
         )
 
         # Get event bus
@@ -144,7 +143,7 @@ class LLMSectionProcessor(SectionProcessor):
                 section_type=section.section_type,
                 section_size_chars=len(section.text),
                 chunk_count=chunk_count,
-            )
+            ),
         )
 
         try:
@@ -155,10 +154,10 @@ class LLMSectionProcessor(SectionProcessor):
             if len(section.text) > self.chunk_size:
                 logger.info(
                     f"Large section ({len(section.text)} chars) detected, "
-                    f"splitting into chunks of {self.chunk_size} chars"
+                    f"splitting into chunks of {self.chunk_size} chars",
                 )
                 extracted_elements = await self._process_section_chunked(
-                    section, analysis_context, paper
+                    section, analysis_context, paper,
                 )
 
                 # Assess and publish extraction quality
@@ -171,40 +170,39 @@ class LLMSectionProcessor(SectionProcessor):
                         section_type=section.section_type,
                         elements_extracted=len(extracted_elements),
                         duration_seconds=time.time() - start_time,
-                    )
+                    ),
                 )
 
                 return extracted_elements
-            else:
-                # Process normally for smaller sections
-                elements_data = await self._process_with_retries(
-                    section, analysis_context
-                )
+            # Process normally for smaller sections
+            elements_data = await self._process_with_retries(
+                section, analysis_context,
+            )
 
-                # Convert LLM output to immutable ExtractedElement objects
-                extracted_elements = self._create_extracted_elements(
-                    elements_data, section, paper
-                )
+            # Convert LLM output to immutable ExtractedElement objects
+            extracted_elements = self._create_extracted_elements(
+                elements_data, section, paper,
+            )
 
-                logger.info(
-                    f"Successfully extracted {len(extracted_elements)} elements "
-                    f"from {section.section_type} section"
-                )
+            logger.info(
+                f"Successfully extracted {len(extracted_elements)} elements "
+                f"from {section.section_type} section",
+            )
 
-                # Assess and publish extraction quality
-                self._assess_and_publish_quality(extracted_elements, paper, section)
+            # Assess and publish extraction quality
+            self._assess_and_publish_quality(extracted_elements, paper, section)
 
-                # Publish section processing completed event
-                event_bus.publish(
-                    SectionProcessingCompleted(
-                        paper_id=paper.paper_id,
-                        section_type=section.section_type,
-                        elements_extracted=len(extracted_elements),
-                        duration_seconds=time.time() - start_time,
-                    )
-                )
+            # Publish section processing completed event
+            event_bus.publish(
+                SectionProcessingCompleted(
+                    paper_id=paper.paper_id,
+                    section_type=section.section_type,
+                    elements_extracted=len(extracted_elements),
+                    duration_seconds=time.time() - start_time,
+                ),
+            )
 
-                return extracted_elements
+            return extracted_elements
 
         except Exception as e:
             # Classify the error for intelligent handling
@@ -218,10 +216,10 @@ class LLMSectionProcessor(SectionProcessor):
                 },
             )
 
-            logger.error(
-                f"Failed to process {section.section_type} section: {e} "
+            logger.exception(
+                f"Failed to process {section.section_type} section "
                 f"(category: {error_classification.category.value}, "
-                f"severity: {error_classification.severity.value})"
+                f"severity: {error_classification.severity.value})",
             )
 
             # For severe errors, we might still try partial extraction
@@ -231,7 +229,7 @@ class LLMSectionProcessor(SectionProcessor):
                 ErrorSeverity.MEDIUM,
             ]:
                 partial_elements = await self._attempt_partial_extraction(
-                    section, paper, e
+                    section, paper, e,
                 )
 
             # Publish completion event even for failures
@@ -241,7 +239,7 @@ class LLMSectionProcessor(SectionProcessor):
                     section_type=section.section_type,
                     elements_extracted=len(partial_elements),
                     duration_seconds=time.time() - start_time,
-                )
+                ),
             )
 
             # Publish quality assessment for failed/partial extraction
@@ -262,21 +260,21 @@ class LLMSectionProcessor(SectionProcessor):
                         f"severity_{error_classification.severity.value}",
                     )
                     + (("partial_recovery_attempted",) if partial_elements else ()),
-                )
+                ),
             )
 
             # Return partial elements or empty tuple - graceful degradation
             return partial_elements
 
     async def _process_section_chunked(
-        self, section: DetectedSection, analysis_context: Dict[str, Any], paper: Paper
+        self, section: DetectedSection, analysis_context: Dict[str, Any], paper: Paper,
     ) -> Tuple[ExtractedElement, ...]:
         """Process large section by splitting into chunks."""
         chunks = self._split_text_into_chunks(section.text)
         all_elements: List[ExtractedElement] = []
 
         logger.info(
-            f"Processing {len(chunks)} chunks for {section.section_type} section"
+            f"Processing {len(chunks)} chunks for {section.section_type} section",
         )
 
         for i, chunk_text in enumerate(chunks):
@@ -296,19 +294,19 @@ class LLMSectionProcessor(SectionProcessor):
 
                 # Process chunk with retries
                 elements_data = await self._process_with_retries(
-                    chunk_section, analysis_context
+                    chunk_section, analysis_context,
                 )
 
                 # Convert to ExtractedElement objects
                 chunk_elements = self._create_extracted_elements(
-                    elements_data, section, paper  # Use original section for metadata
+                    elements_data, section, paper,  # Use original section for metadata
                 )
 
                 all_elements.extend(chunk_elements)
 
                 logger.info(
                     f"Processed chunk {i+1}/{len(chunks)}, "
-                    f"extracted {len(chunk_elements)} elements"
+                    f"extracted {len(chunk_elements)} elements",
                 )
 
             except Exception as e:
@@ -326,7 +324,7 @@ class LLMSectionProcessor(SectionProcessor):
                 logger.warning(
                     f"Failed to process chunk {i+1}/{len(chunks)} "
                     f"of {section.section_type}: {e} "
-                    f"(category: {error_classification.category.value})"
+                    f"(category: {error_classification.category.value})",
                 )
 
                 # For retriable errors, we might still extract some basic elements
@@ -334,24 +332,24 @@ class LLMSectionProcessor(SectionProcessor):
                     try:
                         # Attempt basic text extraction as fallback
                         basic_elements = self._extract_basic_elements_from_text(
-                            chunk_text, section, paper
+                            chunk_text, section, paper,
                         )
                         if basic_elements:
                             all_elements.extend(basic_elements)
                             logger.info(
                                 f"Recovered {len(basic_elements)} basic elements "
-                                "from failed chunk"
+                                "from failed chunk",
                             )
                     except Exception as fallback_error:
                         logger.debug(
-                            f"Fallback extraction also failed: {fallback_error}"
+                            f"Fallback extraction also failed: {fallback_error}",
                         )
 
                 continue
 
         logger.info(
             f"Chunked processing complete: {len(all_elements)} total elements "
-            f"from {len(chunks)} chunks"
+            f"from {len(chunks)} chunks",
         )
 
         # Note: For chunked processing, the completion event is published
@@ -375,7 +373,7 @@ class LLMSectionProcessor(SectionProcessor):
             if end < len(text):
                 # Look for sentence or paragraph boundary within overlap range
                 break_point = self._find_good_break_point(
-                    text, max(start, end - self.chunk_overlap), end
+                    text, max(start, end - self.chunk_overlap), end,
                 )
                 if break_point > start:
                     end = break_point
@@ -447,7 +445,7 @@ class LLMSectionProcessor(SectionProcessor):
         return context
 
     async def _process_with_retries(
-        self, section: DetectedSection, context: Dict[str, Any]
+        self, section: DetectedSection, context: Dict[str, Any],
     ) -> list[Dict[str, Any]]:
         """Process section using unified retry handler with timeout and JSON \
 recovery."""
@@ -475,7 +473,7 @@ recovery."""
             if isinstance(raw_result, str):
                 logger.warning(
                     "Received string response from LLM provider, attempting JSON "
-                    "recovery"
+                    "recovery",
                 )
                 recovery_options = JsonRecoveryOptions(
                     strategies=["all"],
@@ -487,48 +485,44 @@ recovery."""
                 if recovery_result.success:
                     logger.info(
                         f"Successfully recovered JSON using strategy: "
-                        f"{recovery_result.strategy_used}"
+                        f"{recovery_result.strategy_used}",
                     )
                     if (
                         isinstance(recovery_result.recovered_data, dict)
                         and "elements" in recovery_result.recovered_data
                     ):
                         return recovery_result.recovered_data["elements"]
-                    else:
-                        return []
-                else:
-                    logger.error(
-                        f"Failed to recover JSON from LLM response: "
-                        f"{recovery_result.error_message}"
-                    )
-                    raise LLMError(
-                        f"Failed to parse LLM response as JSON: "
-                        f"{recovery_result.error_message}"
-                    )
+                    return []
+                logger.error(
+                    f"Failed to recover JSON from LLM response: "
+                    f"{recovery_result.error_message}",
+                )
+                raise LLMError(
+                    f"Failed to parse LLM response as JSON: "
+                    f"{recovery_result.error_message}",
+                )
 
             # Fallback - return empty list if we can't parse
             logger.warning(
-                f"Unexpected response format from LLM provider: {type(raw_result)}"
+                f"Unexpected response format from LLM provider: {type(raw_result)}",
             )
             return []
 
         # Use unified retry handler
         result = await self._retry_handler.execute_with_retry(
-            section_analysis_operation
+            section_analysis_operation,
         )
 
         if result.success:
             return result.value  # type: ignore[no-any-return]
-        else:
-            # Convert retry handler error to LLMError for backward compatibility
-            error_msg = f"Failed to process {section.section_type} section after "
-            f"{result.attempts_made} attempts"
-            if result.error:
-                logger.error(f"{error_msg}: {result.error}")
-                raise LLMError(error_msg) from result.error
-            else:
-                logger.error(error_msg)
-                raise LLMError(error_msg)
+        # Convert retry handler error to LLMError for backward compatibility
+        error_msg = f"Failed to process {section.section_type} section after "
+        f"{result.attempts_made} attempts"
+        if result.error:
+            logger.error(f"{error_msg}: {result.error}")
+            raise LLMError(error_msg) from result.error
+        logger.error(error_msg)
+        raise LLMError(error_msg)
 
     def _create_extracted_elements(
         self,
@@ -553,7 +547,7 @@ recovery."""
                 if element_type not in valid_types:
                     logger.warning(
                         f"Invalid element_type '{element_type}', "
-                        "defaulting to 'finding'"
+                        "defaulting to 'finding'",
                     )
                     element_type = "finding"
 
@@ -578,7 +572,7 @@ recovery."""
 
             except (ValueError, KeyError, TypeError) as e:
                 logger.warning(
-                    f"Skipping invalid element data in {section.section_type}: {e}"
+                    f"Skipping invalid element data in {section.section_type}: {e}",
                 )
                 continue
 
@@ -602,7 +596,7 @@ recovery."""
                     average_confidence=0.0,
                     quality_score=0.0,
                     quality_issues=("no_elements_extracted",),
-                )
+                ),
             )
             return
 
@@ -624,7 +618,7 @@ recovery."""
             quality_issues.append(f"short_extractions_{short_extractions}")
 
         # Check for element type diversity
-        element_types = set(elem.element_type for elem in extracted_elements)
+        element_types = {elem.element_type for elem in extracted_elements}
         if len(element_types) == 1 and len(extracted_elements) > 3:
             quality_issues.append("low_element_type_diversity")
 
@@ -657,11 +651,11 @@ recovery."""
                 average_confidence=average_confidence,
                 quality_score=quality_score,
                 quality_issues=tuple(quality_issues),
-            )
+            ),
         )
 
     async def _attempt_partial_extraction(
-        self, section: DetectedSection, paper: Paper, original_error: Exception
+        self, section: DetectedSection, paper: Paper, original_error: Exception,
     ) -> Tuple[ExtractedElement, ...]:
         """
         Attempt partial extraction when full processing fails.
@@ -674,24 +668,24 @@ recovery."""
         try:
             # Try basic text-based extraction
             basic_elements = self._extract_basic_elements_from_text(
-                section.text, section, paper
+                section.text, section, paper,
             )
 
             if basic_elements:
                 logger.info(
-                    f"Partial extraction recovered {len(basic_elements)} basic elements"
+                    f"Partial extraction recovered {len(basic_elements)} basic elements",
                 )
                 return basic_elements
 
             # If basic extraction fails, try to extract at least some key phrases
             key_phrase_elements = self._extract_key_phrases_as_elements(
-                section.text, section, paper
+                section.text, section, paper,
             )
 
             if key_phrase_elements:
                 logger.info(
                     f"Key phrase extraction recovered "
-                    f"{len(key_phrase_elements)} elements"
+                    f"{len(key_phrase_elements)} elements",
                 )
                 return key_phrase_elements
 
@@ -701,7 +695,7 @@ recovery."""
         return ()
 
     def _extract_basic_elements_from_text(
-        self, text: str, section: DetectedSection, paper: Paper
+        self, text: str, section: DetectedSection, paper: Paper,
     ) -> Tuple[ExtractedElement, ...]:
         """
         Extract basic elements using simple text analysis patterns.
@@ -753,7 +747,7 @@ recovery."""
         return tuple(elements)
 
     def _extract_key_phrases_as_elements(
-        self, text: str, section: DetectedSection, paper: Paper
+        self, text: str, section: DetectedSection, paper: Paper,
     ) -> Tuple[ExtractedElement, ...]:
         """
         Extract key phrases as a last resort when other methods fail.
@@ -839,7 +833,7 @@ async def process_sections_batch(
 
     logger.info(
         f"Processing {len(sections)} sections concurrently "
-        f"(max_concurrent={max_concurrent})"
+        f"(max_concurrent={max_concurrent})",
     )
 
     # Create semaphore to limit concurrent operations
@@ -880,7 +874,7 @@ async def process_sections_batch(
 
             logger.error(
                 f"Failed to process section {sections[i].section_type}: {result} "
-                f"(category: {error_classification.category.value})"
+                f"(category: {error_classification.category.value})",
             )
 
             # For batch processing, continue even on individual failures
@@ -891,7 +885,7 @@ async def process_sections_batch(
             ]:
                 logger.info(
                     f"Continuing batch processing despite "
-                    f"{sections[i].section_type} failure"
+                    f"{sections[i].section_type} failure",
                 )
         else:
             if isinstance(result, tuple):
@@ -902,7 +896,7 @@ async def process_sections_batch(
 
     logger.info(
         f"Successfully processed {successful_sections}/{len(sections)} sections, "
-        f"extracted {len(all_elements)} total elements"
+        f"extracted {len(all_elements)} total elements",
     )
 
     return tuple(all_elements)
