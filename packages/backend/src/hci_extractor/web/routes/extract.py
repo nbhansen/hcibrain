@@ -1,16 +1,19 @@
 """PDF extraction endpoints."""
 
+import logging
 import tempfile
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from hci_extractor.core.analysis import extract_paper_simple
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.events import EventBus
-from hci_extractor.core.extraction.coordinate_mapper import CoordinateMapper
 from hci_extractor.core.extraction.pdf_extractor import PdfExtractor
 from hci_extractor.core.models import ExtractionResult
 from hci_extractor.providers import LLMProvider
@@ -20,12 +23,12 @@ from hci_extractor.web.dependencies import (
     get_llm_provider,
 )
 from hci_extractor.web.models.responses import (
-    ElementCoordinates,
     ExtractedElement,
     ExtractionResponse,
     ExtractionSummary,
     PaperInfo,
 )
+from hci_extractor.web.models.markup_responses import MarkupExtractionResponse
 
 router = APIRouter()
 
@@ -172,11 +175,12 @@ def _convert_extraction_result_to_response(
         paper=paper_info,
         extraction_summary=extraction_summary,
         extracted_elements=extracted_elements,
+        paper_full_text=None,  # No full text for simple extraction
     )
 
 
 def _convert_extraction_result_to_response_with_coordinates(
-    result: ExtractionResult, processing_time: float, file_path: str,
+    result: ExtractionResult, processing_time: float, file_path: str, pdf_full_text: Optional[str] = None,
 ) -> ExtractionResponse:
     """
     Convert ExtractionResult with coordinates to API response model.
@@ -234,18 +238,8 @@ def _convert_extraction_result_to_response_with_coordinates(
     # Convert extracted elements with coordinates
     extracted_elements = []
     for element in result.elements:
-        # Convert coordinates if present
+        # Coordinates no longer used in text-first architecture
         coordinates = None
-        if element.coordinates:
-            coordinates = ElementCoordinates(
-                page_number=element.coordinates.page_number,
-                x=element.coordinates.x,
-                y=element.coordinates.y,
-                width=element.coordinates.width,
-                height=element.coordinates.height,
-                char_start=element.coordinates.char_start,
-                char_end=element.coordinates.char_end,
-            )
 
         api_element = ExtractedElement(
             element_id=element.element_id,
@@ -268,6 +262,7 @@ def _convert_extraction_result_to_response_with_coordinates(
         paper=paper_info,
         extraction_summary=extraction_summary,
         extracted_elements=extracted_elements,
+        paper_full_text=pdf_full_text,
     )
 
 
@@ -436,25 +431,11 @@ async def extract_pdf_with_coordinates(
             progress_callback=None,
         )
 
-        # Map coordinates to extracted elements
-        coordinate_mapper = CoordinateMapper()
-        mapped_elements = coordinate_mapper.map_multiple_elements(
-            result.elements, pdf_content,
-        )
-
-        # Create new result with mapped elements
-        enhanced_result = ExtractionResult(
-            paper=result.paper,
-            elements=mapped_elements,
-            extraction_metadata=result.extraction_metadata,
-            created_at=result.created_at,
-        )
-
         processing_time = time.time() - start_time
 
-        # Convert to API response format
+        # Convert to API response format with full text for text-based rendering
         return _convert_extraction_result_to_response_with_coordinates(
-            enhanced_result, processing_time, file.filename,
+            result, processing_time, file.filename, pdf_full_text=pdf_content.full_text,
         )
 
 
@@ -464,3 +445,76 @@ async def extract_pdf_with_coordinates(
             temp_file_path.unlink()
         except OSError:
             pass  # File might have been already deleted
+
+
+@router.post("/extract/markup", response_model=MarkupExtractionResponse)
+async def extract_pdf_markup(
+    file: UploadFile = File(...),
+    config: ExtractorConfig = Depends(get_extractor_config),
+    llm_provider: LLMProvider = Depends(get_llm_provider),
+) -> MarkupExtractionResponse:
+    """
+    Extract PDF and return full text with HTML markup for highlights.
+    
+    This endpoint bypasses JSON parsing entirely and asks the LLM to return
+    the complete text with HTML tags for goals, methods, and results.
+    
+    Args:
+        file: PDF file upload
+        config: Extractor configuration 
+        llm_provider: LLM provider for markup generation
+        
+    Returns:
+        Full text with HTML markup for highlighting
+    """
+    # Validate file
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+        
+    # Check file size
+    if hasattr(file, "size") and file.size:
+        max_size = config.extraction.max_file_size_mb * 1024 * 1024
+        if file.size > max_size:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. Maximum size: {config.extraction.max_file_size_mb}MB",
+            )
+    
+    # Save uploaded file to temporary location
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+        content = await file.read()
+        temp_file.write(content)
+        temp_file_path = Path(temp_file.name)
+        
+    try:
+        start_time = time.time()
+        
+        # Extract PDF content
+        pdf_extractor = PdfExtractor(config)
+        pdf_content = pdf_extractor.extract_content(temp_file_path)
+        
+        # DEBUG: Log PDF extraction results
+        logger.info(f"🔍 EXTRACT DEBUG - PDF extracted: {len(pdf_content.full_text)} chars")
+        logger.info(f"🔍 EXTRACT DEBUG - First 500 chars: {repr(pdf_content.full_text[:500])}")
+        
+        # Generate markup using LLM (no JSON parsing!)
+        marked_up_text = await llm_provider.generate_markup(pdf_content.full_text)
+        
+        processing_time = time.time() - start_time
+        
+        return MarkupExtractionResponse(
+            paper_full_text_with_markup=marked_up_text,
+            paper_info={
+                "title": "Extracted Paper",
+                "authors": [],
+                "paper_id": str(uuid.uuid4())[:8]
+            },
+            processing_time_seconds=processing_time,
+        )
+        
+    finally:
+        # Clean up temporary file
+        try:
+            temp_file_path.unlink()
+        except OSError:
+            pass

@@ -52,7 +52,7 @@ class ExtractedElement(BaseModel):
 
     element_id: str = Field(..., description="Unique element identifier")
     element_type: str = Field(
-        ..., description="Type: claim, finding, method, or artifact",
+        ..., description="Type: goal, method, or result",
     )
     text: str = Field(..., description="Verbatim extracted text")
     section: str = Field(..., description="Paper section where element was found")
@@ -90,6 +90,9 @@ class ExtractionResponse(BaseModel):
     )
     extracted_elements: List[ExtractedElement] = Field(
         ..., description="All extracted elements",
+    )
+    paper_full_text: Optional[str] = Field(
+        None, description="Full text content of the PDF for text-based rendering",
     )
 
     class Config:
