@@ -543,13 +543,13 @@ recovery."""
                 element_type = element_data.get("element_type", "unknown")
 
                 # Ensure element_type is valid for our model
-                valid_types = ["claim", "finding", "method", "artifact"]
+                valid_types = ["goal", "method", "result"]
                 if element_type not in valid_types:
                     logger.warning(
                         f"Invalid element_type '{element_type}', "
-                        "defaulting to 'finding'",
+                        "defaulting to 'result'",
                     )
-                    element_type = "finding"
+                    element_type = "result"
 
                 # Create immutable extracted element
                 element = ExtractedElement.create_with_auto_id(

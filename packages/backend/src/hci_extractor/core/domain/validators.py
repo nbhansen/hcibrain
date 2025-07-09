@@ -18,7 +18,7 @@ class ElementValidator:
     """Validates extracted elements according to domain rules."""
 
     # Domain constants for valid values
-    VALID_ELEMENT_TYPES = frozenset(["claim", "finding", "method", "artifact"])
+    VALID_ELEMENT_TYPES = frozenset(["goal", "method", "result"])
     VALID_EVIDENCE_TYPES = frozenset(
         ["quantitative", "qualitative", "theoretical", "mixed", "unknown"],
     )

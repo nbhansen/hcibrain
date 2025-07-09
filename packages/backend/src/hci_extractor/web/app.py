@@ -66,8 +66,8 @@ def create_app() -> FastAPI:
         app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
     # Serve the main UI page at root
-    @app.get("/", include_in_schema=False)
-    async def root() -> Union[FileResponse, RedirectResponse]:
+    @app.get("/", include_in_schema=False, response_model=None)
+    async def root():
         """Serve the main UI page."""
         index_path = static_path / "index.html"
         if index_path.exists():

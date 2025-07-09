@@ -14,12 +14,13 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_PORT=8000
 FRONTEND_PORT=3000
-BACKEND_LOG="backend.log"
-FRONTEND_LOG="frontend.log"
-BACKEND_DIR="packages/backend"
-FRONTEND_DIR="packages/frontend"
+BACKEND_LOG="$SCRIPT_DIR/backend.log"
+FRONTEND_LOG="$SCRIPT_DIR/frontend.log"
+BACKEND_DIR="$SCRIPT_DIR/packages/backend"
+FRONTEND_DIR="$SCRIPT_DIR/packages/frontend"
 
 log() {
     echo -e "${CYAN}[$(date '+%H:%M:%S')]${NC} $1"
@@ -213,7 +214,7 @@ start_backend() {
     # Activate virtual environment and start backend
     cd "$BACKEND_DIR"
     source venv/bin/activate
-    nohup uvicorn src.hci_extractor.web.app:app --host 0.0.0.0 --port $BACKEND_PORT > ../../$BACKEND_LOG 2>&1 &
+    nohup uvicorn src.hci_extractor.web.app:app --host 0.0.0.0 --port $BACKEND_PORT > "$BACKEND_LOG" 2>&1 &
     BACKEND_PID=$!
     cd - > /dev/null
     
@@ -235,7 +236,7 @@ start_frontend() {
     log "Starting HCIBrain frontend..."
     
     cd "$FRONTEND_DIR"
-    nohup npm run dev > ../../$FRONTEND_LOG 2>&1 &
+    nohup npm run dev > "$FRONTEND_LOG" 2>&1 &
     FRONTEND_PID=$!
     cd - > /dev/null
     
