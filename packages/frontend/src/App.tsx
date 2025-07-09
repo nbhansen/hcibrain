@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
+import { UI_TEXT, API_ENDPOINTS } from './constants';
 
 interface PaperInfo {
   title: string;
@@ -10,15 +11,28 @@ interface PaperInfo {
 interface MarkupResponse {
   paper_full_text_with_markup: string;
   paper_info: PaperInfo;
+  plain_language_summary: string;
   processing_time_seconds: number;
+}
+
+interface TocItem {
+  id: string;
+  text: string;
+  level: number;
+  element?: HTMLElement;
 }
 
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [markupResult, setMarkupResult] = useState<MarkupResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // TOC state
+  const [tocItems, setTocItems] = useState<TocItem[]>([]);
+  const [activeSection, setActiveSection] = useState<string>('');
+  const markupContentRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -26,7 +40,7 @@ function App() {
       setSelectedFile(file);
       setError(null);
     } else {
-      setError('Please select a PDF file');
+      setError(UI_TEXT.FILE_ERROR);
     }
   };
 
@@ -34,29 +48,16 @@ function App() {
     if (!selectedFile) return;
 
     setIsProcessing(true);
-    setProgress(0);
     setError(null);
-
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev < 90) return prev + Math.random() * 15;
-        return prev;
-      });
-    }, 1000);
 
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      console.log('🚀 Uploading PDF to backend:', selectedFile.name);
-
-      const response = await fetch('http://localhost:8000/api/v1/extract/markup', {
+      const response = await fetch(API_ENDPOINTS.MARKUP, {
         method: 'POST',
         body: formData,
       });
-
-      clearInterval(progressInterval);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -64,19 +65,9 @@ function App() {
       }
 
       const result: MarkupResponse = await response.json();
-      
-      console.log('✅ Markup extraction successful:', {
-        textLength: result.paper_full_text_with_markup.length,
-        processingTime: result.processing_time_seconds,
-        paperTitle: result.paper_info.title
-      });
-
       setMarkupResult(result);
-      setProgress(100);
     } catch (err) {
-      clearInterval(progressInterval);
-      console.error('❌ Upload failed:', err);
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      setError(err instanceof Error ? err.message : UI_TEXT.UPLOAD_FAILED);
     } finally {
       setIsProcessing(false);
     }
@@ -86,21 +77,131 @@ function App() {
     setSelectedFile(null);
     setMarkupResult(null);
     setError(null);
-    setProgress(0);
+    setTocItems([]);
+    setActiveSection('');
+    
+    // Clean up intersection observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
   };
+
+  // Generate TOC from HTML content
+  const generateTOC = useCallback((htmlContent: string): TocItem[] => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    
+    return Array.from(headings)
+      .filter((heading) => heading.textContent && heading.textContent.trim().length > 0)
+      .map((heading, index) => ({
+        id: `heading-${index}`,
+        text: heading.textContent?.trim() || '',
+        level: parseInt(heading.tagName.charAt(1)),
+      }));
+  }, []);
+
+  // Setup intersection observer for active section tracking
+  const setupIntersectionObserver = useCallback(() => {
+    if (!markupContentRef.current) return;
+
+    // Clean up existing observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    const headings = markupContentRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    
+    // Add IDs to headings for navigation
+    headings.forEach((heading, index) => {
+      heading.id = `heading-${index}`;
+    });
+
+    // Create intersection observer
+    const options = {
+      root: markupContentRef.current,
+      rootMargin: '-20% 0px -70% 0px',
+      threshold: 0,
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      let mostVisible = '';
+      let maxRatio = 0;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+          maxRatio = entry.intersectionRatio;
+          mostVisible = entry.target.id;
+        }
+      });
+
+      if (mostVisible) {
+        setActiveSection(mostVisible);
+      }
+    }, options);
+
+    // Observe all headings
+    headings.forEach((heading) => {
+      if (observerRef.current) {
+        observerRef.current.observe(heading);
+      }
+    });
+  }, []);
+
+  // Handle TOC item click with smooth scrolling
+  const handleTocClick = useCallback((itemId: string) => {
+    const element = document.getElementById(itemId);
+    if (element && markupContentRef.current) {
+      const container = markupContentRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      
+      const scrollTop = container.scrollTop + elementRect.top - containerRect.top - 20;
+      
+      container.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth',
+      });
+      
+      setActiveSection(itemId);
+    }
+  }, []);
+
+  // Setup TOC when markup result is available
+  useEffect(() => {
+    if (markupResult?.paper_full_text_with_markup) {
+      const toc = generateTOC(markupResult.paper_full_text_with_markup);
+      setTocItems(toc);
+      
+      // Setup observer after DOM is updated
+      setTimeout(() => {
+        setupIntersectionObserver();
+      }, 100);
+    }
+  }, [markupResult, generateTOC, setupIntersectionObserver]);
+
+  // Cleanup observer on unmount
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🎓 Academic Paper Markup Assistant</h1>
-        <p>Upload a PDF to extract goals, methods, and results with color-coded highlights</p>
+        <h1>{UI_TEXT.APP_TITLE}</h1>
+        <p>{UI_TEXT.APP_DESCRIPTION}</p>
       </header>
 
       <main className="app-main">
         {!markupResult ? (
           <div className="upload-section">
             <div className="upload-card">
-              <h2>📄 Upload Academic Paper</h2>
+              <h2>{UI_TEXT.UPLOAD_TITLE}</h2>
               
               <div className="file-input-wrapper">
                 <input
@@ -111,31 +212,23 @@ function App() {
                   id="pdf-upload"
                 />
                 <label htmlFor="pdf-upload" className="file-input-label">
-                  {selectedFile ? selectedFile.name : 'Choose PDF file...'}
+                  {selectedFile ? selectedFile.name : UI_TEXT.CHOOSE_FILE}
                 </label>
               </div>
 
               {selectedFile && !isProcessing && (
                 <button onClick={handleUpload} className="upload-button">
-                  🚀 Process PDF
+                  {UI_TEXT.PROCESS_BUTTON}
                 </button>
               )}
 
               {isProcessing && (
                 <div className="processing-status">
                   <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${progress}%` }}
-                    ></div>
+                    <div className="progress-fill"></div>
                   </div>
-                  <p>Processing... {Math.round(progress)}%</p>
-                  <small>
-                    {progress < 20 && "📄 Uploading PDF..."}
-                    {progress >= 20 && progress < 50 && "🔍 Extracting text..."}
-                    {progress >= 50 && progress < 80 && "🤖 Processing with AI (chunking large document)..."}
-                    {progress >= 80 && "✨ Generating markup..."}
-                  </small>
+                  <p>{UI_TEXT.PROCESSING}</p>
+                  <small>{UI_TEXT.PROCESSING_DESCRIPTION}</small>
                 </div>
               )}
 
@@ -149,42 +242,79 @@ function App() {
         ) : (
           <div className="results-section">
             <div className="results-header">
-              <h2>📊 Results</h2>
+              <h2>{UI_TEXT.RESULTS_TITLE}</h2>
               <button onClick={resetUpload} className="new-upload-button">
-                📄 Upload New PDF
+                {UI_TEXT.NEW_UPLOAD_BUTTON}
               </button>
             </div>
 
+            {markupResult.plain_language_summary && (
+              <div className="summary-section">
+                <h3>{UI_TEXT.SUMMARY_TITLE}</h3>
+                <p className="summary-text">{markupResult.plain_language_summary}</p>
+              </div>
+            )}
+
             <div className="paper-info">
               <h3>{markupResult.paper_info.title}</h3>
-              <p><strong>Authors:</strong> {markupResult.paper_info.authors.join(', ')}</p>
-              <p><strong>Processing time:</strong> {markupResult.processing_time_seconds.toFixed(1)}s</p>
+              <p><strong>{UI_TEXT.AUTHORS_LABEL}</strong> {markupResult.paper_info.authors.join(', ')}</p>
+              <p><strong>{UI_TEXT.PROCESSING_TIME_LABEL}</strong> {markupResult.processing_time_seconds.toFixed(1)}s</p>
             </div>
 
             <div className="markup-legend">
-              <h4>📝 Markup Legend:</h4>
+              <h4>{UI_TEXT.LEGEND_TITLE}</h4>
               <div className="legend-items">
                 <span className="legend-item">
                   <span className="legend-color goal"></span>
-                  Goals & Objectives
+                  {UI_TEXT.LEGEND_GOALS}
                 </span>
                 <span className="legend-item">
                   <span className="legend-color method"></span>
-                  Methods & Approaches
+                  {UI_TEXT.LEGEND_METHODS}
                 </span>
                 <span className="legend-item">
                   <span className="legend-color result"></span>
-                  Results & Findings
+                  {UI_TEXT.LEGEND_RESULTS}
                 </span>
               </div>
             </div>
 
-            <div 
-              className="markup-content"
-              dangerouslySetInnerHTML={{ 
-                __html: markupResult.paper_full_text_with_markup 
-              }}
-            />
+            <div className="results-layout">
+              {/* Table of Contents Sidebar */}
+              {tocItems.length > 0 && (
+                <div className="toc-sidebar">
+                  <div className="toc-container">
+                    <h4 className="toc-title">📑 Table of Contents</h4>
+                    <nav className="toc-nav">
+                      {tocItems.map((item) => (
+                        <button
+                          key={item.id}
+                          className={`toc-item toc-level-${item.level} ${
+                            activeSection === item.id ? 'active' : ''
+                          }`}
+                          onClick={() => handleTocClick(item.id)}
+                          title={item.text}
+                        >
+                          {item.text}
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
+                </div>
+              )}
+
+              {/* Main Content */}
+              <div className="content-main">
+                {/* Note: HTML content contains goal/method/result markup tags from backend AI analysis */}
+                <div 
+                  ref={markupContentRef}
+                  className="markup-content"
+                  dangerouslySetInnerHTML={{ 
+                    __html: markupResult.paper_full_text_with_markup 
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
       </main>

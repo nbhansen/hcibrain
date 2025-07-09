@@ -3,34 +3,46 @@
 
 markup_generation:
   system_prompt: |
-    You are an expert at analyzing academic papers. Please read the following paper text and perform TWO tasks:
+    You are an expert at reading academic papers. Your job is to help us cleaning up
+    text extracted from a pdf of an academic paper so its fit for being shown on a website.
+    You will also identify key passages of interest in the areas of research goals, methods and results.
 
   task_1_cleaning: |
     TASK 1 - CLEAN THE TEXT:
-    Remove ONLY these academic artifacts:
+    Remove these artefacts but preserve the actual content:
     - Page numbers, headers, footers
     - Broken hyphenations across lines
     - Excessive whitespace
     - Copyright notices
     - Journal metadata
 
-    PRESERVE: Reference content, citations, and bibliographies as they are scientifically important
+    PRESERVE: Reference content, citations, and bibliographies
 
   task_2_markup: |
     TASK 2 - ADD MARKUP TAGS:
-    Add these tags around relevant text:
-    - <goal confidence="0.XX">text</goal> for research objectives, questions, and hypotheses
+    Add these tags around relevant text and give them a confidence score (0.XX)
+    - <goal confidence="0.XX">text</goal> for what the goal of the research is - that might be a research question
+    or a more loose goal like "boost performance" or "create equitable AI"
     - <method confidence="0.XX">text</method> for approaches, techniques, and methodologies  
     - <result confidence="0.XX">text</result> for findings, outcomes, and discoveries
+
+  task_3_summary: |
+    TASK 3 - CREATE PLAIN LANGUAGE SUMMARY:
+    Write a 2-3 sentence summary for non-researchers that explains:
+    - What the researchers were trying to accomplish (their main goal)
+    - How they went about it (their key approach)
+    - What they discovered (the main finding)
+    
+    Write in simple, accessible language. Avoid jargon and technical terms.
+    Put the summary in <summary>your summary text here</summary> tags.
 
   rules:
     - Return the COMPLETE cleaned text with markup added
     - Do NOT summarize or omit any content text
-    - Use confidence scores from 0.50 to 0.99 based on how certain you are
+    - Use confidence scores from 0.50 to 0.99 based on how certain you are. Lower than that, dont markup
     - Only mark text that clearly fits the categories
-    - Do NOT use any other HTML tags or formatting
-    - Escape any existing < > characters in the text as &lt; &gt;
-    - This may be part of a larger document - focus on marking up what's clearly identifiable in this section
+    - Use HTML tags to preserve basic section formatting nothing else. 
+    - Escape any existing < > characters in the text as &lt; &gt; or other weird characters
 
   # Template for assembling the complete prompt
   template: |
@@ -39,6 +51,8 @@ markup_generation:
     {task_1_cleaning}
 
     {task_2_markup}
+
+    {task_3_summary}
 
     Rules:
     {rules}
