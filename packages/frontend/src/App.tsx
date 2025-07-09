@@ -33,6 +33,13 @@ function App() {
   const [activeSection, setActiveSection] = useState<string>('');
   const markupContentRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  
+  // Filter state
+  const [filters, setFilters] = useState({
+    goals: true,
+    methods: true,
+    results: true,
+  });
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -168,6 +175,14 @@ function App() {
     }
   }, []);
 
+  // Handle filter toggle
+  const toggleFilter = useCallback((filterType: 'goals' | 'methods' | 'results') => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: !prev[filterType],
+    }));
+  }, []);
+
   // Setup TOC when markup result is available
   useEffect(() => {
     if (markupResult?.paper_full_text_with_markup) {
@@ -264,18 +279,30 @@ function App() {
             <div className="markup-legend">
               <h4>{UI_TEXT.LEGEND_TITLE}</h4>
               <div className="legend-items">
-                <span className="legend-item">
+                <button 
+                  className={`legend-item legend-toggle ${filters.goals ? 'active' : ''}`}
+                  onClick={() => toggleFilter('goals')}
+                  title={filters.goals ? 'Hide Goals' : 'Show Goals'}
+                >
                   <span className="legend-color goal"></span>
                   {UI_TEXT.LEGEND_GOALS}
-                </span>
-                <span className="legend-item">
+                </button>
+                <button 
+                  className={`legend-item legend-toggle ${filters.methods ? 'active' : ''}`}
+                  onClick={() => toggleFilter('methods')}
+                  title={filters.methods ? 'Hide Methods' : 'Show Methods'}
+                >
                   <span className="legend-color method"></span>
                   {UI_TEXT.LEGEND_METHODS}
-                </span>
-                <span className="legend-item">
+                </button>
+                <button 
+                  className={`legend-item legend-toggle ${filters.results ? 'active' : ''}`}
+                  onClick={() => toggleFilter('results')}
+                  title={filters.results ? 'Hide Results' : 'Show Results'}
+                >
                   <span className="legend-color result"></span>
                   {UI_TEXT.LEGEND_RESULTS}
-                </span>
+                </button>
               </div>
             </div>
 
@@ -308,7 +335,7 @@ function App() {
                 {/* Note: HTML content contains goal/method/result markup tags from backend AI analysis */}
                 <div 
                   ref={markupContentRef}
-                  className="markup-content"
+                  className={`markup-content ${!filters.goals ? 'hide-goals' : ''} ${!filters.methods ? 'hide-methods' : ''} ${!filters.results ? 'hide-results' : ''}`}
                   dangerouslySetInnerHTML={{ 
                     __html: markupResult.paper_full_text_with_markup 
                   }}

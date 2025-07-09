@@ -410,6 +410,43 @@ body {
   font-size: 0.9375rem;
 }
 
+.legend-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.legend-toggle:hover {
+  background: var(--background-muted);
+  border-color: var(--primary-blue);
+}
+
+.legend-toggle:focus {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+.legend-toggle.active {
+  background: var(--primary-blue);
+  color: var(--background-primary);
+  border-color: var(--primary-blue);
+}
+
+.legend-toggle.active:hover {
+  background: var(--primary-blue-dark);
+  border-color: var(--primary-blue-dark);
+}
+
+.legend-toggle.active .legend-color {
+  border-color: var(--background-primary);
+}
+
 .legend-color {
   width: 18px;
   height: 18px;
@@ -723,6 +760,21 @@ body {
 
 .toc-container::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* ========================================
+   MARKUP FILTERING
+   ======================================== */
+.markup-content.hide-goals goal {
+  display: none;
+}
+
+.markup-content.hide-methods method {
+  display: none;
+}
+
+.markup-content.hide-results result {
+  display: none;
 }
 
 /* ========================================
