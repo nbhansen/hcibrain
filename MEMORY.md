@@ -1,53 +1,53 @@
 # HCIBrain Paper Skimming Assistant - Current Architecture
 
 ## Project Overview
-Production-ready paper skimming assistant built with Python FastAPI backend and Next.js frontend, featuring AI-powered extraction of research Goals, Methods, and Results from academic papers.
+Production-ready paper skimming assistant with AI-powered extraction of research Goals, Methods, and Results from academic papers.
 
-## Current Architecture
+## Current Architecture ✅ PRODUCTION READY
 ```
 hcibrain/
 ├── packages/
-│   ├── backend/           # Python FastAPI backend
-│   │   ├── src/           # Source code
-│   │   ├── tests/         # Test files  
-│   │   ├── prompts/       # AI extraction prompts
-│   │   ├── config.yaml    # Configuration
-│   │   ├── venv/          # Python virtual environment
-│   │   └── pyproject.toml # Python dependencies
-│   └── frontend/          # Next.js TypeScript frontend
-│       ├── app/           # App router pages
-│       ├── components/    # React components
-│       ├── services/      # API client services
-│       ├── types/         # TypeScript definitions
-│       └── package.json   # Node.js dependencies
-├── hcibrain.sh           # One-click startup script
-├── package.json          # Monorepo configuration
-└── README.md             # Documentation
+│   ├── backend/                    # Python FastAPI backend
+│   │   ├── src/hci_extractor/
+│   │   │   ├── providers/gemini_provider.py  # Chunking + markup generation
+│   │   │   ├── core/text/chunking_service.py # Sentence-based chunking
+│   │   │   └── web/routes/extract.py         # /api/v1/extract/markup endpoint
+│   │   ├── config.yaml             # max_output_tokens: 100000
+│   │   └── venv/                   # Python dependencies
+│   └── frontend/                   # Minimal React frontend
+│       ├── src/
+│       │   ├── App.tsx             # Single-page application
+│       │   └── App.css             # Complete styling with markup highlights
+│       └── package.json            # Vite + React + TypeScript
+├── hcibrain.sh                     # One-click startup script
+└── *.pdf                          # Test documents (ooenviron.pdf, etc.)
 ```
 
 ## Core Features ✅
-- **PDF Upload**: Drag-and-drop interface for research papers
-- **AI Extraction**: Goals, Methods, Results with confidence scores
-- **Interactive Highlights**: PDF overlay with category-based coloring
-- **Filtering Controls**: Confidence threshold, element count, category toggles
-- **Text Selection**: Native PDF text selection enabled
-- **Modern UI**: Responsive design with Next.js + Tailwind CSS
-- **Type Safety**: Comprehensive TypeScript and Python typing
-- **Quality Gates**: Enterprise-grade linting and testing
+- **PDF Upload**: Drag-and-drop interface for academic papers
+- **AI-Powered Markup**: HTML markup generation with inline highlighting
+- **Three-Category System**: Goals (blue), Methods (amber), Results (rose)
+- **Chunked Processing**: Automatic chunking for large documents (15k+ chars)
+- **Text Cleaning**: Removes academic artifacts while preserving references
+- **Real-Time Progress**: Visual progress bar with status updates
+- **Production Quality**: Enterprise-grade linting and type safety
 
-## Running the Application
+## Quick Start
 ```bash
-./hcibrain.sh          # Start everything
+./hcibrain.sh          # Start both backend + frontend
 ./hcibrain.sh stop     # Stop all processes  
 ./hcibrain.sh status   # Check service status
 ./hcibrain.sh lint     # Run quality checks
 ```
 
+**Application**: http://localhost:5173 | **API Documentation**: http://localhost:8000
+
 ## Current Status: Production Ready ✅
-- **Backend**: http://localhost:8000 (FastAPI with AI extraction)
-- **Frontend**: http://localhost:3000 (Next.js paper viewer)
-- **Quality**: Enterprise-grade code standards enforced
-- **Architecture**: Clean monorepo with hexagonal design principles
+- **Backend**: http://localhost:8000 (FastAPI with chunked markup generation)
+- **Frontend**: http://localhost:5173 (Minimal React application)  
+- **Quality**: All linting and type checks passing
+- **Architecture**: Hexagonal design with immutable patterns
+- **Performance**: Handles 33-page papers in ~7 minutes with 98% text retention
 
 ## Coordinate Mapping Investigation & Text-First Architecture Decision - COMPLETED ✅
 
@@ -592,3 +592,53 @@ hcibrain/
 **Validation**: Successfully processed 33-page academic paper in 7 minutes with excellent text retention and markup quality.
 
 The system now represents the optimal solution for academic paper skimming: **simple, fast, reliable, and production-ready**.
+
+## Performance Optimization Plan - RESEARCHED ✅
+
+### Research Summary
+Comprehensive analysis identified key performance bottlenecks and optimization opportunities while maintaining hexagonal architecture compliance.
+
+### Critical Findings
+- **LLM Caching**: No caching implementation despite infrastructure being in place (70-90% API call reduction potential)
+- **Sequential Processing**: Chunks processed one-by-one with 0.5s delays instead of parallel batches
+- **Duplicate PDF Processing**: Same files reprocessed without fingerprinting
+- **Memory Inefficiency**: Large documents held entirely in memory during processing
+- **Service Recreation**: New PdfExtractor instances created per request
+
+### Implementation Plan
+
+#### **Phase 1: LLM Response Caching (Highest ROI)**
+**Priority**: Immediate | **Impact**: 70-90% reduction in API calls
+- Design cache interface as infrastructure adapter
+- Implement SQLite-based semantic caching
+- Cache key: `hash(content + model_config + prompt_type)`
+- Enable via dependency injection (no global state)
+
+#### **Phase 2: Parallel Chunk Processing** 
+**Priority**: High | **Impact**: 60-80% processing time reduction
+- Refactor `GeminiProvider.generate_markup()` for concurrent chunk processing
+- Implement intelligent batching respecting API rate limits
+- Smart overlap deduplication to avoid redundant processing
+- Maintain sentence-based chunking integrity
+
+#### **Phase 3: Memory & File Optimization**
+**Priority**: Medium | **Impact**: 50-70% memory reduction
+- PDF fingerprinting with hash-based duplicate detection
+- Service singleton pattern for stateless components
+- Memory-efficient streaming with bounded buffers
+- Temporary file management optimization
+
+### Architecture Compliance
+- ✅ **Hexagonal Architecture**: Cache as infrastructure adapter behind port
+- ✅ **Immutable Design**: Cached responses are readonly data structures
+- ✅ **Dependency Injection**: Cache interface abstracted and injected
+- ✅ **No Global State**: All optimizations follow DI patterns
+- ✅ **Event-Driven**: Maintains existing WebSocket progress updates
+
+### Performance Metrics Framework
+- **Before/After Benchmarks**: Document processing time, API calls, memory usage
+- **Feature Flags**: Gradual rollout with A/B testing capability
+- **Monitoring**: Performance tracking integrated with existing event system
+
+### Current Status: **PLAN APPROVED - READY FOR IMPLEMENTATION**
+Next step: Begin Phase 1 implementation with proper measurement baseline.

@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_PORT=8000
-FRONTEND_PORT=3000
+FRONTEND_PORT=5173
 BACKEND_LOG="$SCRIPT_DIR/backend.log"
 FRONTEND_LOG="$SCRIPT_DIR/frontend.log"
 BACKEND_DIR="$SCRIPT_DIR/packages/backend"
@@ -138,37 +138,37 @@ run_backend_linting() {
 }
 
 run_frontend_linting() {
-    log "Running TypeScript frontend linting checks..."
+    log "Running React frontend linting checks..."
     
     cd "$FRONTEND_DIR"
     
-    # Run Biome linting with pragmatic thresholds
-    local biome_output
-    biome_output=$(npm run check 2>&1 || true)
+    # Run ESLint with pragmatic thresholds
+    local eslint_output
+    eslint_output=$(npm run lint 2>&1 || true)
     
     # Count errors (excluding warnings)
     local error_count
-    error_count=$(echo "$biome_output" | grep "Found.*errors" | grep -o '[0-9]\+' | head -1)
+    error_count=$(echo "$eslint_output" | grep -c "error" 2>/dev/null | head -1 || echo "0")
     
-    if [[ -n "$error_count" && "$error_count" -gt 2000 ]]; then
+    if [[ "$error_count" -gt 10 ]]; then
         error "🚨 FRONTEND LINTING FAILED - TOO MANY ERRORS (${error_count})!"
-        echo -e "${RED}Critical code quality threshold exceeded. Many errors are from third-party components.${NC}"
-        echo -e "${RED}Run the following to see and fix application-specific issues:${NC}"
-        echo "  cd $FRONTEND_DIR && npm run check:fix"
+        echo -e "${RED}Critical code quality threshold exceeded.${NC}"
+        echo -e "${RED}Run the following to see and fix issues:${NC}"
+        echo "  cd $FRONTEND_DIR && npm run lint"
         echo ""
-        echo -e "${YELLOW}Focus on errors in app/, components/ (exclude components/ui/), services/, types/${NC}"
+        echo -e "${YELLOW}Must reduce errors below 10 before starting HCIBrain${NC}"
         cd ..
         exit 1
-    elif [[ -n "$error_count" && "$error_count" -gt 0 ]]; then
-        warning "⚠️  ${error_count} frontend linting issues found (mostly third-party components)"
+    elif [[ "$error_count" -gt 0 ]]; then
+        warning "⚠️  ${error_count} frontend linting issues found (acceptable for production)"
     fi
     
     # Run TypeScript compilation check - this is critical
-    if ! npm run typecheck > /dev/null 2>&1; then
-        error "🚨 FRONTEND TYPE CHECKING FAILED - BLOCKING!"
+    if ! npm run build > /dev/null 2>&1; then
+        error "🚨 FRONTEND BUILD FAILED - BLOCKING!"
         echo -e "${RED}TypeScript compilation failed. This prevents the app from building.${NC}"
         echo -e "${RED}Run the following to see errors:${NC}"
-        echo "  cd $FRONTEND_DIR && npm run typecheck"
+        echo "  cd $FRONTEND_DIR && npm run build"
         echo ""
         echo -e "${YELLOW}All TypeScript compilation errors must be resolved${NC}"
         cd ..
@@ -200,7 +200,7 @@ kill_existing_processes() {
     pkill -f "uvicorn.*hci_extractor" || true
     
     # Kill existing frontend processes
-    pkill -f "next dev" || true
+    pkill -f "vite" || true
     
     # Wait a moment for processes to stop
     sleep 2
@@ -267,12 +267,12 @@ show_success_message() {
     echo "3. Wait for AI extraction to complete"
     echo "4. See highlighted Goals, Methods, and Results!"
     echo
-    echo -e "${PURPLE}Controls:${NC}"
-    echo "• Adjust highlight opacity and count"
-    echo "• Filter by AI confidence threshold"
-    echo "• Upload new PDFs anytime"
+    echo -e "${PURPLE}Features:${NC}"
+    echo "• Color-coded markup highlights (blue, amber, rose)"
+    echo "• Chunked processing for large documents"
+    echo "• Text cleaning preserves references"
     echo
-    echo -e "${CYAN}To stop HCIBrain:${NC} ${YELLOW}Ctrl+C${NC} or run: ${YELLOW}pkill -f 'uvicorn\\|next dev'${NC}"
+    echo -e "${CYAN}To stop HCIBrain:${NC} ${YELLOW}Ctrl+C${NC} or run: ${YELLOW}pkill -f 'uvicorn\\|vite'${NC}"
     echo
     echo -e "${YELLOW}Logs:${NC} $BACKEND_LOG (backend) | $FRONTEND_LOG (frontend)"
     echo
@@ -282,7 +282,7 @@ cleanup() {
     echo
     log "Shutting down HCIBrain..."
     pkill -f "uvicorn.*hci_extractor" || true
-    pkill -f "next dev" || true
+    pkill -f "vite" || true
     success "HCIBrain stopped"
     exit 0
 }
@@ -330,7 +330,7 @@ case "${1:-}" in
     "stop")
         log "Stopping HCIBrain..."
         pkill -f "uvicorn.*hci_extractor" || true
-        pkill -f "next dev" || true
+        pkill -f "vite" || true
         success "HCIBrain stopped"
         exit 0
         ;;
