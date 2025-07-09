@@ -2,7 +2,10 @@
 
 import logging
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type, TypeVar, Union
+
+if TYPE_CHECKING:
+    from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
 
 logger = logging.getLogger(__name__)
 
@@ -41,19 +44,27 @@ class DIContainer:
         self._resolving: set[Type[Any]] = set()  # Track circular dependency resolution
 
     def register_singleton(
-        self, service_type: Type[T], implementation: Union[Type[T], Callable[..., T]],
+        self,
+        service_type: Type[T],
+        implementation: Union[Type[T], Callable[..., T]],
     ) -> None:
         """Register a singleton service."""
         self._services[service_type] = ServiceDescriptor(
-            service_type, implementation, ServiceLifetime.SINGLETON,
+            service_type,
+            implementation,
+            ServiceLifetime.SINGLETON,
         )
 
     def register_transient(
-        self, service_type: Type[T], implementation: Union[Type[T], Callable[..., T]],
+        self,
+        service_type: Type[T],
+        implementation: Union[Type[T], Callable[..., T]],
     ) -> None:
         """Register a transient service."""
         self._services[service_type] = ServiceDescriptor(
-            service_type, implementation, ServiceLifetime.TRANSIENT,
+            service_type,
+            implementation,
+            ServiceLifetime.TRANSIENT,
         )
 
     def register_factory(
@@ -64,13 +75,18 @@ class DIContainer:
     ) -> None:
         """Register a service with a factory function."""
         self._services[service_type] = ServiceDescriptor(
-            service_type, factory, lifetime, factory,
+            service_type,
+            factory,
+            lifetime,
+            factory,
         )
 
     def register_instance(self, service_type: Type[T], instance: T) -> None:
         """Register a specific instance as a singleton."""
         self._services[service_type] = ServiceDescriptor(
-            service_type, type(instance), ServiceLifetime.SINGLETON,
+            service_type,
+            type(instance),
+            ServiceLifetime.SINGLETON,
         )
         self._singletons[service_type] = instance
 
@@ -167,11 +183,21 @@ def configure_services(container: DIContainer) -> None:
         return ExtractorConfig.from_configuration_data(config_data, config_service)
 
     container.register_factory(
-        ExtractorConfig, create_configuration, ServiceLifetime.SINGLETON,
+        ExtractorConfig,
+        create_configuration,
+        ServiceLifetime.SINGLETON,
     )
 
     # Register event bus as singleton
     container.register_singleton(EventBus, EventBus)
+
+    # Register metrics collector as singleton
+    from hci_extractor.core.metrics import MetricsCollector
+
+    container.register_singleton(MetricsCollector, MetricsCollector)
+
+    # Note: ErrorClassifier removed - complex error classification not needed
+    # Simple error handling is sufficient for this use case
 
     # Register prompt manager as singleton
     container.register_singleton(PromptManager, PromptManager)
@@ -179,10 +205,14 @@ def configure_services(container: DIContainer) -> None:
     # Register markup prompt loader as singleton
     def create_markup_prompt_loader(config: ExtractorConfig) -> "MarkupPromptLoader":
         from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+        
         prompts_dir = config.prompts_directory
         return MarkupPromptLoader(prompts_dir)
 
-    container.register_factory("MarkupPromptLoader", create_markup_prompt_loader)
+    # Import the actual class for registration
+    from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+
+    container.register_factory(MarkupPromptLoader, create_markup_prompt_loader)
 
     # Register PDF extractor factory with config dependency
     def create_pdf_extractor(config: ExtractorConfig) -> PdfExtractor:
@@ -193,41 +223,72 @@ def configure_services(container: DIContainer) -> None:
     # Register retry handler factory that creates instances with dependencies
     def create_retry_handler(event_bus: EventBus) -> RetryHandler:
         return RetryHandler(
-            operation_name="default_operation", publish_events=True, event_bus=event_bus,
+            operation_name="default_operation",
+            publish_events=True,
+            event_bus=event_bus,
         )
 
     container.register_factory(RetryHandler, create_retry_handler)
 
-    # Register LLM provider factory (GeminiProvider implementation)
-    def create_gemini_provider(
-        config: ExtractorConfig, event_bus: EventBus, prompt_manager: PromptManager,
-        markup_prompt_loader: "MarkupPromptLoader",
-    ) -> GeminiProvider:
+    # Register LLM provider factory (configurable based on provider_type)
+    def create_llm_provider(
+        config: ExtractorConfig,
+        event_bus: EventBus,
+        prompt_manager: PromptManager,
+        markup_prompt_loader: MarkupPromptLoader,
+    ) -> LLMProvider:
         from hci_extractor.providers.provider_config import (
             ExtractorConfigurationAdapter,
         )
 
-        # Create provider-specific configuration adapter
-        config_adapter = ExtractorConfigurationAdapter(config)
-        provider_config = config_adapter.get_gemini_config()
+        provider_type = config.api.provider_type.lower()
 
-        return GeminiProvider(
-            provider_config=provider_config,
-            event_bus=event_bus,
-            prompt_manager=prompt_manager,
-            markup_prompt_loader=markup_prompt_loader,
-            model_name=config.analysis.model_name,
+        if provider_type == "gemini":
+            from hci_extractor.providers.gemini_provider import GeminiProvider
+
+            # Create provider-specific configuration adapter
+            config_adapter = ExtractorConfigurationAdapter(config)
+            provider_config = config_adapter.get_gemini_config()
+
+            return GeminiProvider(
+                provider_config=provider_config,
+                event_bus=event_bus,
+                prompt_manager=prompt_manager,
+                markup_prompt_loader=markup_prompt_loader,
+                model_name=config.analysis.model_name,
+            )
+        raise ValueError(f"Unsupported provider type: {provider_type}")
+
+    # Register the configurable provider factory for the abstract interface
+    container.register_factory(LLMProvider, create_llm_provider)
+
+    # Also register GeminiProvider specifically for backward compatibility
+    def create_gemini_provider(
+        config: ExtractorConfig,
+        event_bus: EventBus,
+        prompt_manager: PromptManager,
+        markup_prompt_loader: "MarkupPromptLoader",
+    ) -> GeminiProvider:
+        provider = create_llm_provider(
+            config,
+            event_bus,
+            prompt_manager,
+            markup_prompt_loader,
         )
+        if not isinstance(provider, GeminiProvider):
+            raise TypeError(
+                "GeminiProvider requested but different provider configured"
+            )
+        return provider
 
-    # Register as both the concrete type and the interface
     container.register_factory(GeminiProvider, create_gemini_provider)
-    # Note: LLMProvider is abstract, register concrete implementation
-    container.register_factory(LLMProvider, create_gemini_provider)  # type: ignore
 
     # Register LLMSectionProcessor factory
     # Register LLMSectionProcessor factory
     def create_section_processor(
-        llm_provider: LLMProvider, config: ExtractorConfig, event_bus: EventBus,
+        llm_provider: LLMProvider,
+        config: ExtractorConfig,
+        event_bus: EventBus,
     ) -> Any:  # Using Any to avoid circular import
         from hci_extractor.core.analysis import LLMSectionProcessor
 
@@ -240,12 +301,16 @@ def configure_services(container: DIContainer) -> None:
 
     # Register domain services
     def create_section_analysis_service(
-        llm_provider: LLMProvider, config: ExtractorConfig, event_bus: EventBus,
+        llm_provider: LLMProvider,
+        config: ExtractorConfig,
+        event_bus: EventBus,
     ) -> SectionAnalysisService:
         return SectionAnalysisService(llm_provider, config, event_bus)
 
     def create_paper_summary_service(
-        llm_provider: LLMProvider, config: ExtractorConfig, event_bus: EventBus,
+        llm_provider: LLMProvider,
+        config: ExtractorConfig,
+        event_bus: EventBus,
     ) -> PaperSummaryService:
         return PaperSummaryService(llm_provider, config, event_bus)
 

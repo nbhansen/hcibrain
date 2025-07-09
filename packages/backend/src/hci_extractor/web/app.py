@@ -1,12 +1,8 @@
 """FastAPI application setup."""
 
-from pathlib import Path
-from typing import Union
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 
 from hci_extractor.core.models import (
     ConfigurationError,
@@ -42,9 +38,13 @@ def create_app() -> FastAPI:
     # Add CORS middleware for frontend development
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Configure appropriately for production
+        allow_origins=[
+            "http://localhost:5173",  # Vite dev server
+            "http://127.0.0.1:5173",  # Alternative localhost
+            "http://localhost:3000",  # Common React dev port
+        ],
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 
@@ -60,19 +60,10 @@ def create_app() -> FastAPI:
     app.include_router(extract.router, prefix="/api/v1", tags=["extraction"])
     app.include_router(websocket.router, prefix="/api/v1", tags=["progress"])
 
-    # Mount static files
-    static_path = Path(__file__).parent / "static"
-    if static_path.exists():
-        app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
-
-    # Serve the main UI page at root
+    # Redirect root to API documentation
     @app.get("/", include_in_schema=False, response_model=None)
-    async def root():
-        """Serve the main UI page."""
-        index_path = static_path / "index.html"
-        if index_path.exists():
-            return FileResponse(str(index_path))
-        # Fallback to API docs if UI not available
+    async def root() -> RedirectResponse:
+        """Redirect to API documentation."""
         return RedirectResponse(url="/docs")
 
     return app
