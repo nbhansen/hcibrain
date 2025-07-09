@@ -19,6 +19,7 @@ from hci_extractor.core.models.exceptions import (
     RateLimitError,
 )
 from hci_extractor.prompts import PromptManager
+from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
 from hci_extractor.providers.base import LLMProvider
 from hci_extractor.providers.provider_config import LLMProviderConfig
 from hci_extractor.utils.retry_handler import RetryPolicy, RetryStrategy
@@ -34,6 +35,7 @@ class GeminiProvider(LLMProvider):
         provider_config: LLMProviderConfig,
         event_bus: EventBus,
         prompt_manager: Optional[PromptManager] = None,
+        markup_prompt_loader: Optional[MarkupPromptLoader] = None,
         model_name: str = "gemini-1.5-flash",
     ):
         """
@@ -43,6 +45,7 @@ class GeminiProvider(LLMProvider):
             provider_config: Provider-specific configuration
             event_bus: Event bus for publishing events
             prompt_manager: PromptManager instance for prompt templates
+            markup_prompt_loader: MarkupPromptLoader for markup generation prompts
             model_name: Gemini model to use
         """
         # Initialize base class with provider-specific configuration
@@ -50,6 +53,9 @@ class GeminiProvider(LLMProvider):
 
         # Initialize PromptManager for this provider
         self.prompt_manager = prompt_manager or PromptManager()
+
+        # Initialize markup prompt loader
+        self.markup_prompt_loader = markup_prompt_loader
 
         # Get API key from provider configuration
         self.api_key = provider_config.api_key
@@ -69,7 +75,7 @@ class GeminiProvider(LLMProvider):
             max_output_tokens=provider_config.max_output_tokens,
             response_mime_type="application/json",  # Force JSON output
         )
-        
+
         # Separate configuration for markup generation (plain text, no JSON)
         self.markup_generation_config = genai.types.GenerationConfig(
             temperature=0.1,  # Lower temperature for more consistent markup
@@ -156,7 +162,7 @@ class GeminiProvider(LLMProvider):
 
 
         except Exception as e:
-            logger.exception(f"Gemini API error for summary generation")
+            logger.exception("Gemini API error for summary generation")
             if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
                 raise
             raise GeminiApiError()
@@ -172,80 +178,84 @@ class GeminiProvider(LLMProvider):
         Returns:
             Full text with HTML markup tags for highlights
         """
-        from hci_extractor.core.text import create_markup_chunking_service, ChunkingMode
         import asyncio
-        
+
+        from hci_extractor.core.text import ChunkingMode, create_markup_chunking_service
+
         try:
             # DEBUG: Log input details
             logger.info(f"🔍 MARKUP DEBUG - Input text length: {len(full_text)}")
-            logger.info(f"🔍 MARKUP DEBUG - First 200 chars: {repr(full_text[:200])}")
-            logger.info(f"🔍 MARKUP DEBUG - Last 200 chars: {repr(full_text[-200:])}")
-            
+            logger.info(f"🔍 MARKUP DEBUG - First 200 chars: {full_text[:200]!r}")
+            logger.info(f"🔍 MARKUP DEBUG - Last 200 chars: {full_text[-200:]!r}")
+
             # Check if we need chunking (conservative limit to ensure reliability)
             max_single_chunk_size = 15000  # Conservative limit for reliable processing
-            
+
             if len(full_text) <= max_single_chunk_size:
                 logger.info("🔍 MARKUP DEBUG - Text fits in single chunk, processing directly")
                 return await self._process_single_chunk(full_text)
-            
+
             # Use chunking for large documents
             logger.info("🔍 MARKUP DEBUG - Text too large, using chunking approach")
             chunking_service = create_markup_chunking_service(ChunkingMode.SENTENCE_BASED)
-            
+
             # Prepare chunks with overlap for context continuity
             chunks = chunking_service.prepare_chunks_for_markup(
                 text=full_text,
                 max_chunk_size=12000,  # Leave room for prompt overhead
-                overlap_size=300  # Moderate overlap for context
+                overlap_size=300,  # Moderate overlap for context
             )
-            
+
             logger.info(f"🔍 MARKUP DEBUG - Created {len(chunks)} chunks for processing")
-            
+
             # Process chunks with rate limiting
             marked_chunks = []
             for i, chunk in enumerate(chunks):
                 print(f"🔄 Processing chunk {i+1}/{len(chunks)} ({len(chunk)} chars)")
-                print(f"   First 100 chars: {repr(chunk[:100])}")
+                print(f"   First 100 chars: {chunk[:100]!r}")
                 logger.info(f"🔍 MARKUP DEBUG - Processing chunk {i+1}/{len(chunks)} ({len(chunk)} chars)")
-                
+
                 try:
                     marked_chunk = await self._process_single_chunk(chunk, chunk_index=i+1, total_chunks=len(chunks))
-                    
+
                     print(f"✅ Chunk {i+1} complete ({len(marked_chunk)} chars output)")
-                    print(f"   First 100 chars of result: {repr(marked_chunk[:100])}")
-                    
+                    print(f"   First 100 chars of result: {marked_chunk[:100]!r}")
+
                     marked_chunks.append(marked_chunk)
-                    
+
                     # Rate limiting between chunks
                     if i < len(chunks) - 1:  # Don't wait after last chunk
                         await asyncio.sleep(0.5)
-                        
+
                 except Exception as e:
                     print(f"❌ Chunk {i+1} failed: {e}")
                     logger.warning(f"🔍 MARKUP DEBUG - Chunk {i+1} failed: {e}, using original text")
                     marked_chunks.append(chunk)  # Fallback to unmarked text
-            
+
             # Merge chunks back together
             full_marked_text = self._merge_marked_chunks(marked_chunks)
-            
+
             logger.info(f"🔍 MARKUP DEBUG - Final merged text: {len(full_marked_text)} chars")
-            logger.info(f"🔍 MARKUP DEBUG - Merged first 200 chars: {repr(full_marked_text[:200])}")
-            logger.info(f"🔍 MARKUP DEBUG - Merged last 200 chars: {repr(full_marked_text[-200:])}")
-            
+            logger.info(f"🔍 MARKUP DEBUG - Merged first 200 chars: {full_marked_text[:200]!r}")
+            logger.info(f"🔍 MARKUP DEBUG - Merged last 200 chars: {full_marked_text[-200:]!r}")
+
             return full_marked_text
-            
+
         except Exception as e:
-            logger.exception(f"Gemini API error for markup generation")
+            logger.exception("Gemini API error for markup generation")
             if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
                 raise
             raise GeminiApiError()
-    
+
     async def _process_single_chunk(self, text: str, chunk_index: int = 1, total_chunks: int = 1) -> str:
         """Process a single chunk of text for markup generation."""
-        # Create prompt for markup generation
-        chunk_info = f" (chunk {chunk_index}/{total_chunks})" if total_chunks > 1 else ""
-        
-        prompt = f"""
+        # Generate prompt using prompt loader if available, otherwise fallback to hardcoded
+        if self.markup_prompt_loader:
+            prompt = self.markup_prompt_loader.get_markup_prompt(text, chunk_index, total_chunks)
+        else:
+            # Fallback to hardcoded prompt (for backwards compatibility)
+            chunk_info = f" (chunk {chunk_index}/{total_chunks})" if total_chunks > 1 else ""
+            prompt = f"""
 You are an expert at analyzing academic papers. Please read the following paper text{chunk_info} and perform TWO tasks:
 
 TASK 1 - CLEAN THE TEXT:
@@ -276,41 +286,41 @@ Rules:
 Paper text:
 {text}
 """
-        
+
         logger.info(f"🔍 MARKUP DEBUG - Single chunk prompt length: {len(prompt)}")
-        
+
         # Make API request with markup-specific config (plain text, not JSON)
         response = await self._make_markup_api_request(prompt)
-        
-        # DEBUG: Log raw response details  
+
+        # DEBUG: Log raw response details
         raw_response = response["raw_response"]
         logger.info(f"🔍 MARKUP DEBUG - Chunk response length: {len(raw_response)}")
-        
+
         return raw_response.strip()
-    
+
     def _merge_marked_chunks(self, marked_chunks: list[str]) -> str:
         """Merge marked chunks back together, handling overlap intelligently."""
         if not marked_chunks:
             return ""
-        
+
         if len(marked_chunks) == 1:
             return marked_chunks[0]
-        
+
         # Simple merge - join with double newlines to preserve structure
         # TODO: Could be enhanced to detect and remove duplicate content from overlaps
         merged = marked_chunks[0]
-        
+
         for chunk in marked_chunks[1:]:
             # Add paragraph break between chunks
             merged += "\n\n" + chunk
-        
+
         return merged
 
     async def _make_markup_api_request(self, prompt: str, **kwargs: Any) -> Dict[str, Any]:
         """Make API request to Gemini for markup generation - plain text output."""
         try:
-            logger.info(f"🔍 MARKUP DEBUG - Making Gemini API request with plain text config")
-            
+            logger.info("🔍 MARKUP DEBUG - Making Gemini API request with plain text config")
+
             # Generate content using Gemini with markup-specific config
             response = await self.model.generate_content_async(
                 prompt, generation_config=self.markup_generation_config, **kwargs,

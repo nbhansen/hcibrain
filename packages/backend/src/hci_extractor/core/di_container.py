@@ -176,6 +176,14 @@ def configure_services(container: DIContainer) -> None:
     # Register prompt manager as singleton
     container.register_singleton(PromptManager, PromptManager)
 
+    # Register markup prompt loader as singleton
+    def create_markup_prompt_loader(config: ExtractorConfig) -> "MarkupPromptLoader":
+        from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+        prompts_dir = config.prompts_directory
+        return MarkupPromptLoader(prompts_dir)
+
+    container.register_factory("MarkupPromptLoader", create_markup_prompt_loader)
+
     # Register PDF extractor factory with config dependency
     def create_pdf_extractor(config: ExtractorConfig) -> PdfExtractor:
         return PdfExtractor(config=config)
@@ -193,6 +201,7 @@ def configure_services(container: DIContainer) -> None:
     # Register LLM provider factory (GeminiProvider implementation)
     def create_gemini_provider(
         config: ExtractorConfig, event_bus: EventBus, prompt_manager: PromptManager,
+        markup_prompt_loader: "MarkupPromptLoader",
     ) -> GeminiProvider:
         from hci_extractor.providers.provider_config import (
             ExtractorConfigurationAdapter,
@@ -206,6 +215,7 @@ def configure_services(container: DIContainer) -> None:
             provider_config=provider_config,
             event_bus=event_bus,
             prompt_manager=prompt_manager,
+            markup_prompt_loader=markup_prompt_loader,
             model_name=config.analysis.model_name,
         )
 
