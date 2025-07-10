@@ -120,10 +120,18 @@ function App() {
 
     const headings = markupContentRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6');
     
-    // Add IDs to headings for navigation
-    headings.forEach((heading, index) => {
-      heading.id = `heading-${index}`;
+    // Add IDs to headings for navigation and update TOC items with element references
+    const updatedTocItems = tocItems.map((item, index) => {
+      const heading = headings[index];
+      if (heading) {
+        heading.id = item.id; // Use the same ID from TOC generation
+        return { ...item, element: heading as HTMLElement };
+      }
+      return item;
     });
+    
+    // Update TOC items with element references
+    setTocItems(updatedTocItems);
 
     // Create intersection observer
     const options = {
@@ -154,7 +162,7 @@ function App() {
         observerRef.current.observe(heading);
       }
     });
-  }, []);
+  }, [tocItems]);
 
   // Handle TOC item click with smooth scrolling
   const handleTocClick = useCallback((itemId: string) => {
@@ -188,13 +196,18 @@ function App() {
     if (markupResult?.paper_full_text_with_markup) {
       const toc = generateTOC(markupResult.paper_full_text_with_markup);
       setTocItems(toc);
-      
+    }
+  }, [markupResult, generateTOC]);
+
+  // Setup intersection observer when TOC items are ready
+  useEffect(() => {
+    if (tocItems.length > 0 && markupResult) {
       // Setup observer after DOM is updated
       setTimeout(() => {
         setupIntersectionObserver();
       }, 100);
     }
-  }, [markupResult, generateTOC, setupIntersectionObserver]);
+  }, [tocItems, markupResult, setupIntersectionObserver]);
 
   // Cleanup observer on unmount
   useEffect(() => {
