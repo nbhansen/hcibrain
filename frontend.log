@@ -3,19 +3,7 @@
 > vite
 
 
-  VITE v7.0.3  ready in 348 ms
+  VITE v7.0.3  ready in 165 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-09.42.25 [vite] (client) hmr update /src/App.tsx
-09.42.26 [vite] (client) ✨ new dependencies optimized: dompurify
-09.42.26 [vite] (client) ✨ optimized dependencies changed. reloading
-09.42.30 [vite] (client) hmr update /src/App.tsx
-10.11.16 [vite] (client) hmr update /src/App.tsx
-10.14.06 [vite] (client) hmr update /src/App.tsx
-10.14.13 [vite] (client) hmr update /src/App.tsx
-10.14.44 [vite] (client) hmr update /src/App.tsx
-10.14.55 [vite] (client) hmr update /src/App.tsx
-10.15.05 [vite] (client) hmr update /src/App.tsx
-10.15.15 [vite] (client) hmr update /src/App.tsx
-11.33.24 [vite] (client) page reload src/main.tsx
