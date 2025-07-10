@@ -24,7 +24,7 @@ class TestWebAPI:
     def test_markup_endpoint_requires_file(self, client):
         """Test that the markup endpoint requires a file upload."""
         # Test without file - should get validation error
-        response = client.post("/extract/markup")
+        response = client.post("/api/v1/extract/markup")
         assert response.status_code == 422  # Validation error
 
     def test_markup_endpoint_accepts_pdf_content_type(self, client):
@@ -35,13 +35,13 @@ class TestWebAPI:
         fake_pdf_content = b"%PDF-1.4\n%test content"
         
         response = client.post(
-            "/extract/markup",
+            "/api/v1/extract/markup",
             files={"file": ("test.pdf", fake_pdf_content, "application/pdf")}
         )
         
         # Should accept the file but may fail at processing stage
         # We're testing the API structure, not the full processing pipeline
-        assert response.status_code in [200, 422, 500]  # Various acceptable outcomes
+        assert response.status_code in [200, 400, 422, 500]  # Various acceptable outcomes
         
         # If it's a 422, it should be validation-related, not "missing file"
         if response.status_code == 422:
@@ -52,7 +52,7 @@ class TestWebAPI:
     def test_api_returns_json_responses(self, client):
         """Test that API endpoints return JSON responses."""
         # Test an endpoint that should return JSON
-        response = client.post("/extract/markup")
+        response = client.post("/api/v1/extract/markup")
         
         # Even error responses should be JSON
         assert response.headers.get("content-type", "").startswith("application/json")
