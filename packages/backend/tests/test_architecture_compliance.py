@@ -203,6 +203,7 @@ class TestHexagonalArchitectureCompliance:
 
     def test_providers_implement_abstractions(self):
         """Test that providers implement proper abstract interfaces."""
+        from hci_extractor.providers.gemini_provider import GeminiProvider
         
         # Test that GeminiProvider properly implements LLMProvider
         assert issubclass(GeminiProvider, LLMProvider), (
@@ -276,6 +277,7 @@ class TestProviderArchitectureCompliance:
 
     def test_provider_no_direct_environment_access(self):
         """Test that providers don't directly access environment variables."""
+        from hci_extractor.providers.gemini_provider import GeminiProvider
 
         # Check the source code for os.getenv calls
         source_file = inspect.getfile(GeminiProvider)
@@ -429,7 +431,7 @@ class TestCodebaseStructuralCompliance:
             from hci_extractor.core.events import EventBus
             from hci_extractor.core.models import Paper
             from hci_extractor.providers.base import LLMProvider
-                    except ImportError as e:
+        except ImportError as e:
             pytest.fail(f"Circular import detected: {e}")
 
     def test_src_directory_structure(self):
