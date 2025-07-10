@@ -7,13 +7,14 @@ from typing import Any, Dict, Optional
 
 from hci_extractor.core.events import EventBus
 from hci_extractor.core.models import LLMError, LLMValidationError, RateLimitError
+from hci_extractor.core.ports import LLMProviderPort
 from hci_extractor.providers.provider_config import LLMProviderConfig
 from hci_extractor.utils.retry_handler import RetryHandler, RetryPolicy, RetryStrategy
 
 logger = logging.getLogger(__name__)
 
 
-class LLMProvider(ABC):
+class LLMProvider(LLMProviderPort, ABC):
     """Abstract base class for LLM providers."""
 
     def __init__(
@@ -51,7 +52,6 @@ class LLMProvider(ABC):
             )
         else:
             self._retry_handler = retry_handler
-
 
     @abstractmethod
     def validate_response(self, response: Dict[str, Any]) -> bool:

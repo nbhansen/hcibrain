@@ -1,14 +1,13 @@
 """FastAPI dependencies that bridge to existing DI container."""
 
 from functools import lru_cache
-from typing import cast
 
 from fastapi import Depends
 
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.di_container import DIContainer, create_configured_container
 from hci_extractor.core.events import EventBus
-from hci_extractor.providers import LLMProvider
+from hci_extractor.core.ports.llm_provider_port import LLMProviderPort
 from hci_extractor.web.progress import WebSocketManager
 
 
@@ -41,7 +40,9 @@ def get_extractor_config(
     return container.resolve(ExtractorConfig)
 
 
-def get_llm_provider(container: DIContainer = Depends(get_container)) -> LLMProvider:
+def get_llm_provider(
+    container: DIContainer = Depends(get_container),
+) -> LLMProviderPort:
     """
     FastAPI dependency that resolves LLMProvider from DI container.
 
@@ -51,7 +52,7 @@ def get_llm_provider(container: DIContainer = Depends(get_container)) -> LLMProv
     Returns:
         Configured LLM provider instance
     """
-    return cast(LLMProvider, container.resolve(LLMProvider))
+    return container.resolve(LLMProviderPort)
 
 
 def get_event_bus(container: DIContainer = Depends(get_container)) -> EventBus:
@@ -67,7 +68,9 @@ def get_event_bus(container: DIContainer = Depends(get_container)) -> EventBus:
     return container.resolve(EventBus)
 
 
-def get_websocket_manager(container: DIContainer = Depends(get_container)) -> WebSocketManager:
+def get_websocket_manager(
+    container: DIContainer = Depends(get_container),
+) -> WebSocketManager:
     """
     FastAPI dependency that resolves WebSocketManager from DI container.
 

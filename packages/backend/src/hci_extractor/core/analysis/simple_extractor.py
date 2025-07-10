@@ -37,7 +37,7 @@ from hci_extractor.core.models import (
     Paper,
     PdfError,
 )
-from hci_extractor.providers import LLMProvider
+from hci_extractor.core.ports import LLMProviderPort
 
 from .section_detector import detect_sections
 from .section_processor import LLMSectionProcessor, process_sections_batch
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 async def extract_paper_simple(
     pdf_path: Path,
-    llm_provider: LLMProvider,
+    llm_provider: LLMProviderPort,
     config: ExtractorConfig,
     event_bus: EventBus,
     paper_metadata: Optional[Dict[str, Any]] = None,
@@ -400,7 +400,7 @@ def _create_paper_from_metadata(
 
 async def extract_multiple_papers(
     pdf_paths: List[Path],
-    llm_provider: LLMProvider,
+    llm_provider: LLMProviderPort,
     config: ExtractorConfig,
     event_bus: EventBus,
     papers_metadata: Optional[List[Dict[str, Any]]] = None,
@@ -504,7 +504,7 @@ async def extract_multiple_papers(
 
 async def _generate_paper_summary(
     sections: tuple[Any, ...],
-    llm_provider: LLMProvider,
+    llm_provider: LLMProviderPort,
     paper_id: str,
 ) -> Optional[Dict[str, Any]]:
     """
@@ -566,7 +566,7 @@ async def _generate_paper_summary(
 
 def extract_paper_sync(
     pdf_path: Path,
-    llm_provider: LLMProvider,
+    llm_provider: LLMProviderPort,
     config: ExtractorConfig,
     event_bus: EventBus,
     paper_metadata: Optional[Dict[str, Any]] = None,

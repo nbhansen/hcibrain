@@ -1,0 +1,210 @@
+# HCIBrain Monorepo - Root Configuration
+# This defines the workspace and consolidates Python tooling configuration
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hcibrain"
+version = "0.1.0"
+description = "HCI Brain - Academic Paper Analysis Platform (Full-Stack Monorepo)"
+authors = [{name = "HCIBrain Team"}]
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+
+# No runtime dependencies at workspace level - install backend separately
+
+# Consolidated development dependencies for the entire workspace
+[project.optional-dependencies]
+dev = [
+    # Core testing and quality tools
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    
+    # Code formatting and linting
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    
+    # Type checking
+    "mypy>=1.0.0",
+    
+    # Security and code quality analysis
+    "bandit>=1.7.0",
+    "radon>=6.0.0",
+    "vulture>=2.0.0",
+]
+
+# No scripts at workspace level - use backend package directly
+
+# Build configuration - this is a tools-only workspace
+[tool.hatch.build.targets.wheel]
+packages = []  # No source packages to include
+
+# =============================================================================
+# Development Tool Configurations (Inherited from Backend)
+# =============================================================================
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+# Apply to both backend and any Python scripts in root
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | node_modules
+    | packages/frontend
+)/
+'''
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+# Scan backend package and root-level Python files
+files = ["packages/backend/src", "scripts"]
+exclude = [
+    "packages/frontend/",
+    "node_modules/",
+    "packages/backend/venv/",
+]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+# Include backend source and root scripts
+include = ["packages/backend/src/**/*.py", "packages/backend/tests/**/*.py", "scripts/**/*.py"]
+exclude = [
+    "packages/frontend",
+    "node_modules", 
+    "packages/backend/venv",
+    ".git",
+    "__pycache__",
+    "*.egg-info",
+    ".pytest_cache",
+    ".mypy_cache",
+]
+
+[tool.ruff.lint]
+# Comprehensive rule set from backend configuration
+select = [
+    # Current rules
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "W",    # pycodestyle warnings
+    
+    # Code complexity and quality
+    "C90",  # mccabe complexity
+    "B",    # flake8-bugbear (catches common bugs)
+    "C4",   # flake8-comprehensions
+    "S",    # flake8-bandit (security)
+    "A",    # flake8-builtins
+    "COM",  # flake8-commas
+    "DTZ",  # flake8-datetimez
+    "T10",  # flake8-debugger
+    "ISC",  # flake8-implicit-str-concat
+    "PIE",  # flake8-pie
+    "PT",   # flake8-pytest-style
+    "Q",    # flake8-quotes
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
+    "ERA",  # eradicate (commented code)
+    "PL",   # pylint
+    "TRY",  # tryceratops (exception handling)
+    "RUF",  # ruff-specific rules
+]
+
+ignore = [
+    # Documentation (we'll enable gradually)
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+    "D200", "D205", "D212", "D400", "D401", "D415",
+    
+    # Annotations (we'll enable gradually)
+    "ANN001", "ANN002", "ANN003", "ANN101", "ANN102", "ANN201", "ANN202",
+    
+    # Allow TODO comments for now
+    "TD002", "TD003", "FIX002",
+    
+    # Allow magic numbers for now
+    "PLR2004",
+    
+    # Allow complex functions for now (we'll fix these)
+    "PLR0912", "PLR0913", "PLR0915",
+    # Interface and infrastructure patterns
+    "ARG001", "ARG002", "ARG003",  # Unused arguments common in interfaces
+    "PLC0415",  # Import outside top-level (common in CLI and lazy loading)
+    "B904",     # Raise without from (acceptable in domain boundaries)
+    "TRY003",   # Vanilla exceptions (acceptable for domain-specific errors)
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+"packages/backend/tests/*" = ["S101", "ARG", "PLR2004"]  # Allow assert, unused args, magic numbers in tests
+"scripts/*" = ["T201"]  # Allow print statements in scripts
+"packages/backend/src/hci_extractor/cli/commands.py" = ["C901", "PLR0912", "PLR0915", "F401", "RUF001", "E501"]  # Allow CLI complexity and detection imports
+"packages/backend/src/hci_extractor/web/routes/*" = ["B008", "E501", "SIM105"]  # Allow FastAPI patterns, long lines, OSError handling
+"packages/backend/src/hci_extractor/cli/command_modules/*" = ["PLC0415", "C901", "PTH123", "TRY301", "E501"]  # Allow CLI complexity patterns
+
+# =============================================================================
+# Testing Configuration
+# =============================================================================
+
+[tool.pytest.ini_options]
+testpaths = ["packages/backend/tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=packages/backend/src",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-report=html",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["packages/backend/src"]
+omit = [
+    "packages/backend/tests/*",
+    "packages/backend/venv/*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+    "packages/frontend/*",
+    "node_modules/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

@@ -256,22 +256,12 @@ Paper text:
         return raw_response.strip()
 
     def _merge_marked_chunks(self, marked_chunks: list[str]) -> str:
-        """Merge marked chunks back together with paragraph breaks."""
-        if not marked_chunks:
-            return ""
+        """Merge marked chunks using domain service."""
+        from hci_extractor.core.domain.text_processing_service import (
+            TextProcessingService,
+        )
 
-        if len(marked_chunks) == 1:
-            return marked_chunks[0]
-
-        # Simple merge - join with double newlines to preserve structure
-        # The chunking service handles overlap intelligently, so simple concatenation works well
-        merged = marked_chunks[0]
-
-        for chunk in marked_chunks[1:]:
-            # Add paragraph break between chunks
-            merged += "\n\n" + chunk
-
-        return merged
+        return TextProcessingService.merge_marked_chunks(marked_chunks)
 
     async def _make_markup_api_request(
         self,

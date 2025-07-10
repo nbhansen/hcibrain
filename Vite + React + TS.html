@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://localhost:5173/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="./Vite + React + TS_files/client"></script>
+
+    
+    <link rel="icon" type="image/svg+xml" href="http://localhost:5173/vite.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite + React + TS</title>
+  <style type="text/css" data-vite-dev-id="/home/nbhansen/dev/hcibrain/packages/frontend/src/index.css">:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+</style><style type="text/css" data-vite-dev-id="/home/nbhansen/dev/hcibrain/packages/frontend/src/App.css">/* App Layout */
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #333;
+}
+
+.app-header {
+  background: white;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.app-header p {
+  margin: 0;
+  color: #718096;
+  font-size: 1.1rem;
+}
+
+.app-main {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Upload Section */
+.upload-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.upload-card {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+}
+
+.upload-card h2 {
+  margin: 0 0 2rem 0;
+  color: #2d3748;
+  font-size: 1.8rem;
+}
+
+/* File Input */
+.file-input-wrapper {
+  margin-bottom: 2rem;
+}
+
+#pdf-upload {
+  display: none;
+}
+
+.file-input-label {
+  display: block;
+  padding: 1rem 2rem;
+  background: #f7fafc;
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.file-input-label:hover {
+  border-color: #667eea;
+  background: #edf2f7;
+}
+
+/* Buttons */
+.upload-button, .new-upload-button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-button:hover, .new-upload-button:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+}
+
+/* Progress */
+.processing-status {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  animation: progress-pulse 2s infinite;
+}
+
+@keyframes progress-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.processing-status p {
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0.5rem 0;
+}
+
+.processing-status small {
+  color: #718096;
+  font-style: italic;
+}
+
+/* Error */
+.error-message {
+  background: #fed7d7;
+  color: #c53030;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.error-boundary {
+  padding: 2rem;
+  text-align: center;
+  background: #fed7d7;
+  color: #c53030;
+  border-radius: 8px;
+  margin: 2rem;
+}
+
+/* Results Section */
+.results-section {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.results-header h2 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.8rem;
+}
+
+/* Paper Info */
+.paper-info {
+  padding: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.paper-info h3 {
+  margin: 0 0 1rem 0;
+  color: #2d3748;
+  font-size: 1.4rem;
+  line-height: 1.4;
+}
+
+.paper-info p {
+  margin: 0.5rem 0;
+  color: #4a5568;
+}
+
+/* Markup Legend */
+.markup-legend {
+  padding: 1.5rem 2rem;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.markup-legend h4 {
+  margin: 0 0 1rem 0;
+  color: #2d3748;
+  font-size: 1.2rem;
+}
+
+.legend-items {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.legend-color.goal {
+  background: rgba(59, 130, 246, 0.7); /* blue */
+}
+
+.legend-color.method {
+  background: rgba(245, 158, 11, 0.7); /* amber */
+}
+
+.legend-color.result {
+  background: rgba(244, 63, 94, 0.7); /* rose */
+}
+
+/* Markup Content */
+.markup-content {
+  padding: 2rem;
+  line-height: 1.8;
+  font-size: 1.05rem;
+  color: #2d3748;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Markup highlighting */
+.markup-content goal {
+  background: rgba(59, 130, 246, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  color: #1e40af;
+  border-left: 3px solid #3b82f6;
+  padding-left: 8px;
+  display: inline-block;
+  margin: 2px 0;
+}
+
+.markup-content method {
+  background: rgba(245, 158, 11, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  color: #92400e;
+  border-left: 3px solid #f59e0b;
+  padding-left: 8px;
+  display: inline-block;
+  margin: 2px 0;
+}
+
+.markup-content result {
+  background: rgba(244, 63, 94, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  color: #be185d;
+  border-left: 3px solid #f43f5e;
+  padding-left: 8px;
+  display: inline-block;
+  margin: 2px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-main {
+    padding: 1rem;
+  }
+  
+  .upload-card {
+    padding: 2rem;
+  }
+  
+  .results-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .legend-items {
+    justify-content: center;
+  }
+  
+  .markup-content {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+</style></head>
+  <body>
+    <div id="root"><div class="app"><header class="app-header"><h1>🎓 Academic Paper Markup Assistant</h1><p>Upload a PDF to extract goals, methods, and results with color-coded highlights</p></header><main class="app-main"><div class="results-section"><div class="results-header"><h2>📊 Results</h2><button class="new-upload-button">📄 Upload New PDF</button></div><div class="paper-info"><h3>Extracted Paper</h3><p><strong>Authors:</strong> </p><p><strong>Processing time:</strong> 668.6s</p></div><div class="markup-legend"><h4>📝 Markup Legend:</h4><div class="legend-items"><span class="legend-item"><span class="legend-color goal"></span>Goals &amp; Objectives</span><span class="legend-item"><span class="legend-color method"></span>Methods &amp; Approaches</span><span class="legend-item"><span class="legend-color result"></span>Results &amp; Findings</span></div></div><div class="markup-content"><h3>Abstract</h3>
+<p>Research in HCI and autism has become more focused on involving autistic adults in technological design. <method confidence="0.99">In this paper, we present the results of a scoping review analysis of 11 projects across 18 papers that focused on including autistic adults in the design of technology that impacts their lives.</method> <goal confidence="0.95">This paper contributes a deeper understanding of how autistic adults were involved in participatory design processes.</goal> <result confidence="0.98">Our findings reveal mixed positions on how the lived autistic perspective was harnessed to direct the application of topics and technologies chosen.</result> <result confidence="0.98">Most projects employed infrastructures to enhance participation (e.g., providing multiple modes to participate or employing a tailored methodology).</result> <result confidence="0.90">We pose future opportunities for autistic involvement, for example, in topics and technologies where autistic research is employed (e.g., autism diagnosis and machine learning), reviewing the importance of formal diagnosis for inclusion, and harnessing the multiple expertise of autistic adults.</result></p>
+
+<h3>1 Introduction</h3>
+<p><goal confidence="0.98">In this scoping review, we investigate the involvement of autistic adults1 in technology design.</goal> There has been increasing interest in supporting autistic adults with technology (for example, at home [68, 87] or at work [35, 82]). However, a growing concern relates to the voice autistic people have in designing such technologies [62]. Autistic people are often excluded from research that directly impacts their lives. As advocated by many grassroots autistic groups and researchers [4, 55, 57, 67], embracing the lived experience of autistic people is vital for balanced research, especially where the result directly affects their routine. A 2017 survey revealed that autistics were more likely than non-autistics to describe their social, communication, and empathy styles as differences rather than deficits [37]. This suggests that involving autistics can yield multiple perspectives that could enrich autism research, shifting the imbalances resulting from those led solely by non-autistic people.</p>
+<p>In HCI, the use of Participatory Design (PD) for designing with autistic people has increased in the last ten years [10, 12, 33]. In particular, a strong focus has been on involving autistic children in technology design and evaluation (e.g. [32, 33, 50, 78]). While commendable, as autistic adults require different tools to harness their strengths, analysing their involvement in the design of technologies is also important.</p>
+<p>Some review articles explore the application of particular technology for autistic adults. Almurashi et al. [1] propose a taxonomy of VR systems that support social, life, and safety training for autistic people. Wang and Jeon [83] surveyed assistive technologies for autistic adults. Such studies provide valuable insight into how specific technologies are designed and evaluated. However, they do not focus on involving autistic adults in design; this argument is also raised in a recent but limited review of involving autistic adults in co-design [72]. Further work would be valuable to support the participation of autistic adults in designing meaningful technology.</p>
+<p>We identified some limited reviews. Çorlu et al. [88] investigate how autistic individuals are involved in UX HCI research. Their review looked at a broader range of autistic users (e.g., children) and not exclusively on adults. They are also not limited to participatory design, focusing on usability and UX. Maun et al. [51] (and later in [52]) review participatory design activities with autistic adults. They identified patterns in how activities could be configured to complement the needs of autistic adults, including sensory considerations, communication, and individual differences. <method confidence="0.85">We follow these views; however, we extend them by drawing on PD research that highlights a problem in researchers focusing on singular design activities [41] and a lack of focus on the impact of participatory design processes [11, 42].</method></p>
+<p><goal confidence="0.95">There remains a need to understand holistically how autistic adults were involved in design processes, from decision-making in the topic generation to the end of the project.</goal> We argue that analysing research projects as a whole aids in understanding how</p>
+<p><sup>1</sup>In this article, we use identity-first language (i.e. autistic adult) rather than person-first language (i.e. person with autism), as this has been the preference of the autistic community [84]. Nonetheless, we understand this is not a one-size-fits-all solution and that participatory design ought to value the preferences of each stakeholder.</p>
+
+<p><goal confidence="0.90">There remains a need to understand holistically how autistic adults were involved in design processes, from decision-making in the topic generation to the end of the project.</goal> We argue that analysing research projects as a whole aids in understanding how participatory processes unfolded and were facilitated. This understanding would allow researchers to learn from existing projects and identify potential gaps.</p>
+<p><goal confidence="0.99">To extend this knowledge, this scoping review reflects on the involvement of autistic adults throughout the design process, as opposed to how singular activities were configured.</goal> <goal confidence="0.99">We strive to discover the mechanisms put in place from the beginning (and how these dynamically changed over time) and the medium- to long-term effects they intended to achieve.</goal> The research questions we employed were:</p>
+<ul>
+<li><goal confidence="0.99">How are autistic adults involved in the participatory design process of technology that impacts their daily lives?</goal></li>
+<li><goal confidence="0.99">What opportunities are there for the future involvement of autistic adults in the participatory design of technology?</goal></li>
+</ul>
+<p><method confidence="0.95">To do so, we identified topics and technologies used in papers about autistic adults from our scoping search.</method> <method confidence="0.95">We compared these with the 11 selected projects to understand where autistic voices were included.</method> <method confidence="0.99">We utilised Program Theory to analyse the projects, providing a framework to discuss different factors in the design process [27].</method> <method confidence="0.90">This approach visualises participant involvement, activities, driving principles, and the short- to long-term process effects.</method> <method confidence="0.95">Our analysis takes a strengths-based perspective, which we outline in the next section.</method></p>
+<h2>2 Background</h2>
+<p>This section introduces the strengths-based perspective of autism research, participatory design, Program Theory, and the considerations for supporting autistic and non-autistic interactions in design.</p>
+<h3>2.1 Perspectives for Autism Research</h3>
+<p>Autism research has been framed in three ways. One perspective views the autistic person as having problems that need to be fixed. Infamously, the medical model positions autism as a “deficit” with traits that need to be cured [3]. For instance, the Diagnostic and Statistical Manual of Mental Disorders (DSM-5) is often referred to when diagnosing autism [5]; the diagnostic criteria positions autistic traits as impairments, notably in social relationships, motor movements, and executive functioning. Moreover, the theory of mind positions autistic people as unable to understand the mental states of themselves and others [7]. Autistic people have been characterised as having difficulties seeing the “bigger picture” due to their tendencies to focus on details [34].</p>
+<p>While many autistic people need support in daily life, framing the problem from within the autistic person has been seen as harmful; it promotes a perception that autistic people must change their behaviour and adapt to the context [16, 54, 80]. Thus, they have been contested by autistic advocates because they assume that there is an ideal mind to be attained [43, 45, 80]. Many autistic people engage in self-stimulatory movements, such as hand rocking and fidgeting, that help regulate emotions [46]. Autistic people have sensory preferences and aversions, which impact how they respond in certain contexts [13, 49]. From the medical model, these patterns have been viewed as behaviours that need to be fixed [80]. However, when considered effectively, self-stimulatory movement and sensory information can be stimulating for an autistic individual [80]. In contrast, the social model of disability considers the environment to be the barrier that inhibits autistic people from flourishing [43, 45]. This perspective aims to design environments that are inclusive, balanced, and adaptable to the needs of autistic people.</p>
+<p>Lastly, it is recognised that autism should be considered from a strengths-based perspective. Murray [58] posits that autistic people’s ability to delve into the details enables them to engage in tasks that those who focus on the bigger picture cannot. This demonstrates how attention to detail can be perceived as a strength rather than a deficit. From a strength-based perspective, the preferred outlook for autism is from the lens of neurodiversity. Judy Singer [77] popularised this term to describe that all human minds differ. Those who adopt a strength-based perspective advocate harnessing the strengths of neurodivergent minds (for example, autism, ADHD, dyslexia, etc.) [43, 80]. We refer to the strength-based perspective as neurodiversity-affirmative [43]. This perspective has increased in popularity in HCI in the last ten years [19]. There has been a strong emphasis towards embracing the strengths of autistic children in design by adapting participatory approaches [33, 53, 78].</p>
+<p><method confidence="0.95">We position our analysis of the participatory activities from the neurodiversity-affirmative perspective.</method> We stress the importance of considering the strengths that autistic adults have in participatory design processes. The following section presents how autistic and non-autistic interactions are considered from this perspective.</p>
+<h3>2.2 Autistic and non-autistic interactions</h3>
+<p>Participatory design requires relationship building to sustain efforts within and between stakeholder groups. In the case of autism research, it is critical to consider how interactions may evolve between autistic and non-autistic stakeholders.</p>
+<p>On these interactions, Milton posits that breakdowns in understanding can occur between autistic and non-autistic individuals due to differing world views [57]. These breakdowns result in a “double empathy problem” [57]. Nonetheless, assumptions regarding how social interactions ought to occur tend to ostracise behaviours that fall outside the perceived norm [57]. Thus, there are often misconceptions that autistic people should make changes to their behaviours and communication styles, resulting in a one-sided effort. This may lead to breakdowns in trust, relationships, power, and, ultimately, participation. Similarly, de Jaegher [20, 21] suggests that autistic and non-autistic interactions in participatory processes ought to value the multiple perspectives of stakeholders. The goal is not to assume there is one way of knowing and experiencing the world and to ensure that a singular perspective does not dominate interactions [21]. The principle lies with stakeholders respecting the autistic experience as a valid way to experience the world. The participatory design process is a sustained engagement within and between autistic and non-autistic people. Therefore, ensuring the multiple lived experiences of all autistic stakeholders are central to the design process is critical.</p>
+
+The participatory design process is a sustained engagement within and between autistic and non-autistic people. Therefore, ensuring the multiple lived experiences of all autistic stakeholders are central to the design process is critical.
+
+<h3>2.3 Participation in design processes</h3>
+<goal confidence="0.85">Participatory Design (PD) is concerned with empowering people through design processes [41].</goal> <method confidence="0.95">We draw on a growing body of research that uses Program Theory to analyse the activities and outcomes of participatory efforts ([11, 42]).</method> Recently, this approach has been further developed by Falk et al. [27] who, in a CHI2021 paper, <method confidence="0.90">employed Program Theory as a structured analytical framework to examine and compare various hackathon formats systematically.</method> This approach allowed the authors to explicate underlying assumptions, evaluate effectiveness, and conduct cross-case analysis of different hackathon designs.
+
+Program Theory is a good fit for our agenda for several reasons. While tensions in interactions are always present in any engagement, they manifest differently in autistic and non-autistic interactions [21, 57]. Participatory design takes as the point of departure that: a) it is impossible to understand someone well enough to replace their participation in the design process [41]; b) learning from each other is key to the PD design process [76]; c) users influencing the design process is not just a pragmatic matter: it is an ethical obligation of any designer participating [41]; and d) <goal confidence="0.90">for participatory design to have a long-lasting effort, it is vital that we focus on infrastructuring efforts, that is, embedding our work into the existing lives, communities, and materialities that autistic users live in [23].</goal>
+
+This means that, while all PD would emphasise user involvement, when viewed from a neurodiversity-affirmative lens, <goal confidence="0.95">it becomes urgent to discuss how and why participation in designing technology with autistic users might matter.</goal> Furthermore, it draws our attention to the work done to involve users, allowing us, like Falk et al. [27], to compare and contrast approaches aiming to achieve this goal.
+
+<method confidence="0.90">Program Theory provides a lens for reviewing how participatory processes unfold in projects.</method> It is not a theory, but rather is used to identify how programs (such as participatory design) operate more holistically [42]. <method confidence="0.98">Through Program Theory, clear relationships between the different stages in design processes can be identified by mapping how projects run across their:
+<ul>
+<li>Inputs: tangible or intangible resources available, such as stakeholders and funding;</li>
+<li>Processes: including the activities that take place to respond to specific mechanisms. Mechanisms are principles that the project aims to follow, such as mutual learning, relationship building, and power balance between stakeholders.</li>
+<li>Effects: which could be immediate, but also medium- to long-term goals of the project.</li>
+</ul>
+</method>
+<method confidence="0.95">By employing Program Theory, we can visualise how design processes are considered across projects involving autistic adults.</method>
+In the next section, we will present the lessons learned from other researchers regarding participatory design activities. We view these lessons through the lens of Program Theory, which aided in understanding considerations for facilitating autistic involvement.
+
+<h3>2.4 Lessons from Participatory Research with Autistic Adults</h3>
+While little work reviews the involvement of autistic adults in design, there are accounts of first-hand experiences and responses from relevant stakeholders on their perspectives of participatory research with autistic people and how these could be facilitated. In this section, we will visualise these recommendations using Program Theory, which guided our analysis.
+
+<h4>2.4.1 Inputs.</h4>
+One key input in participatory research with autistic adults is including a diverse range of stakeholders with lived experience, including autistic adults, caregivers, and other relevant stakeholders. Nicoladis et al. [59] recommended considering the multiple expertise of autistics (i.e., as engineers, programmers, designers, and researchers) when formulating research plans. Multiple reflections underscore the value of having autistic researchers on the team, particularly in building trust in the process [22, 31].
+
+Topics and technological applications should be aligned with the needs of autistic individuals to demonstrate respect for the autistic lived experience [30]. <result confidence="0.90">Pellicano et al. [64] revealed how autistic adults in the Australian context felt more connected with participatory projects when their lived experience was valued when shaping the project trajectory.</result>
+
+Ensuring everyone involved knows what participation means in the project context is critical. Den Houting [22] warned that misalignments in expectations could lead to participants sitting on the lower end of participation. For researchers, it is crucial to shift participation beyond tokenism toward having opportunities to take ownership of projects that align with their lived experiences [18]. <result confidence="0.95">Nonetheless, impediments remain when conducting meaningful participatory research due to resource constraints, such as limited support from senior academics, project timelines, and funding [66].</result> Including autistic community members in the research and shaping the project idea before funding is sought could help promote more meaningful participation [66].
+
+<h4>2.4.2 Process.</h4>
+Facilitating relationships and trust-building is considered critical in PD. With autistic and non-autistic interactions, it is important to re-emphasise that conflicting world views could create tension [57]. Balancing power dynamics within and between autistic and non-autistic stakeholders is crucial to support relationships. Fletcher-Watson et al. [30] have stressed the importance of involving autistic people in developing policies that determine how power permeates within participatory projects. The methods employed should be aligned to support participation [30].
+
+Providing tailored approaches and methods is critical for encouraging the involvement of autistic people [30]. Nicoladis et al. [59] have also suggested including autistic people in customising the consent process, which could be challenging for many autistic people.
+
+<h4>2.4.3 Effects.</h4>
+Medium to long-term effects can emerge where inputs and mechanisms are supported and harnessed. <result confidence="0.85">Fletcher-Watson et al. [30] argued that providing infrastructures for autistic adults to continually share ideas can be useful for developing further meaningful projects.</result> <result confidence="0.95">Pellicano et al. [64] highlighted how participatory projects resulted in increased confidence in autistic people to advocate for and value their lived experience.</result>
+
+Table 1 visualises these recommendations across their inputs, mechanisms, and effects. We can see the importance of meaningfully aligning the topic and technology role with the autistic lived experience. Sustaining autistic voices in the process involves employing mechanisms for infrastructuring involvement and managing power imbalances. If performed positively, these can result in lasting effects, including increased confidence in autistic people and infrastructures that support sustained autistic participation. In the next section, we detail the scoping approach employed to select the papers.
+
+<table border="1" style="width:100%; border-collapse: collapse;">
+<caption>Table 1: A summary of lessons learned from participatory design processes involving autistic adults. These are categorised according to their inputs, mechanisms and effects, in line with the Program Theory framework.</caption>
+<thead>
+<tr>
+<th rowspan="2" style="text-align:left; padding: 5px;">Input</th>
+<th colspan="2" style="text-align:center; padding: 5px;">Process</th>
+<th colspan="3" style="text-align:center; padding: 5px;">Effects</th>
+</tr>
+<tr>
+<th style="text-align:left; padding: 5px;">Mechanism</th>
+<th style="text-align:left; padding: 5px;">Activity</th>
+<th style="text-align:left; padding: 5px;">Output</th>
+<th style="text-align:left; padding: 5px;">Outcome</th>
+<th style="text-align:left; padding: 5px;">Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="padding: 5px;">Topics and technologies aligned with autistic peoples’ goals/needs [30, 63, 64]<br>Diverse stakeholders aligning with relevant expertise (autistics, caregivers, etc.) [22, 30, 31, 59, 64, 66]<br>Negotiations on level of stakeholder participation [18, 22, 30, 63, 66]<br>Funding and resources support effective participation [18, 22, 30, 66]</td>
+<td style="padding: 5px;">Building relationships, trust and mutual learning [59, 62]<br>Balancing power dynamics [30, 59]<br>Infrastructure to support participation [30, 59]<br>Harnessing communication (including tensions) within and between autistic and non-autistics [30, 66]</td>
+<td style="padding: 5px;">Relationship building exercises [59, 63]<br>Reflexive feedback/design activities [59]<br>Activities around consent [59]<br>Co-distributing of research findings [59]</td>
+<td style="padding: 5px;"><result confidence="0.90">A product that meets autistic goals [62, 63]</result></td>
+<td style="padding: 5px;"><result confidence="0.90">Co-learning [31, 59]</result><br><result confidence="0.90">Capacity and skillbuilding [59]</result></td>
+<td style="padding: 5px;"><goal confidence="0.95">Improving lives of autistic people [30, 62, 63]</goal><br><goal confidence="0.95">Building self-confidence and acceptance [63]</goal><br><goal confidence="0.95">Infrastructures for advocating autistic knowledge [30, 59]</goal></td>
+</tr>
+</tbody>
+</table>
+
+<h3>3 Methods</h3>
+In this section, we outline our scoping review approach and methodological reflections on why and how we searched. We also discuss our supporting keyword analysis, which was used to identify topics and technologies represented in the papers we later analysed.
+
+<h4>3.1 The Scoping Approach</h4>
+<method confidence="0.99">We employed the Joanna Briggs approach [65] as our search strategy,</method> <goal confidence="0.99">driven by our goal to include a wide range of case studies involving autistic adults in designing technology.</goal> Systematic reviews follow a structured search and pre-defined process; the search concludes when papers are selected by inclusion/exclusion criteria. While valuable, we sought additional insights to strengthen our review. <method confidence="0.95">The Joanna Briggs Scoping approach allowed us to scan reference lists of included papers for other relevant sources.</method> This enabled us to add an additional phase to obtain more contextual information on the projects identified.
+
+<method confidence="0.99">The inclusion criteria for this scoping review were:
+<ul>
+<li>Research completed between 2010-2023: Our justification for choosing this period is to focus on the most recent work toward supporting the involvement of autistic adults in design.</li>
+<li>Autistic adults over the age of 18: <goal confidence="0.99">Our goal was to focus on adult involvement.</goal> While children’s involvement is imperative in design, a growing focus is on understanding how design activities can be set up for autistic adults.</li>
+<li>Studies geared toward the needs of autistic adults exclusively: While the needs of other related groups (such as ADHD and dyslexia) are important, these are not directly comparable to designing for and with autistic adults.</li>
+<li>Focus on Technology Design: We focus on technology because creating shared understanding presents unique challenges. With novel technologies, those with limited technical knowledge may struggle to envision how it could support their needs. This requires explorative design interactions between diverse participants.</li>
+<li>Clear and analysable case: While lots of valuable research does not describe cases in detail, we need process details to analyse and answer our research questions. This also means that we do not include review articles, pure usability, or evaluation studies as they do not contain information on the mechanisms of how autistic adults were involved.</li>
+</ul>
+</method>
+<method confidence="0.95">Our pilot search included Scopus, Pubmed, and Web of Science.</method> However, <result confidence="0.80">we found that the search generated a large number of</result>
+
+<p><method confidence="0.95">Our pilot search included Scopus, Pubmed, and Web of Science.</method> <result confidence="0.90">However, we found that the search generated a large number of false positives.</result> <method confidence="0.98">Therefore, we narrowed the search to specific peer-reviewed journals and venues within and outside the scope of HCI (Table 2).</method></p>
+
+<h3>Table 2: Summary of Database Searches. The search count for 2010-2022 and 2022-2023 are all unique results.</h3>
+
+<p>
+<b>Database:</b> International Journal of Human-Computer Interaction<br>
+<b>Searches 2010-2022:</b> 12 (26 August 2022)<br>
+<b>Searches 2022-2023:</b> 4 (26 May 2023)<br>
+<b>Keywords:</b> autism OR autistic OR ASD OR Asperger OR Aspergers OR Asperger’s
+</p>
+
+<p>
+<b>Database:</b> International Journal of Human-Computer Studies<br>
+<b>Searches 2010-2022:</b> 14 (26 August 2022)<br>
+<b>Searches 2022-2023:</b> 2 (26 May 2023)<br>
+<b>Keywords:</b> autis* OR ASD OR asperg*
+</p>
+
+<p>
+<b>Database:</b> ACM<br>
+<b>Searches 2010-2022:</b> 626 (26 August 2022)<br>
+<b>Searches 2022-2023:</b> 130 (26 August 2022)<br>
+<b>Keywords:</b> autis* OR ASD OR asperg*
+</p>
+
+<p>
+<b>Database:</b> IEEE<br>
+<b>Searches 2010-2022:</b> 2409 (26 August 2022)<br>
+<b>Searches 2022-2023:</b> 2 (26 May 2023)<br>
+<b>Keywords:</b> autis* OR ASD OR asperger*
+</p>
+
+<p>
+<b>Database:</b> Assistive Technologies<br>
+<b>Searches 2010-2022:</b> 18 (24 August 2022)<br>
+<b>Searches 2022-2023:</b> 1 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Disability and Rehabilitation: Assistive Technology<br>
+<b>Searches 2010-2022:</b> 21 (24 August 2022)<br>
+<b>Searches 2022-2023:</b> 5 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Journal of Applied Research in Intellectual Disabilities<br>
+<b>Searches 2010-2022:</b> 87 (24 August 2022)<br>
+<b>Searches 2022-2023:</b> 7 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Journal of Intellectual &amp; Developmental Disability<br>
+<b>Searches 2010-2022:</b> 88 (24 August 2022)<br>
+<b>Searches 2022-2023:</b> 4 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Developmental Disabilities Research Reviews<br>
+<b>Searches 2010-2022:</b> 6 (25 August 2022)<br>
+<b>Searches 2022-2023:</b> 0 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Advances in Autism<br>
+<b>Searches 2010-2022:</b> 13 (26 August 2022)<br>
+<b>Searches 2022-2023:</b> 1 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Autism Research Journal<br>
+<b>Searches 2010-2022:</b> 395 (29 August 2022)<br>
+<b>Searches 2022-2023:</b> 49 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Good Autism Practice<br>
+<b>Searches 2010-2022:</b> 30 (26 August 2022)<br>
+<b>Searches 2022-2023:</b> 0 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Journal of Autism and Developmental Disorders<br>
+<b>Searches 2010-2022:</b> 450 (29 August 2022)<br>
+<b>Searches 2022-2023:</b> 42 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p>
+<b>Database:</b> Research in Autism Spectrum Disorders<br>
+<b>Searches 2010-2022:</b> 50 (26 August 2022)<br>
+<b>Searches 2022-2023:</b> 10 (26 May 2023)<br>
+<b>Keywords:</b> participation OR participatory OR co-design OR co-development OR co-creation OR collaborative OR collaboration OR “experience-centred design”
+</p>
+
+<p><method confidence="0.98">The generation of keywords for our search involved careful discussion between the two authors and an independent reviewer (recommended by the Joanna Briggs approach [65]). We considered what keywords could be used to retrieve research on autistic adults, participatory design (and design in general), and technology. The independent reviewer is an expert in participatory design and has experience conducting systematic reviews.</method></p>
+<p><method confidence="0.98">We considered whether we should include technology-specific keywords (e.g. technology, web, app, virtual reality). In their review on the agency of autistic children in technology design, Spiel et al. [78] included the inclusive search term (technolog*). Domínguez-Lucio et al. [24] also included a range of technology-related keywords in their search (such as apps, technology, and internet). We were careful not to restrict our search to specific technologies; therefore, we did not include these keywords.</method></p>
+<p><method confidence="0.99">We adapted keywords based on venue themes. For instance, as ACM and IEEE were technology-focused venues, technology-related keywords were unnecessary. Similarly, autism-specific venues did not require autism-related keywords. So, in technology development venues, we used only autism-specific keywords (with wildcards (*) where appropriate). In the venues dedicated to autism research, our keyword searches focused on participation in the design process (Table 2). We considered keywords such as human-centred and user-centred. However, collective discussions between the authors and the independent reviewer resulted in a focus on participatory approaches, as they invite stakeholders as partners throughout the design process, potentially leading to a sustained impact [42].</method> <goal confidence="0.95">This was important for us when employing analysis using Program Theory. Since the goal was to focus on the design process rather than evaluation, keywords such as user study and evaluation were not included.</goal> <method confidence="0.95">We also chose not to focus on specific methods (e.g. interviews or workshops), because they are not specific to design and can be conducted during evaluation stages.</method></p>
+<p><method confidence="0.99">Our search includes 01/01/2010-26/05/2023.</method> <result confidence="0.95">The initial corpus of papers was 4499,</result> <method confidence="0.99">and our search and filtering strategy unfolded in four phases:</method></p>
+<p><method confidence="0.99">Phase 1 - screening: We manually screened through titles and abstracts to remove false positives and irrelevant articles. False positives included articles where the search term ASD returned papers on, for instance, Adjustable Speed Drives, Approximate Simultaneous Diagonalization, etc. Subsequently, we examined each dataset to exclude papers focusing on children, adolescents, other neurodivergent populations, and papers that did not focus on technology, according to our criteria above.</method> <result confidence="0.98">This search resulted in 484 papers. The significant reduction in papers could be explained by the strong emphasis on children in autism research [72], the large amount of non-technical papers returned from Autism research venues, and false positives.</result></p>
+<p><method confidence="0.99">Phase 2 - abstract search: We reviewed article abstracts to decide whether Program Theory analysis was feasible in the remaining papers. This included the criteria in phase 1, as well as papers that a) do not describe the design process; b) only describe a usability study; and c) experiments that are performed using datasets collected from autistic people, such as the Autism Brain Imaging Data Exchange (ABIDE) [25].</method> <result confidence="0.98">This search resulted in 52 papers.</result></p>
+<p><method confidence="0.99">Phase 3 - deeper reading: Following the above criteria, we delved deeper into the papers to ensure that the paper provided the information required to analyse the case study using Program Theory.</method> <result confidence="0.98">Following this search, 18 papers remained in the 2010-2023 search.</result></p>
+<p><method confidence="0.99">Phase 4 - reference scanning: We scanned the reference lists of the resulting papers to identify relevant sources, following the inclusion and exclusion criteria.</method> <result confidence="0.98">We identified 9 additional relevant papers, resulting in 27 papers.</result> <result confidence="0.95">As a few papers concerned the same research project, the papers were grouped by project. The remaining 27 papers spanned 19 different projects.</result> <result confidence="0.99">However, when performing the Program Theory analysis, it became apparent that 8 projects did not contain enough information to analyse the design process. Therefore, we focused our analysis on the remaining 11 projects, spread across 18 papers (Table 3).</result></p>
+
+<h3>3.2 Identifying Topics and Technologies Represented in the Corpus</h3>
+<p><goal confidence="0.99">A secondary goal of this review was to identify which topics and technologies autistic adults had a voice in shaping, and opportunities for further participatory research.</goal> <method confidence="0.99">We achieved this through a keyword analysis, comparing the topics and technologies of the selected 11 projects to those in the initial corpus.</method></p>
+<p><method confidence="0.99">To obtain these keywords, one author created a Python script that counted keyword frequency from the corpus after the phase 1 filtering removed irrelevant papers (e.g., false positives, duplicates, or concerning children). Keywords expected due to the nature of the study were removed (e.g. ASD, autism, autistic adult). However, keywords that included autism but referred to a topic of focus remained (e.g. autism diagnosis, autism classification).</method></p>
+<p><method confidence="0.99">Once filtered, one author manually categorised keywords relating to a) technologies and b) topics. For instance, keywords such as autism spectrum disorder classification and autism trait classification were grouped to create a single topic category of Autism Classification. These categories were reviewed by another author. We finalised the groupings to form topic/technology categories. Lastly, we generated an additional Python script to identify the frequency in which a keyword connected with that category appeared (Figure 1).</method> We present the results of this keyword analysis in the next section.</p>
+<p>Figure 1: (A) Histogram depicting categories associated with Technology keywords and the frequencies they occurred. (B) Histogram depicting categories associated with Topic keywords and the frequencies they occurred.</p>
+
+<h3>4 Representation of Topics and Technologies in Final Corpus</h3>
+<p>Here, we visualise and present the results following our keyword analysis, as explained in Section 3.2. <result confidence="0.98">Of 484 phase 1 papers, 350 contained Topic Category keywords, and 205 had Technology category keywords.</result> <result confidence="0.85">These frequencies differ from the total paper count, mostly because some papers lacked associated keywords. Despite this limitation, the data provides insights into technology use in adult autism research.</result></p>
+<p><result confidence="0.99">Focusing on technologies, keywords associated with Machine Learning/Artificial Intelligence (32%) appeared most frequently (Figure 1A).</result> <result confidence="0.99">There was a sharp increase in 2017-2023 compared to 2010-2016.</result> <result confidence="0.99">Brain Scanning is connected to 17% of the articles, again seeing a sharp increase between 2017-2023 compared to 2010-2017.</result> <result confidence="0.99">Virtual Reality appeared to be the third most common technology.</result> <result confidence="0.99">There also appeared to be a marked growth in the employment of Augmented Reality, with 95% of papers with keywords connected to this technology appearing between 2017-2023.</result></p>
+<p><result confidence="0.99">Concerning topics, Emotions (15%), Autism Diagnosis (11%), and Education and Learning (9%) appeared to be the most popular categories.</result> <result confidence="0.99">In particular, Figure 1 B highlights a significant increase in articles with keywords related to Autism Diagnosis, with 87% of</result></p>
+
+Figure 2: A heatmap illustrating the connections between topics and technologies represented amongst the most popular topics. The colour indicates the frequency in which the topic/technology category appeared. The heatmap colour ranges from light red (not represented) to dark red (highly represented). Borders are created where the topic/technology pairing also features in the final selected projects. Table 3 presents this in more detail.
+
+<result confidence="0.98">Concerning topics, Emotions (15%), Autism Diagnosis (11%), and Education and Learning (9%) appeared to be the most popular categories.</result> <result confidence="0.99">In particular, Figure 1 B highlights a significant increase in articles with keywords related to Autism Diagnosis, with 87% of these papers published between 2017-2023.</result> <result confidence="0.99">Papers that included keywords associated with the Social category also increased, with 72% of these papers being published between 2017-2023, as compared to 28% between 2010 and 2016.</result> <result confidence="0.95">Autism Detection appeared to remain steady.</result> <result confidence="0.98">Articles with keywords aligned with Healthcare also showed a 56% increase in 2017-2023 compared to 2010-2016.</result>
+
+In Figure 2, we illustrate the technologies that occurred most frequently amongst the most popular topics (i.e., topic categories that represented 4% or more of the articles). <result confidence="0.95">Machine Learning/Artificial Intelligence (ML/AI) featured in papers across all popular topic categories.</result> <result confidence="0.90">Nonetheless, neither ML nor AI appeared as dominant topic/technology categories in the selected 11 topics (Table 3).</result> <result confidence="0.96">This heatmap also illustrates that ML/AI has strong connections to papers that contained keywords related to Autism Diagnosis.</result> <result confidence="0.97">Brain Scanning connects to five out of the eight popularly listed topics: Autism Diagnosis, Facial Expression, Healthcare, Emotions, and Autism Detection.</result> <result confidence="0.92">These topic/technology pairings also do not feature in the shortlisted 11 projects.</result>
+
+Table 3 presents the final selected projects and their corresponding topic/technology categories. <method confidence="0.95">We manually assigned these categories based on the project descriptions.</method> The cells highlighted in grey emphasise the projects that we selected for analysis that contain the topic/technology pairings presented in Figures 1 and 2. <result confidence="0.90">Only two of these projects contain technology/topic pairings not featured in the most popular topics: ASCmeI.T, a platform for autistic individuals to suggest meaningful technology projects, and PIUMA, a crowdsourcing application for travel.</result>
+
+<h3>5 Involving Autistic Adults in Design</h3>
+
+<method confidence="0.95">In this section, we analyse how autistic adults were involved in designing technologies. We categorise each project by topic: Emotions, Social, Travel, Education, Participation, and Healthcare.</method> We describe how the participation of autistic voices is fostered across the topics identified in Section 4.
+
+<h4>5.1 Emotions</h4>
+
+We identified three projects that focused on Emotions. AccessASD [28, 29, 75] was a nine-month project involving autistic adults, caregivers, mental health therapists, and family members in <goal confidence="0.98">designing an anxiety management application (Clasp) [75]</goal>.
+
+Table 3: Projects from the final corpus with their topic/technology. Project names are from original prototypes or projects when available. Asterisk(*) indicates unnamed projects, which we labelled by their goal or tool. Grey highlighting shows projects with topic/technology appearing in the top 4% of the initial corpus following phase 1 scanning.
+
+Project
+Topic
+Technology
+AccessASD (2014) [28, 29, 75]
+Emotions
+Tangible interaction
+AHAT (2016) [60]
+Healthcare
+Web technology
+ASCmeI.T (2016) [38]
+Participation
+Mobile Technology
+Autism&amp;Uni (2016) [26]
+Education
+Online toolkit; web technology
+Biomusic (2019; 2020; 2022) [15, 39, 40]
+Emotions; music
+Affective Technology
+Choreografish (2018) [2]
+Emotions
+Virtual Reality
+Connecting through Kinect* (2017; 2018) [36, 79]
+Social
+Game
+IInclusive Online Dating* (2023) [17]
+Social
+Social media
+PIUMA (2017; 2018; 2020) [69–71]
+Travel
+Crowdsourcing
+Reimaging Social Media* (2023) [8]
+Social
+Social media
+SocialMirror (2012) [44]
+Social
+Augmented Reality; Social media
+
+<method confidence="0.98">The project employed a tailored methodology, termed Speedplay [29].</method> <method confidence="0.95">The researchers devised Speedplay for short-term projects that require engagement with hard-to-reach community groups with limited budgets.</method> <method confidence="0.99">The approach incorporates short intervals of design work with slower periods to meet short-term project demands while fostering participation of autistic stakeholders [75].</method> Biomusic [15, 39, 40] was a <method confidence="0.90">participatory design project that included researchers, autistic users, and musicians,</method> <goal confidence="0.98">exploring how self-awareness of emotional states can be generated through affective technology.</goal> <method confidence="0.99">The technology - also called Biomusic [39] - employed sensors that translate physiological signals, such as heart rate, skin conductance and temperature, into audio output, thus creating music soundscapes.</method> Choreographish was a <method confidence="0.90">participatory-oriented research project with autistic students, parents, educators, and specialists [2].</method> <method confidence="0.92">The resulting VR dance platform was co-created with autistic students.</method> <goal confidence="0.99">It aimed to reduce the anxiety that autistic adults face in creative dance.</goal>
+
+<h4>5.1.1 Inputs.</h4>
+
+<result confidence="0.90">The AccessASD project was initially focused on reducing social barriers, emerging to the topic of anxiety after a discussion with autistic stakeholders [75].</result> <method confidence="0.97">Autistic stakeholders were involved from the project onset, where they expressed their experiences related to anxiety within the prepare stage.</method> <method confidence="0.96">This stage also saw the involvement of autistic adults in forming the clearly defined design brief, which dictated the project direction.</method> The prepare and design stages were critical for building relationships, and <method confidence="0.99">the authors employed methods such as interviewing, knowledge-sharing sessions, and prototyping to build trust.</method> In Choreographish, the initial topic was open for exploration. <method confidence="0.98">The research team invited autistic students to a focus group to define this topic [2].</method> Biomusic focused on Emotions; however, <method confidence="0.92">the participatory process included autistic stakeholders in defining how affective computing could support them in emotional expression.</method>
+
+<result confidence="0.95">Inclusion criteria were not clearly defined for all projects.</result> In AccessASD, autistic stakeholders required a confirmed autism diagnosis classified as high functioning. <method confidence="0.98">All three projects gained contact with autistic stakeholders through existing community organisations.</method> <result confidence="0.96">For AccessASD, having an autistic researcher on the team facilitated initial conversations with autistic people and the partnering organisations, which was crucial.</result> <method confidence="0.95">Biomusic collaborated with “Spectrum Productions”, a volunteer organisation providing opportunities for autistic youth interested in media creation.</method> The organisation provided the core user group for the Biomusic project [39, 40], as well as audio-visual equipment, while researchers provided knowledge and funding for activities. <method confidence="0.95">Similarly, Choreographish created an alliance with a neurodiversity-affirmative education program for autistic adults.</method> This community partnership established connection and building relationships with autistic students.
+
+<h4>5.1.2 Process.</h4>
+
+<result confidence="0.95">How the participation of autistic adults was supported across the projects varied.</result> Expectations in AccessASD were considered part of the Speedplay approach, as <method confidence="0.97">each design stage included a clearly defined design deliverable co-designed with autistic adults [75].</method> <method confidence="0.92">The researchers defined these stages to support the need for certainty for autistic people, which often cannot be facilitated in participatory projects.</method> Biomusic focused more on the modes of participating in design [39, 40]. The approach was less structured and more open than AccessASD. <method confidence="0.99">The activities included workshops where Biomusic was co-created by using audio equipment to record sounds and teaching participants to create soundscapes with the equipment.</method> <method confidence="0.85">The workshops were designed to follow the wonder and creativity of the participants.</method> Furthermore, <method confidence="0.99">several efforts were made to make the workshops accessible for different sensory needs (for example, providing quiet zones, different options for physical spacing, toning down the volume and lights on request [39]).</method> The key is that they were adjusted on request, drawing on the configurable space that Spectrum Productions offered.
+
+<method confidence="0.90">Mechanisms across all three projects focused on power balance and relationship building.</method> In Chorepgraphish, there were different mechanisms of mutual reflection and learning. <method confidence="0.97">This was facilitated through focus groups and individual interviews, where the design direction included the voices of autistic students involved.</method> In AccessASD, <method confidence="0.90">care and respect were also considered core mechanisms when engaging with autistic adults [75].</method> This influenced the timing of the project.
+
+This was facilitated <method confidence="0.95">through focus groups and individual interviews, where the design direction included the voices of autistic students involved</method>. In AccessASD, care and respect were also considered core mechanisms when engaging with autistic adults [75]. This influenced the timing of activities in Speedplay. <method confidence="0.90">The group workshops were purposely scheduled later in the prepare stage because the team members had not met before, and it was important that the diversity of perspectives was captured earlier in the process</method>. <method confidence="0.95">The mechanisms employed in Biomusic emphasised mutual learning [15, 39], with researchers providing knowledge about emotions and physiology and autistic participants contrasting this with their experiences of, for instance, stress</method>.
+
+<h3>5.1.3 Effects.</h3>
+<result confidence="0.95">All projects resulted in immediate technological outputs.</result> Since participatory design aims towards medium to long-term effects [42], we will delve more into these here. <result confidence="0.90">A sustained impact of AccessASD was Speedplay, which has also been used by the project authors to include other populations [28].</result> <result confidence="0.95">This demonstrates the impact the methodology had on supporting relationship-building in short-term projects.</result> Speedplay also included a sustaining step, which worked towards discovering how development could continue at the end of the project and targeting community champions to pursue the project further [75]. <result confidence="0.95">Biomusic formed a closer understanding and network between academic and autistic communities, which could be a key to future collaborations.</result> <result confidence="0.95">Academic spaces like university facilities became familiar and accessible to people who had previously been users of Spectrum Production facilities, thus building up capacity for both autistic users and academics.</result> Choreographish also focused on long-term commitment [2]. While the project was ongoing, the source code of the project was provided to enable others to build on the project.
+
+<h3>5.2 Social</h3>
+Four projects were connected to Social. <goal confidence="0.95">Reimagining Social Media explored the design of social media platforms from the perspective of autistic adults [8].</goal> <goal confidence="0.95">The researchers employed co-design to investigate how social media could be designed to facilitate “autistic sociality”.</goal> <goal confidence="0.98">Inclusive Online Dating concentrated on co-designing a dating platform with autistic adults, exploring how dating sites can be designed to create more meaningful autistic-centred connections [17].</goal> <goal confidence="0.90">SocialMirror was a prototype designed to encourage the independence of autistic people.</goal> <goal confidence="0.95">The prototype intended to connect autistic people to close-knit networks that may provide the autistic person with support to foster their independence [44].</goal> <goal confidence="0.98">Connecting Through Kinect aimed to create a collaborative videogame using the KinectVR system to help autistic youth improve their emotion recognition and social skills [36, 79].</goal> The game is meant to be played with a friend or family member who is not autistic. The project is described as a participatory design project, with researchers teaming up autistic college students as co-designers, to give input on game features, storylines, and reward systems.
+
+<h3>5.2.1 Inputs.</h3>
+Two of the projects, Reimagining Social Media and Inclusive Online Dating, seemed to employ approaches toward understanding the topic from the perspective of the autistic person. <method confidence="0.95">In Inclusive Online Dating, the project commenced with interviews to identify autistic experiences in finding dating partners and interacting with them online [17].</method> <method confidence="0.95">The interview results fed into how the subsequent group workshops, which were chosen as the authors felt this space could allow participants to explore various scenarios relating to online dating.</method> The Reimagining Social Media project explored sociality from the perspective of the autistic adults involved. The authors felt that autistic people have a different way of understanding social coordination than from a neurotypical perspective. <goal confidence="0.99">The exploration of how autistic sociality can be embedded in a social media platform was the project goal [8].</goal> <method confidence="0.98">The SocialMirror project commenced with a three-month collaboration with autistic adults, partnered through a local autism charity [44]. The research team collaborated with autistic adults in their weekly social group to establish rapport and address everyday challenges that inhibit independence.</method> <method confidence="0.95">The core design requirements were then derived through interviews with caregivers to discover their concerns surrounding independence [44].</method> In Connecting through Kinect, the main inputs were autistic college students, non-autistic researchers, as well as technology support provided by the university to develop the KinectVR prototype [36, 79]. The intended target group were younger non-verbal autistic children, and the project team included autistic college students who previously struggled with verbal speech.
+
+One project in this category had clear diagnostic requirements for inclusion, SocialMirror, which included high-functioning autistic adults through a local autism centre [44]. The Inclusive Online Dating also specified inclusion criteria requirements, though it did not state a requirement for a formal diagnosis [17]. One participant had self-identified as autistic following an online test for Autism Spectrum Disorder (ASD). The team stressed the importance of involving autistic people who had experience dating or the desire to date. In Reimagining Social Media, all participants had a diagnosis of autism, though it is not clear if this was required when involving autistic stakeholders [8].
+
+Reimagining Social Media was the only project in this category that mentioned the inclusion of an autistic researcher [8]. The team emphasised the autistic voice important for leading design, research, and analytical decisions in the project.
+
+<h3>5.2.2 Process.</h3>
+<method confidence="0.95">In Inclusive Online Dating, the materials were provided to participants in advance. This enabled autistic participants to process the workshop content beforehand [17].</method>
+
+How power dynamics were considered varied. <method confidence="0.95">In SocialMirror, the goal was to facilitate caretakers and autistic adults in having a voice. With this in mind, both stakeholder groups were interviewed separately beforehand to ensure each stakeholder was represented [44].</method> As mentioned above, the central mechanism in Reimagining Social Media was to ensure autistic voices had more authority across the research [8].
+
+All projects facilitated flexible involvement of autistic people. <method confidence="0.90">Both Reimagining Social Media and Inclusive Online Dating employed multiple participation options.</method> <method confidence="0.98">In Inclusive Online Dating, the workshop sessions were configured to support the form of participation that the autistic stakeholders preferred [17]. Two participants were invited to participate in the workshops individually upon request. The researchers also provided one-to-one support for autistic people to participate in individual tasks and group discussions.</method> <method confidence="0.98">In Reimagining Social Media, the researchers provided materials for participants to engage in the workshop in physical or digital form when requested [8]. The digital materials were supplied via Miro - an online tool for remote collaboration.</method> The physical
+
+In Reimagining Social Media, <method confidence="0.95">the researchers provided materials for participants to engage in the workshop in physical or digital form when requested [8]. The digital materials were supplied via Miro - an online tool for remote collaboration. The physical version of the materials were printed out and posted to participants before each session. The venue - a remote workshop carried out over Zoom - was chosen based on the preferences of the autistic participants.</method>
+Connecting through Kinect <method confidence="0.98">employed participatory design by inviting autistic college students to share their lived experiences at various game design and testing sessions. [36, 79]. The core mechanisms were mutual learning and what the authors refer to as a “triple-decker sandwich” model of technology design (drawing on Parsons and Cobb [61]), aligning theoretical knowledge, technological capabilities, and user perspectives.</method> This can be seen in how activities were structured: <method confidence="0.90">since participation was flexible, participants could choose how much and how to engage, as opposed to there being a set format. Similar to Reimagining Social Media, the team offered multiple participation options, such as interviews, workshops, or online digital participation.</method> The SocialMirror project took another perspective on supporting autistic participation. <method confidence="0.95">The participant observations at the beginning of the process were chosen to establish a relationship with autistic participants [44]. This led to design ideas to address social challenges they observed, which the team felt required confirmation from caregivers through semi-structured interviews.</method> <method confidence="0.98">The team chose focus groups for the end of the process; however, the format of the focus group was designed following a pilot test with an autistic adult before the main focus group took place [44].</method> <result confidence="0.85">Through the pilot, the researchers learned that the structured interviews alone were unsuitable for people with cognitive difficulties due to challenges describing their experiences.</result> <method confidence="0.95">The modified procedure then included pictures with examples of real-world problems to enable shared discussions to emerge.</method>
+
+<h3>5.2.3 Effects.</h3>
+<result confidence="0.98">In SocialMirror and Connecting through Kinect, the immediate outputs were prototypes.</result> <result confidence="0.90">Reimagining Social Media and Inclusive Online Dating included some considerations for designing platforms tailored to the autistic experience.</result> <result confidence="0.98">When considering sustained effects, Reimagining Social Media and Inclusive Online Dating concluded with further knowledge regarding sociality from the autistic perspective.</result> <result confidence="0.99">In Inclusive Online Dating, there was a clear perspective on how the autistic stakeholders desired to build and maintain their relationships and their preferences on dating [17].</result> <result confidence="0.99">Reimagining Social Media provided further knowledge on how social media platforms could enhance autistic sociality [8].</result> <result confidence="0.95">The Reimagining Social Media project also produced design cards which were used to evoke discussions and critique regarding what social media could be. These cards were shared on GitHub, a public platform for sharing repositories.</result> <result confidence="0.95">In Connecting through Kinect the authors mentioned stronger game-design that is consistent with research on making great serious games for autistic users.</result> This illustrates the “triple-decker sandwich” approach [36, 79] in action, as it is the interplay between design work, theories and input from autistic college students that makes the KinectVR game work. <result confidence="0.90">The authors also mention benefits for the autistic college students - collaborating on a real-life project means that they might gain valuable experience useful for later job applications.</result>
+
+<h3>5.3 Travel</h3>
+There was one project that linked to the topic of Travel. PIUMA was an interactive mobile app, that <goal confidence="0.99">had the goal of supporting autistic adults in navigation [69–71].</goal> <method confidence="0.95">The app resulted from a phenomenological engagement with autistic adults in design, which valued the lived experience of autistics as expertise.</method>
+
+<h3>5.3.1 Inputs.</h3>
+The topic chosen for PIUMA was driven by the <goal confidence="0.99">research goal of exploring how autistic people experience the spaces they navigate, which they argue was a gap in HCI research [69].</goal> <method confidence="0.90">Inclusion in this project required an official diagnosis [69].</method> The beginning of the process saw the involvement of high and mid-functioning autistic adults as per the DSM-5. <result confidence="0.90">Later, the research team established that spatial navigation support may be more suitable for high-functioning autistic people, as this cohort tended to navigate outside their homes more frequently than mid-functioning autistic people.</result> <method confidence="0.95">The means for establishing relationships with autistic stakeholders was through the local autism centre [69].</method>
+
+<h3>5.3.2 Process.</h3>
+In PIUMA, <method confidence="0.98">the authors chose interviews and cognitive maps as a means to engage autistic adults to share their perspective on space [69].</method> The decision to employ interviews was grounded on literature supporting their employment to engage autistic people in design. The autistic stakeholders also had little challenges with verbal communication. The authors stressed that the interview flow was tailored depending on the participant. <result confidence="0.90">Reflecting on the use of interviews to provoke responses, the research team indicated that responses varied. Some autistic people tended to be specific, while others were prone to diverge from the question, needing guidance to keep on topic.</result>
+A central mechanism of PIUMA was power balance within and between autistic and non-autistic stakeholders. <method confidence="0.98">The team adopted strategies including turn-taking and raising hands to support balanced engagement in activities [69].</method> <result confidence="0.95">Based on lessons learned, the researchers also saw a benefit in asking autistic people to work alone first and share their ideas directly afterwards, as this provides all participants with the space to formulate ideas without group influence.</result> <result confidence="0.85">Providing access to materials in advance helped autistic stakeholders understand the workshop format.</result>
+The participation options seemed more restricted in PIUMA [69]. The interview took place in the autism centre, the recruitment venue. On reflection, the authors mentioned it would have been ideal to interview in situ, though this was not possible. <method confidence="0.95">To facilitate this, the environment was attuned to meet the autistic person’s sensory preferences and needs [69].</method> The workshops also took place in the autism centre. <result confidence="0.90">However, these spaces were difficult to configure: it was challenging to cater to conflicting needs in an unfamiliar and shared space.</result> <result confidence="0.95">Notably, the authors highlighted challenges in finding compromises where stakeholders’ sensory and communication needs collided.</result>
+
+<h3>5.3.3 Effects.</h3>
+<result confidence="0.99">The immediate output in PIUMA was the technological prototype to support spatial navigation for autistic people [70, 71].</result> <result confidence="0.95">Focusing on longer-term effects, the researchers discussed gaining long-term knowledge on lessons learned following the project [69].</result> <result confidence="0.95">The authors felt that strengthening relationships was particularly important before the group design session commenced, as the interactions between researchers and participants required a solid foundation [69].</result>
+
+The authors felt that strengthening relationships was particularly important before the group design session commenced, as the interactions between researchers and participants required a solid foundation [69].
+
+<h3>5.4 Education and Learning</h3>
+One project focused on supporting Education and Learning. <goal confidence="0.95">Autism-&amp;Uni included autistic students in designing a resource to support autistic students transitioning to third-level education [26].</goal> The project followed the <method confidence="0.98">five-stage design thinking approach (emphasise, define, ideate, prototype, and test), with autistic stakeholders involved in the define, prototype and test stages</method>. <method confidence="0.95">In the define stages, autistic stakeholders were contacted to complete surveys to gather perspectives on the lived experience of autistic students.</method> <method confidence="0.95">In the prototype and testing stages, autistic students were invited to test the Autism&amp;Uni prototype and provide suggestions for improvement.</method>
+
+<h4>5.4.1 Inputs.</h4>
+Autism&amp;Uni considered college life from diverse perspectives [26]: autistic people, caregivers, family members, professionals working with autistic people, etc. The research team defined the level and stages of involvement in the project. The project does not specify whether participants must have an autism diagnosis. In the initial survey, students were asked if they were diagnosed.
+An autistic researcher was on the team who was primarily responsible for creating the content for the workshop in the prototype stages [26]. The authors reflected on how the project may have fallen into the category of brief, one-off consulting roles. The team argued that autistic expertise should be carefully considered. They argued that research tends to emphasise autistics as experts in their lived experience but often not in other aspects of project shaping, e.g., in defining research questions. This is something that needs to be facilitated.
+
+<h4>5.4.2 Process.</h4>
+A core mechanism of Autism&amp;Uni was that the autistic voice should guide the design [26]. The project topic was driven by autistic voices rather than literature, which had limitations in autistic representation. <method confidence="0.98">A survey was disseminated across many stakeholders (autistic people and their proxies) to identify opportunities and challenges for autistic students navigating the transition to third-level education.</method> The research team also reflected on the employment of surveys, indicating they cannot be used by themselves to probe more information. Upon reflection, the team considered whether the empathise stage could have been enriched with methods such as focus groups, as the autistic stakeholders involved were vocal about their challenges in informal discussions. Similar to PIUMA, there seemed to be some reflection on the methods on whether they enabled the participation of autistic stakeholders. <method confidence="0.90">Participation options (including location, structure and content) in the prototyping workshop were defined following the completion of a survey from the autistic stakeholders [26].</method>
+
+<h4>5.4.3 Effects.</h4>
+<result confidence="0.95">The Autism&amp;Uni toolkit is one of the few projects that worked toward an impactful resource adopted in different universities worldwide (https://www.autism-uni.org/toolkits/).</result> <result confidence="0.95">The toolkit provides support and resources for all autistic students and higher education professionals who mentor autistic students in their transition.</result>
+
+<h3>5.5 Participation</h3>
+One project focused on participation. <goal confidence="0.98">The ASCmeI.T [38] project focused on creating a mobile application and surrounding ecosystem to enable autistic people to communicate to researchers what types of technology they would like to see implemented in their lives.</goal> <method confidence="0.90">The app supports autistic people or caregivers to record short video ideas for technologies that might assist their everyday lives.</method> <goal confidence="0.98">The aim is to shift the agenda of technology development; normally, autistic people are only involved later in the design process (if at all), when the overall goal has already been set.</goal>
+
+<h4>5.5.1 Inputs.</h4>
+The inputs in ASCmeI.T came primarily from the researchers [38]. The app itself might be considered a way of generating inputs for a larger program: <goal confidence="0.90">the aim is to allow autistic people to suggest potential problems and solutions that might lead to further development.</goal> Particularly, the ecosystem around the app could be considered both an input and a condition for the effects - for instance, a website was created to share great examples and inspire further submissions, and participants were solicited through social media.
+
+<h4>5.5.2 Process.</h4>
+<method confidence="0.90">The ASCmeI.T app shapes an activity: co-creating scenarios for technology design ideas [38].</method> By doing so, it utilises a mechanism of participatory creation, though one might question what influence the participants had on ideas after development. <method confidence="0.98">The core mechanisms used are participatory design (in creating the app and using the outputs) and crowdsourcing, all aimed at giving autistic people a voice in technology design.</method>
+
+<h4>5.5.3 Effects.</h4>
+<result confidence="0.99">The immediate outputs of ASCmeI.T were over 30 submitted films, with various ideas from assisting people to educational assistance [38].</result> <result confidence="0.95">By extension, it highlighted gaps between existing products and solutions, as well as the needs and desires of autistic people.</result>
+
+<h3>5.6 Healthcare</h3>
+The Autism Healthcare Accommodations Tool (AHAT) was the only project focused on Healthcare. <goal confidence="0.99">AHAT [60] aimed to address the significant healthcare challenges faced by autistic adults (e.g. finding a disability-friendly provider, communication with providers, or specific challenges related to sensory and bodily issues during treatment).</goal> <method confidence="0.95">Using a community-based participatory research approach tailored to support autistic involvement [81]</method>, <result confidence="0.90">the project developed tools to improve healthcare interactions between autistic patients and their care providers.</result> <result confidence="0.95">The toolkit allows patients to create personalised accommodation reports for their healthcare providers and supplied worksheets and checklists for healthcare providers.</result>
+
+<h4>5.6.1 Inputs.</h4>
+Autistic adults were part of the overall research team in AHAT. <method confidence="0.90">Stakeholders were recruited through an ongoing alliance of researchers, autistic adults, family members, and healthcare and disability services providers [60].</method> This meant that autistic adults participated in formulating research agendas based on their experience. The key input was establishing an alliance that ensures an ongoing stream of participatory efforts, as well as resources (such as funding and digital infrastructure, like the many tools available on the AHAT website).
+
+<h4>5.6.2 Process.</h4>
+<method confidence="0.98">Autistic stakeholders were co-designers of the AHAT toolkit, which included the checklists, schemas, and other materials [60].</method> <method confidence="0.90">The autistic stakeholders then had the opportunity to reformulate and add to the materials created during these sessions.</method> This meant that an activity, which could have been just a way of
+
+<p>The autistic stakeholders then had the opportunity to reformulate and add to the materials created during these sessions. <method confidence="0.98">This meant that an activity, which could have been just a way of data-gathering, was turned into a more participatory activity that created opportunities for reflection. Apart from medical information, <goal confidence="0.90">this material also aimed to understand how patients might communicate their needs and potential accommodations to healthcare practitioners, for instance, by highlighting communication difficulties or sensory challenges.</goal> Following using the toolkit, participants created a personalised report evaluated by researchers. This approach highlights a participatory mindset [60]: the key mechanisms were participation, shared reflection, and the co-creation of products. To achieve this, the researchers also tailored interviews, workshops and tests with autistic participants, using, for instance, a flexible interview format and inclusion of supporters, if needed.</method></p>
+<p>5.6.3 Effects. <result confidence="0.98">The overall outcome of the project was the AHAT toolkit [60], which contained general healthcare and autism-related resources that might aid patients, supporters, or healthcare providers.</result> <goal confidence="0.90">The longer-term impact of this might be to improve the self-efficacy of autistic adults in healthcare settings, as well as to improve the efficiency of treatment.</goal></p>
+<h2>6 Discussion</h2>
+<p><goal confidence="0.95">This paper reviewed how autistic adults are involved in the participatory design of technology.</goal> <method confidence="0.95">We identified frequently occurring topics and technology areas and provided qualitative findings through Program Theory analysis.</method> <goal confidence="0.95">In the following subsections, we revisit our research questions to highlight how autistic people participate in technology design and suggest opportunities for future engagement.</goal></p>
+<h3>6.1 Involvement of Autistic Adults in Designing Technology</h3>
+<p><goal confidence="0.99">In this section, we will address the first research question, how are autistic adults involved in the participatory design process of technology that impacts their daily lives?</goal></p>
+<p><result confidence="0.90">The projects involved autistic adults in different ways to share their expertise on topics and the project direction.</result> <result confidence="0.95">All but one project had predefined goals or topics.</result> In ASCmeI.T, while categorised as participation, there is no real defined topic; rather, the application is designed to support autistic adults in sharing topics for design that cater for their needs. The remaining projects did have a topic focus. <method confidence="0.90">Five projects concentrated on the involvement of autistic adults in shaping the understanding of the project topic (AHAT, Inclusive Online Dating, AccessASD, PIUMA, Reimagining Social Media). These projects were driven by methodological approaches intended to understand the perspective of autistic adults and draw on their expertise on the topic, whether through customised participatory methodologies (AccessASD, AHAT) or with a philosophy of understanding the topic from the perspective of autistic adults (e.g., by embedding approaches that focus on lived experience (PIUMA)) or intending to understand a particular topic from the autistic perspective (Reimagining Social Media).</method> In Connecting through Kinect, autistic partners were valued for their expertise in game design, which was harnessed in the design process. <result confidence="0.85">This suggests that the autistic perspective as a way of experiencing the world is valued across projects.</result> This resonates with de Jaeghar’s view that respectful engagements within and between autistic and non-autistic stakeholders are important for seeing and inviting participation [21].</p>
+<p><result confidence="0.90">It is important to note that the level of participation differed between the projects.</result> <result confidence="0.88">However, it is not clear how decisions surrounding participation were made, which merits reflection.</result> Literature indicates that autistic stakeholders may not want to participate fully [56]. Moreover, experience adopting participatory design should be considered, particularly for researchers and stakeholders who are employing it for the first time in autism research [22]. To manage expectations in such instances, den Houting et al. [22] suggest easing into the process by including some levels of participation that could mature as relationships between the community and the team grow. In this learning process, Nicoladis et al. [59] stress that the researchers involved should reflect on how their perspectives may impact the process, particularly on any implicit biases that may frame autistics’ voiced needs as “impairments”. In other cases, as we have seen in Connecting through Kinect, it may not be possible to directly include the target stakeholders. In these cases, there was a known importance for having some autistic representation (e.g., autistic researchers or autistic allies). There is an important consideration in understanding what knowledge those stakeholders have and what assumptions they may bring to the process based on their lived experience [30, 59]. We argue that more work is needed to reflect on decision-making on who participates, as well as assumptions that may influence those decisions.</p>
+<p><method confidence="0.90">Building infrastructures to support participation varied between projects, such as devising customised participatory approaches (e.g. AHAT and AccessASD) or (as in most cases) providing multiple modes of participation (Reimagining Social Media, Inclusive Online Dating).</method> Conencting through Kinect employed this quite creatively by encouraging movement in the design process, which was directly tailored to autistic needs.</p>
+<p><result confidence="0.95">We learn that the conflicting sensory needs of autistic people need to be considered particularly in group activities (e.g., in PIUMA and Biomusic).</result> All people, but especially autistic people, report differences in how they process sensory information, such as sounds [13]. Some people have low thresholds, meaning they are highly sensitive to the stimulus and desire to avoid them. Others may have a high threshold and actively seek certain sensory stimuli. These differences can cause tension and power imbalance, particularly in cases where it may seem that one stakeholder’s needs are prioritised over another. It is important to consider how the nuances of how autistic stakeholders experience the world can be factored in designing activities, particularly in cases where there may be conflicts in sensory needs, such as in group activities (as referenced by Maun et al. [52]).</p>
+<p><result confidence="0.90">Power dynamics played a nuanced role in facilitating conversations between autistic and non-autistic stakeholders [57, 59].</result> <result confidence="0.95">Three of the projects (AccessASD, AHAT, and Reimagining Social Media) mentioned having autistic researchers on the team, who were imperative for making decisions on the project direction and making connections with other autistic stakeholders, which has been recommended as a means for empowering autistic participation [62].</result> <result confidence="0.85">How activities were structured seemed to be important to ensure that participants had a voice.</result> <method confidence="0.85">Some projects approached this by ensuring that autistic stakeholders had an opportunity to share ideas individually before engaging in group activities (e.g., in AccessASD).</method></p>
+
+<p><result confidence="0.90">How activities were structured seemed to be important to ensure that participants had a voice.</result> <method confidence="0.98">Some projects approached this by ensuring that autistic stakeholders had an opportunity to share ideas individually before engaging in group activities (e.g., in AccessASD and SocialMirror), while others facilitated turn-taking (e.g., in PIUMA).</method> However, while these researchers have done great work, <result confidence="0.95">we also witnessed limited engagement of the autistic adult stakeholders in shaping and refining the approaches employed for participation.</result> Just as autistic adults are experts on what tools and technologies would benefit their lives, they are also experts on what methods and approaches could engage and drive them to participate. Therefore, <goal confidence="0.85">we believe there could be more opportunities to involve autistic people in the decision-making of methods employed through active reflection</goal>, as we will discuss in section 6.2.</p>
+<p>Additionally, the projects demonstrated that balancing power is a principle that should be considered when evaluating how the project unfolds. <method confidence="0.95">The introduction of individual activities before group activities occurred was important in AccessASD and SocialMirror.</method> Although balancing such power is generally important in participatory projects [41, 76], the reflections on why this was facilitated seemed to stem from a consideration toward the voice of autistics in design and keeping the process autistic-centred.</p>
+<p><result confidence="0.98">The level of participatory relationships varied between projects. However, few initiated from long-lasting relationships, with most focusing on a shorter period of time.</result> This is not surprising, given the limited resources available to support neurodiversity-affirmative research in autism [66]. Creating lasting impact is a key issue facing much of HCI research that engages communities (see e.g. [23, 42]). Academic research is often linked to available funding, which is typically given for more time-limited projects. The funding landscape contrasts with the ideal of deeper, more consistent engagements for participatory design. However, this is not a flaw of the researchers involved as much as it is a symptom of a larger issue with academic funding. <result confidence="0.90">The shorter-term projects seemed to gather positive relationship-building experiences, particularly through partnerships with autism organisations and charities.</result> <method confidence="0.90">Such approaches enable shorter-term projects to connect with existing infrastructures within the community where there are predefined relationships with autistic people, and their role in society, thus mirroring existing developments in PD [23].</method> <goal confidence="0.90">As researchers, we should connect with autistic-led organisations if the mechanism is to respect the autistic experience [31].</goal> <method confidence="0.95">Embedding this research into the community enables “infrastructuring” [47], strengthening existing positive efforts by embedding them into the fabric of what is already there, strengthening impact, and increasing the possibility of long-term engagements.</method> In saying that, we argue the need to make visible the immediate gains that autistic people can harness through participation (which is important in community-based participatory design [48]). Doing so will also need to consider the plurality of goals between autistic stakeholders and organisational objectives, and how they align with the communities where participation is sought [48].</p>
+<h2>6.2 Opportunities for Future Involvement</h2>
+<p>The opportunities presented below intend to address the second research question, <goal confidence="0.99">what opportunities are there for the future involvement of autistic adults in the participatory design of technology?</goal></p>
+<p>It is important to acknowledge that resources and funding may impact who is involved and how participation is facilitated. As mentioned above, most funding typically covers a shorter time period with actionable deadlines, which may be in contrast to the long-term commitment of participatory design. These suggestions could be helpful for researchers when considering how participation is supported when designing technology with autistic adults.</p>
+<h3>6.2.1 Including autistic voices across a broader range of topics and technologies:</h3>
+<p><result confidence="0.90">When reviewing the range of topics and technologies of focus, it is evident that there are opportunities to involve autistic adults in design conversations.</result> <result confidence="0.95">Unsurprisingly, there has been a sharp increase in papers where technology keywords related to Machine Learning/Artificial Intelligence.</result> This resonates with recent calls for more human-centred AI [74, 85]. As an example including autistic individuals, most Large Language Models may be trained to support the non-autistic rather than the autistic experience (e.g., Begel et al. [9]). <result confidence="0.99">In our keyword analysis, there appeared to be a strong correlation between papers containing keywords Autism Diagnosis, and Machine Learning/Artificial Intelligence - yet we found no participatory research concerning this topic in our corpus.</result> <goal confidence="0.95">We suggest that more participatory design projects could include autistic people in conversations about the role AI (e.g. Large Language Models employed in chatbots/agents, or deep learning techniques employed for autism diagnosis) could play in their lives.</goal> <goal confidence="0.95">Additionally, we suggest conducting participatory research with autistic people to explore what the diagnostic process could look like and how technology could support that process.</goal> With the growing recognition of self-diagnosis in neurodiversity-affirmative research (e.g., as indicated by Sarrett[73]), <goal confidence="0.90">we recommend involving those who self-identify as autistic and how their needs could be facilitated in the diagnosis process, if at all.</goal> We agree with Fletcher-Watson et al. [30] that <goal confidence="0.85">participation in hard science topics (e.g. AI, Brain Scanning applications) could result in knowledge exchange that empowers autistic people with the skills to critique the role they play in their lives.</goal></p>
+<h3>6.2.2 The role of formal diagnosis in inclusion criteria:</h3>
+<p>From a neurodiversity-affirmative standpoint, it is essential to recognise that not all may have a formal diagnosis or choose to disclose it. This awareness is crucial to understanding autistic participation, as communication needs must be addressed. <result confidence="0.90">Most projects required specific inclusion criteria, often aligned with the DSM-5, which might be necessary for certain topics.</result> However, when possible, <goal confidence="0.90">it is important to open up conversations for including others who may self-identify as autistic, and to foster understanding where disclosure of an autism diagnosis may not be desired (as seen in [86]).</goal> However, it is important to consider that including autistic adults who may not desire to disclose their diagnosis may not be feasible in short-term projects where such relationships have not already been established.</p>
+<h3>6.2.3 Reinforcing the multiple expertise and interests of autistic adults in design:</h3>
+<p>We would like to reinforce that autistic people have multiple lived expertise [59] that can be critical to planning and fostering engagement in participatory activities. For example, they may be engineers, technicians, researchers, or even members of other communities. <result confidence="0.85">The research to date suggests that autistic involvement is growing on the research side,</result> and <goal confidence="0.90">we argue that we could consider their roles as designers, programmers, or other</goal></p>
+
+For example, they may be engineers, technicians, researchers, or even members of other communities. <result confidence="0.90">The research to date suggests that autistic involvement is growing on the research side</result>, and <goal confidence="0.85">we argue that we could consider their roles as designers, programmers, or other specialists</goal>. In future projects, there are certainly more possibilities to consider the multiple lived expertise in participatory design and research as recommended by Nicoladis et al. [59]. An example of this could be learning the interests of stakeholders in drawing, storytelling, coding, and music composition (or as game design students as the case in Connecting through Kinect) and <method confidence="0.92">employing these as techniques for knowledge sharing in participatory design activities</method>. We understand that this may require researchers to challenge their assumptions on how participatory design could be employed in this context, particularly if their experience is mostly focused on projects where traditional participatory design is concerned (see, e.g. Bannon et al. [6]). However, <goal confidence="0.95">we argue that broadening the scope of participation, and reimagining how activities are not only tailored to meet their needs but also strengths, can be beneficial</goal>.
+
+<h3>Considering challenges of negotiations on the level of participation:</h3>
+It is often cited that autistic people should have the opportunity to participate in the research process [18, 22, 30, 63, 66]. Perhaps due to funding barriers or the project scope, there could be challenges in supporting and negotiating participation. Tensions can arise, for example, when project timelines are limited, and relationships do not have the resources to develop. Nonetheless, <goal confidence="0.95">it is still important to facilitate conversations surrounding expectations of involvement and provide opportunities for autistic people to negotiate the level of participation that works for them in the project (considering their multiple expertise and identities)</goal>. Where project timelines are restricted, one means is to consider how relationships can be sustained following the project, particularly in cases where establishing the relationship was successful. Smaller projects in shorter timelines can provide a test bed for larger projects to develop.
+
+<h3>Employing opportunities for reflection and challenging design/research assumptions:</h3>
+As researchers in participatory design, one consideration is how our assumptions shape the research process not only in terms of the research direction (e.g. what topic/technology is of focus) but also how we get there (i.e. what tools and techniques are employed throughout the process to foster participation). As Bødker and Iversen [14] argue, <method confidence="0.90">the production of design artefacts (e.g., physical prototypes, scenarios) can also form the basis for collaborative reflection on where the project is headed (e.g., designing a social network) and why</method>. Moreover, we argue that involving autistics in some way falls in line with the considerations of community-based participatory research (see, e.g. [48]) in that <goal confidence="0.90">more work is needed to document, reflect and challenge assumptions on decisions made on the design process before the work takes place</goal>. Reflective processes can make visible research and design assumptions and create a deeper understanding of practice from the stakeholders’ perspective (which, like other community-based participatory research projects, may involve a plurality of practices [48]). In the case of autism research, we extend the argument to challenge assumptions on what tools and techniques are employed to facilitate participation. <goal confidence="0.98">We encourage researchers to consider reflection activities in collaboration with autistics on the methods employed to foster participation (whether interviews, focus groups, or workshops), and whether those approaches are suitable for communication between all stakeholders involved and harness their strengths</goal>. <result confidence="0.95">Our analysis suggests that there is not a “one size fits all” solution, but rather an approach that is revisited and refined for future work following reflections between autistic and non-autistic stakeholders.</result>
+
+<h3>Limitations</h3>
+There are limitations to this study. <method confidence="0.99">As a scoping review, we are limited to what is presented in the papers</method>; <result confidence="0.90">this information may be tailored toward the venue and hold the perspectives of the authors</result>. <method confidence="0.80">By conducting interviews, for instance, we may have been able to follow up with questions to investigate how the methods were employed</method>. In saying that, <result confidence="0.85">we do believe this paper provides a snapshot of how participatory processes have been employed with autistic adults in general</result>. Secondly, <method confidence="0.98">by categorising the papers by topics and technologies employed according to keywords in Section 4, we acknowledge that some papers may not have explicit keywords related to the paper’s main topic/technology</method>. <result confidence="0.92">Indeed, we did notice many papers did not include keywords</result>. While this paper was not intended to provide detailed quantitative information illustrating the topics and technologies employed, <result confidence="0.90">grouping the keywords by topic and technology enabled us to understand what research was being employed in the area and the overall trend in research over the years</result>. <result confidence="0.90">Lastly, this paper does not consider research newer than our cutoff date 2023. Including these papers in our search may have resulted in further research projects being added to the corpus</result>. We believe this paper would provide a useful lens for reflecting on research conducted from 2024 onwards.
+
+<h3>Conclusion</h3>
+<result confidence="0.99">In conclusion, the projects examined showed diverse ways of involving autistic adults in design, from tailored methodologies to providing multiple modes to participate in specific design activities</result>. <method confidence="0.98">Through the lens of Program Theory, we shed light on how participatory design activities unfolded and the opportunities for further involvement</method>. <result confidence="0.95">We believe this was a valuable means for understanding how participation was mapped throughout the process of all projects: it drew attention to who was involved, how activities were structured to foster participation, and the long-lasting effects of the process</result>. <result confidence="0.92">It also revealed discussions that require attention (e.g. decision-making in participation)</result>. We acknowledge that Program Theory does not support a critical engagement in design choices. However, <goal confidence="0.97">our proposed opportunities for design can help researchers consider how their project inputs, mechanisms, and effects fall in line with the autistic stakeholders’ strengths, values, and desired outcomes/impacts - meaning that they are leading to more autistic-centred approaches</goal>.
+
+<h3>Acknowledgments</h3>
+We thank the independent reviewer, Sarah Foley (University College Cork), who provided feedback and guidance on the keywords chosen for this scoping review search.
+
+<h3>References</h3>
+[1] Haneen Almurashi, Rahma Bouaziz, Wallaa Alharthi, Mohammed Al-Sarem, Mohammed Hadwan, and Slim Kammoun. 2022. Augmented Reality, Serious Games and Picture Exchange Communication System for People with ASD: Systematic Literature Review and Future Directions. Sensors (Basel, Switzerland) 22, 3 (Feb. 2022), 1250. doi:10.3390/s22031250
+
+<p>[1] 2022. <method confidence="0.85">Augmented Reality, Serious Games and Picture Exchange Communication System for People with ASD: Systematic Literature Review and Future Directions</method>. Sensors (Basel, Switzerland) 22, 3 (Feb. 2022), 1250. doi:10.3390/s22031250</p>
+<p>[2] Roger Altizer Jr., Eric Handman, Greg Bayles, Jeff Jackman, Kun Cheng, Sydnie Ritchie, Trevor Newell, and Cheryl Wright. 2018. Choreografish: <method confidence="0.95">Co-designing a Choreography-based Therapeutic Virtual Reality System with Youth Who Have Autism Spectrum Advantages</method>. In Proceedings of the 2018 Annual Symposium on Computer-Human Interaction in Play Companion Extended Abstracts (CHI PLAY ’18 Extended Abstracts). Association for Computing Machinery, New York, NY, USA, 381–389. doi:10.1145/3270316.3271541</p>
+<p>[3] Melissa Anderson-Chavarria. 2022. The autism predicament: models of autism and their impact on autistic identity. Disability &amp; Society 37, 8 (Sept. 2022), 1321–1341. doi:10.1080/09687599.2021.1877117</p>
+<p>[4] Autistic Self Advocasy Network (ASAN). 2021. What We Believe - Autistic Self Advocacy Network. https://autisticadvocacy.org/about-asan/what-we-believe/</p>
+<p>[5] American Psychriatric Association. 2013. Diagnostic and Statistical Manual of Mental Disorders (DSM5). American Psychiatric Association, United States. https://doi/book/10.1176/appi.books.9780890425596</p>
+<p>[6] Liam Bannon, Jeffrey Bardzell, and Susanne Bødker. 2018. <goal confidence="0.75">Reimagining participatory design</goal>. Interactions 26, 1 (Dec. 2018), 26–32. doi:10.1145/3292015</p>
+<p>[7] Simon Baron-Cohen, Alan M. Leslie, and Uta Frith. 1985. <goal confidence="0.99">Does the autistic child have a “theory of mind”?</goal> Cognition 21, 1 (1985), 37–46. https://www.sciencedirect.com/science/article/pii/0010027785900228</p>
+<p>[8] Belén Barros Pena, Nelya Koteyko, Martine Van Driel, Andrea Delgado, and John Vines. 2023. "My Perfect Platform Would Be Telepathy" - <goal confidence="0.90">Reimagining the Design of Social Media with Autistic Adults</goal>. In Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems (CHI ’23). Association for Computing Machinery, New York, NY, USA, 1–16. doi:10.1145/3544548.3580673</p>
+<p>[9] Andrew Begel, John Tang, Sean Andrist, Michael Barnett, Tony Carbary, Piali Choudhury, Edward Cutrell, Alberto Fung, Sasa Junuzovic, Daniel McDuff, Kael Rowan, Shibashankar Sahoo, Jennifer Frances Waldern, Jessica Wolk, Hui Zheng, and Annuska Zolyomi. 2020. <result confidence="0.90">Lessons Learned in Designing AI for Autistic Adults</result>. In Proceedings of the 22nd International ACM SIGACCESS Conference on Computers and Accessibility (ASSETS ’20). Association for Computing Machinery, New York, NY, USA, 1–6. doi:10.1145/3373625.3418305</p>
+<p>[10] Laura Benton, Hilary Johnson, Emma Ashwin, Mark Brosnan, and Beate Grawemeyer. 2012. Developing IDEAS: <method confidence="0.80">supporting children with autism within a participatory design team</method>. In Proceedings of the SIGCHI Conference on Human Factors in Computing Systems (CHI ’12). Association for Computing Machinery, New York, NY, USA, 2599–2608. doi:10.1145/2207676.2208650</p>
+<p>[11] Claus Bossen, Christian Dindler, and Ole Sejer Iversen. 2018. <method confidence="0.80">Program theory for participatory design</method>. In Proceedings of the 15th Participatory Design Conference: Short Papers, Situated Actions, Workshops and Tutorial - Volume 2 (Hasselt and Genk, Belgium) (PDC ’18). Association for Computing Machinery, New York, NY, USA, Article 3, 4 pages. doi:10.1145/3210604.3210638</p>
+<p>[12] Mark Brosnan, Sarah Parsons, Judith Good, and Nicola Yuill. 2016. <goal confidence="0.99">How can participatory design inform the design and development of innovative technologies for autistic communities?</goal> Journal of Assistive Technologies 10, 2 (June 2016), 115–120. doi:10.1108/JAT-12-2015-0033</p>
+<p>[13] Catana Brown, Nona Tollefson, Winnie Dunn, Rue Cromwell, and Diane Filion. 2001. The adult sensory profile: <method confidence="0.90">Measuring patterns of sensory processing</method>. The American Journal of Occupational Therapy 55, 1 (2001), 75–82. https://research.aota.org/ajot/article-abstract/55/1/75/4511</p>
+<p>[14] Susanne Bødker and Ole Sejer Iversen. 2002. <method confidence="0.85">Staging a professional participatory design practice</method>: <goal confidence="0.70">moving PD beyond the initial fascination of user involvement</goal>. In Proceedings of the second Nordic conference on Human-computer interaction (NordiCHI ’02). Association for Computing Machinery, New York, NY, USA, 11–18. doi:10.1145/572020.572023</p>
+<p>[15] M. Ariel Cascio, Florian Grond, Rossio Motta-Ochoa, Tamar Tembeck, Dan Ten Veen, and Stefanie Blain-Moraes. 2020. Working Together: <method confidence="0.95">Ethnographic Observations on Participatory Design Involving Adults with Autism</method>. Human Organization 79, 1 (March 2020), 1–12. doi:10.17730/0018-7259.79.1.1</p>
+<p>[16] Louise Chapman, Kieran Rose, Laura Hull, and William Mandy. 2022. “I want to fit in. . . but I don’t want to change myself fundamentally”: <method confidence="0.95">A qualitative exploration of the relationship between masking and mental health for autistic teenagers</method>. Research in Autism Spectrum Disorders 99 (Nov. 2022), 102069. doi:10.1016/j.rasd.2022.102069</p>
+<p>[17] Dasom Choi, Sung-In Kim, Sunok Lee, Hyunseung Lim, Hee Jeong Yoo, and Hwajung Hong. 2023. Love on the Spectrum: <goal confidence="0.90">Toward Inclusive Online Dating Experience of Autistic Individuals</goal>. In Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems (CHI ’23). Association for Computing Machinery, New York, NY, USA, 1–15. doi:10.1145/3544548.3581341</p>
+<p>[18] Nick Chown, Jackie Robinson, Luke Beardon, Jillian Downing, Liz Hughes, Julia Leatherland, Katrina Fox, Laura Hickman, and Duncan MacGregor. 2017. <goal confidence="0.95">Improving research about us, with us</goal>: <result confidence="0.85">a draft framework for inclusive autism research</result>. Disability &amp; Society 32, 5 (May 2017), 720–734. doi:10.1080/09687599.2017.1320273</p>
+<p>[19] Nicholas Sheep Dalton. 2013. Neurodiversity &amp; HCI. In CHI ’13 Extended Abstracts on Human Factors in Computing Systems (CHI EA ’13). Association for Computing Machinery, New York, NY, USA, 2295–2304. doi:10.1145/2468356.2468752</p>
+<p>[20] Hanne De Jaegher. 2013. Embodiment and sense-making in autism. Frontiers in Integrative Neuroscience 7 (March 2013), Article 15. doi:10.3389/fnint.2013.00015</p>
+<p>[21] Hanne De Jaegher. 2023. <goal confidence="0.80">Seeing and inviting participation in autistic interactions</goal>. Transcultural Psychiatry 60, 5 (Oct. 2023), 852–865. doi:10.1177/13634615211009627</p>
+<p>[22] Jacquiline den Houting, Julianne Higgins, Kathy Isaacs, Joanne Mahony, and Elizabeth Pellicano. 2021. ‘I’m not just a guinea pig’: <result confidence="0.90">Academic and community perceptions of participatory autism research</result>. Autism 25, 1 (Jan. 2021), 148–163. doi:10.1177/1362361320951696</p>
+<p>[23] Carl DiSalvo, Andrew Clement, and Volkmar Pipek. 2013. Communities: <method confidence="0.90">Participatory Design for, with and by Communities</method>. In Routledge International Handbook of Participatory Design. Routledge, New York, NY, USA.</p>
+<p>[24] S. Domínguez-Lucio, L. M. Compañ-Gabucio, L. Torres-Collado, and M. García de la Hera. 2023. <method confidence="0.95">Occupational Therapy Interventions Using New Technologies in Children and Adolescents with Autism Spectrum Disorder: A Scoping Review</method>. Journal of Autism and Developmental Disorders 53, 1 (Jan. 2023), 332–358. doi:10.1007/s10803-022-05431-3</p>
+<p>[25] Autism Brain Imaging Data Exchange. 2024. ABIDE: Autism Brain Imaging Data Exchange. https://fcon_1000.projects.nitrc.org/indi/abide/</p>
+<p>[26] Marc Fabri, Phoenix C.S. Andrews, and Heta K. Pukki. 2016. <method confidence="0.98">Using design thinking to engage autistic students in participatory design of an online toolkit</method> <goal confidence="0.90">to help with transition into higher education</goal>. Journal of Assistive Technologies 10, 2 (Jan. 2016), 102–114. doi:10.1108/JAT-02-2016-0008</p>
+<p>[27] Jeanette Falk, Gopinaath Kannabiran, and Nicolai Brodersen Hansen. 2021. <goal confidence="0.95">What Do Hackathons Do? Understanding Participation in Hackathons</goal> <method confidence="0.90">Through Program Theory Analysis</method>. In Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems (CHI ’21). Association for Computing Machinery, New York, NY, USA, 1–16. doi:10.1145/3411764.3445198</p>
+<p>[28] Maria Angela Ferrario, Will Simm, Peter Newman, Stephen Forshaw, and Jon Whittle. 2014. <goal confidence="0.85">Software engineering for ’social good’</goal>: <method confidence="0.98">integrating action research, participatory design, and agile development</method>. In Companion Proceedings of the 36th International Conference on Software Engineering (ICSE Companion 2014). Association for Computing Machinery, New York, NY, USA, 520–523. doi:10.1145/2591062.2591121</p>
+<p>[29] Maria Angela Ferrario, Will Simm, and Jon Whittle. 2013. Speedplay, Managing the Other Edge of Innovation. In Open Digital DE2013. ACM, Manchester, UK, 1–3. https://www.researchgate.net/profile/Maria-Ferrario/publication/257479915_PAPER_Speedplay_Managing_the_Other_Edge_of_Innovation/links/564b59a608ae4ae893b7bdc2/PAPER-Speedplay-Managing-the-Other-Edge-of-Innovation.pdf</p>
+<p>[30] Sue Fletcher-Watson, Jon Adams, Kabie Brook, Tony Charman, Laura Crane, James Cusack, Susan Leekam, Damian Milton, Jeremy R Parr, and Elizabeth Pellicano. 2019. Making the future together: <goal confidence="0.95">Shaping autism research through meaningful participation</goal>. Autism 23, 4 (May 2019), 943–953. doi:10.1177/1362361318786721</p>
+<p>[31] Sue Fletcher-Watson, Kabie Brook, Sonny Hallett, Fergus Murray, and Catherine J. Crompton. 2021. <method confidence="0.90">Inclusive Practices for Neurodevelopmental Research</method>. Current Developmental Disorders Reports 8, 2 (June 2021), 88–97. doi:10.1007/s40474-021-00227-z</p>
+<p>[32] Christopher Frauenberger, Judith Good, Alyssa Alcorn, and Helen Pain. 2013. Conversing through and about Technologies: <method confidence="0.90">Design Critique as an Opportunity to Engage Children with Autism</method> and <goal confidence="0.85">Broaden Research(Er) Perspectives</goal>. International Journal of Child-Computer Interaction 1, 2 (May 2013), 38–49. doi:10.1016/j.ijcci.2013.02.001</p>
+<p>[33] Christopher Frauenberger, Julia Makhaeva, and Katta Spiel. 2017. <method confidence="0.98">Blending Methods: Developing Participatory Design Sessions for Autistic Children</method>. In Proceedings of the 2017 Conference on Interaction Design and Children. ACM, Stanford California USA, 39–49. doi:10.1145/3078072.3079727</p>
+<p>[34] Uta Frith and Francesca Happé. 1994. Autism: Beyond “theory of mind”. Cognition 50, 1-3 (1994), 115–132. https://www.sciencedirect.com/science/article/pii/0010027794900248</p>
+<p>[35] Tony Gentry, Richard Kriner, Adam Sima, Jennifer McDonough, and Paul Wehman. 2015. <goal confidence="0.95">Reducing the Need for Personal Supports Among Workers with Autism</goal> <method confidence="0.98">Using an iPod Touch as an Assistive Technology: Delayed Randomized Control Trial</method>. Journal of Autism and Developmental Disorders 45, 3 (March 2015), 669–684. doi:10.1007/s10803-014-2221-8</p>
+<p>[36] Kristen Gillespie, Gabriel Goldstein, David Shane Smith, Ariana Riccio, Michael Kholodovsky, Cali Merendino, Stanislav Leskov, Rayan Arab, Hassan Elsherbini, Pavel Asanov, and Deborah Sturm. 2017. <goal confidence="0.80">Connecting Through Kinect</goal>: <method confidence="0.98">Designing and Evaluating a Collaborative Game with and for Autistic Individuals</method>. In Design, User Experience, and Usability: Designing Pleasurable Experiences, Aaron Marcus and Wentao Wang (Eds.). Springer International Publishing, Cham, 398–413. doi:10.1007/978-3-319-58637-3_32</p>
+<p>[37] Kristen Gillespie-Lynch, Steven K. Kapp, Patricia J. Brooks, Jonathan Pickens, and Ben Schwartzman. 2017. <goal confidence="0.95">Whose Expertise Is It?</goal> <result confidence="0.85">Evidence for Autistic Adults</result></p>
+
+[37] Kristen Gillespie-Lynch, Steven K. Kapp, Patricia J. Brooks, Jonathan Pickens, and Ben Schwartzman. 2017. Whose Expertise Is It? <result confidence="0.85">Evidence for Autistic Adults as Critical Autism Experts</result>. Frontiers in Psychology 8 (March 2017), Article 438. doi:10.3389/fpsyg.2017.00438
+[38] Judith Good, N. Yuill, S. Parsons, M. Brosnan, and L. Austin. 2016. <method confidence="0.90">Putting technology design into the hands of the users with the ASCmeI. T. App</method>. In CHI 2016 Workshop on Autism and Technology: Beyond Assistance and Intervention, San Jose, CA,. ACM, New York, NY, USA, 1–5.
+[39] Florian Grond, M. Ariel Cascio, Rossio Motta-Ochoa, Tamar Tembeck, Dan Ten Veen, and Stefanie Blain-Moraes. 2019. <method confidence="0.95">Participatory design of biomusic with users on the autism spectrum</method>. In 2019 8th International Conference on Affective Computing and Intelligent Interaction (ACII), Cambridge, UK. IEEE, New York, USA, 1–7. doi:10.1109/ACII.2019.8925484
+[40] Florian Grond, Rossio Motta-Ochoa, Natalie Miyake, Tamar Tembeck, Melissa Park, and Stefanie Blain-Moraes. 2022. <method confidence="0.95">Participatory Design of Affective Technology: Interfacing Biomusic and Autism</method>. IEEE Transactions on Affective Computing 13, 1 (Jan. 2022), 250–261. doi:10.1109/TAFFC.2019.2922911
+[41] Kim Halskov and Nicolai Brodersen Hansen. 2015. <result confidence="0.80">The diversity of participatory design research practice at PDC 2002–2012</result>. International Journal of Human-Computer Studies 74 (Feb. 2015), 81–92. doi:10.1016/j.ijhcs.2014.09.003
+[42] Nicolai Brodersen Hansen, Christian Dindler, Kim Halskov, Ole Sejer Iversen, Claus Bossen, Ditte Amund Basballe, and Ben Schouten. 2020. <goal confidence="0.90">How Participatory Design Works: Mechanisms and Effects</goal>. In Proceedings of the 31st Australian Conference on Human-Computer-Interaction (OzCHI ’19). Association for Computing Machinery, New York, NY, USA, 30–41. doi:10.1145/3369457.3369460
+[43] Davida Hartman, Tara O’Donnell-Killen, Jessica K. Doyle, Dr Maeve Kavanagh, Dr Anna Day, and Dr Juliana Azevedo. 2023. The Adult Autism Assessment Handbook: <method confidence="0.90">A Neurodiversity Affirmative Approach</method>. Jessica Kingsley Publishers, London, UK.
+[44] Hwajung Hong, Jennifer G. Kim, Gregory D. Abowd, and Rosa I. Arriaga. 2012. <goal confidence="0.99">Designing a social network to support the independence of young adults with autism</goal>. In Proceedings of the ACM 2012 conference on Computer Supported Cooperative Work (CSCW ’12). Association for Computing Machinery, New York, NY, USA, 627–636. doi:10.1145/2145204.2145300
+[45] Steven K. Kapp, Kristen Gillespie-Lynch, Lauren E. Sherman, and Ted Hutman. 2013. <goal confidence="0.95">Deficit, difference, or both? Autism and neurodiversity</goal>. Developmental psychology 49, 1 (2013), 59. https://psycnet.apa.org/journals/dev/49/1/59/
+[46] Steven K Kapp, Robyn Steward, Laura Crane, Daisy Elliott, Chris Elphick, Elizabeth Pellicano, and Ginny Russell. 2019. ‘People should be allowed to do what they like’: <result confidence="0.95">Autistic adults’ views and experiences of stimming</result>. Autism 23, 7 (Oct. 2019), 1782–1792. doi:10.1177/1362361319829628
+[47] Helena Karasti. 2014. <method confidence="0.85">Infrastructuring in participatory design</method>. In Proceedings of the 13th Participatory Design Conference: Research Papers - Volume 1 (PDC ’14). Association for Computing Machinery, New York, NY, USA, 141–150. doi:10. 1145/2661435.2661450
+[48] Christopher A. Le Dantec and Sarah Fox. 2015. Strangers at the Gate: <method confidence="0.95">Gaining Access, Building Rapport, and Co-Constructing Community-Based Research</method>. In Proceedings of the 18th ACM Conference on Computer Supported Cooperative Work &amp; Social Computing (CSCW ’15). Association for Computing Machinery, New York, NY, USA, 1348–1358. doi:10.1145/2675133.2675147
+[49] K. MacLennan, S. O’Brien, and T. Tavassoli. 2022. In Our Own Words: <result confidence="0.95">The Complex Sensory Experiences of Autistic Adults</result>. Journal of Autism and Developmental Disorders 52, 7 (July 2022), 3061–3075. doi:10.1007/s10803-021-05186-3
+[50] Julia Makhaeva, Christopher Frauenberger, and Katta Spiel. 2016. <method confidence="0.95">Creating Creative Spaces for Co-Designing with Autistic Children: The Concept of a "Handlungsspielraum"</method>. In Proceedings of the 14th Participatory Design Conference: Full Papers - Volume 1. ACM, Aarhus Denmark, 51–60. doi:10.1145/2940299. 2940306
+[51] Rachael Maun, Marc Fabri, and Pip Trevorrow. 2021. <goal confidence="0.90">Adapting Participatory Design Activities for Autistic Adults</goal>: A Review. In Design, User Experience, and Usability: Design for Diversity, Well-being, and Social Development, Marcelo M. Soares, Elizabeth Rosenzweig, and Aaron Marcus (Eds.). Springer International Publishing, Cham, 300–314. doi:10.1007/978-3-030-78224-5_21
+[52] Rachael Maun, Marc Fabri, and Pip Trevorrow. 2024. <method confidence="0.95">Participatory Methods to Engage Autistic People in the Design of Digital Technology: A Systematic Literature Review</method>. Journal of Autism and Developmental Disorders 54, 8 (Aug. 2024), 2960–2971. doi:10.1007/s10803-023-06015-5
+[53] Laura Millen, Sue Cobb, and Harshada Patel. 2011. <method confidence="0.99">A method for involving children with autism in design</method>. In Proceedings of the 10th International Conference on Interaction Design and Children (IDC ’11). Association for Computing Machinery, New York, NY, USA, 185–188. doi:10.1145/1999030.1999057
+[54] Danielle Miller, Jon Rees, and Amy Pearson. 2021. “Masking Is Life”: <result confidence="0.95">Experiences of Masking in Autistic and Nonautistic Adults</result>. Autism in Adulthood 3, 4 (Dec. 2021), 330–338. doi:10.1089/aut.2020.0083
+[55] Damian Milton. 2013. ’Nothing about us, without us’: <goal confidence="0.90">the autism research agenda</goal>. https://kar.kent.ac.uk/62812/
+[56] Damian Milton. 2014. <goal confidence="0.90">What is meant by participation and inclusion, and why it can be difficult to achieve</goal>. https://kar.kent.ac.uk/62799/
+[57] Damian E.M. Milton. 2012. On the ontological status of autism: <result confidence="0.85">the ‘double empathy problem’</result>. Disability &amp; Society 27, 6 (Oct. 2012), 883–887. doi:10.1080/ 09687599.2012.710008
+[58] Dinah Murray, Mike Lesser, and Wendy Lawson. 2005. <result confidence="0.75">Attention, monotropism and the diagnostic criteria for autism</result>. Autism 9, 2 (May 2005), 139–156. doi:10. 1177/1362361305051398
+[59] Christina Nicolaidis, Dora Raymaker, Steven K Kapp, Amelia Baggs, E Ashkenazy, Katherine McDonald, Michael Weiner, Joelle Maslak, Morrigan Hunter, and Andrea Joyce. 2019. <method confidence="0.99">The AASPIRE practice-based guidelines for the inclusion of autistic adults in research as co-researchers and study participants</method>. Autism 23, 8 (Nov. 2019), 2007–2019. doi:10.1177/1362361319830523
+[60] Christina Nicolaidis, Dora Raymaker, Katherine McDonald, Steven Kapp, Michael Weiner, Elesia Ashkenazy, Martha Gerrity, Clarissa Kripke, Laura Platt, and Amelia Baggs. 2016. <method confidence="0.90">The Development and Evaluation of an Online Healthcare Toolkit for Autistic Adults and their Primary Care Providers</method>. Journal of General Internal Medicine 31, 10 (Oct. 2016), 1180–1189. doi:10.1007/s11606-016-3763-6
+[61] Sarah Parsons and Sue Cobb. 2014. <result confidence="0.90">Reflections on the Role of the ‘Users’: Challenges in a Multi-Disciplinary Context of Learner-Centred Design for Children on the Autism Spectrum</result>. International Journal of Research &amp; Method in Education 37, 4 (Oct. 2014), 421–441. doi:10.1080/1743727X.2014.890584
+[62] Sarah Parsons, Nicola Yuill, Mark Brosnan, and Judith Good. 2015. Innovative technologies for autism: <result confidence="0.85">critical reflections on digital bubbles</result>. Journal of Assistive Technologies 9, 2 (Jan. 2015), 116–121. doi:10.1108/JAT-03-2015-0005
+[63] Sarah Parsons, Nicola Yuill, Mark Brosnan, and Judith Good. 2017. “A child with autism only has one childhood”: <result confidence="0.90">main themes and questions for research from the “Digital Bubbles” seminar series</result>. Journal of Enabling Technologies 11, 3 (Jan. 2017), 113–119. doi:10.1108/JET-07-2017-0023
+[64] Elizabeth Pellicano, Wenn Lawson, Gabrielle Hall, Joanne Mahony, Rozanna Lilley, Melanie Heyworth, Hayley Clapham, and Michael Yudell. 2022. “I Knew She’d Get It, and Get Me”: <result confidence="0.95">Participants’ Perspectives of a Participatory Autism Research Project</result>. Autism in Adulthood 4, 2 (June 2022), 120–129. doi:10.1089/aut.2021.0039
+[65] Micah DJ Peters, Cristina Godfrey, Patricia McInerney, Zachary Munn, Andrea C. Tricco, and Hanan Khalili. 2020. 10. <method confidence="0.99">Scoping reviews</method>. In JBI Manual for Evidence Synthesis, E. Aromataris, C. Lockwood, K. Porritt, B. Pilla, and C. Jordan (Eds.). JBI. https://jbi-global-wiki.refined.site/space/MANUAL/355862497/10.+Scoping+ reviews
+[66] Hannah Pickard, Elizabeth Pellicano, Jacquiline Den Houting, and Laura Crane. 2022. Participatory autism research: <result confidence="0.95">Early career and established researchers’ views and experiences</result>. Autism 26, 1 (Jan. 2022), 75–87. doi:10.1177/ 13623613211019594
+[67] Rebecca Poulsen, Charlotte Brownlow, Wenn Lawson, and Elizabeth Pellicano. 2022. <goal confidence="0.90">Meaningful research for autistic people? Ask autistics!</goal> Autism 26, 1 (Jan. 2022), 3–5. doi:10.1177/13623613211064421
+[68] Patricia Pérez-Fuster, Javier Sevilla, and Gerardo Herrera. 2019. <goal confidence="0.99">Enhancing daily living skills in four adults with autism spectrum disorder</goal> through <method confidence="0.95">an embodied digital technology-mediated intervention</method>. Research in Autism Spectrum Disorders 58 (Feb. 2019), 54–67. doi:10.1016/j.rasd.2018.08.006
+[69] Amon Rapp, Federica Cena, Romina Castaldo, Roberto Keller, and Maurizio Tirassa. 2018. <goal confidence="0.95">Designing technology for spatial needs: Routines, control and social competences of people with autism</goal>. International Journal of Human-Computer Studies 120 (Dec. 2018), 49–65. doi:10.1016/j.ijhcs.2018.07.005
+[70] Amon Rapp, Federica Cena, Claudio Schifanella, and Guido Boella. 2020. <goal confidence="0.85">Finding a Secure Place</goal>: <method confidence="0.95">A Map-Based Crowdsourcing System for People With Autism</method>. IEEE Transactions on Human-Machine Systems 50, 5 (Oct. 2020), 424–433. doi:10.1109/ THMS.2020.2984743
+[71] Amon Rapp, Federica Cena, Maurizio Tirassa, Guido Boella, Alessia Calafiore, and Roberto Keller. 2017. <goal confidence="0.90">Tracking personal movements in urban environments</goal>: <method confidence="0.90">personalized maps for people with autism spectrum disorder</method>. In Proceedings of the 2017 ACM International Joint Conference on Pervasive and Ubiquitous Computing and Proceedings of the 2017 ACM International Symposium on Wearable Computers (UbiComp ’17). Association for Computing Machinery, New York, NY, USA, 883– 886. doi:10.1145/3123024.3125507
+[72] Jacob Hjulskov Ravn, Rune Møberg Jacobsen, and Nicolai Brodersen Hansen. 2022. <method confidence="0.95">Co-designing with adult people with ASD: A review of applied tools and techniques</method>. In Adjunct Proceedings of the 2022 Nordic Human-Computer Interaction Conference (NordiCHI ’22). Association for Computing Machinery, New York, NY, USA, 1–5. doi:10.1145/3547522.3547690
+[73] Jennifer C. Sarrett. 2016. Biocertification and Neurodiversity: <result confidence="0.85">the Role and Implications of Self-Diagnosis in Autistic Communities</result>. Neuroethics 9, 1 (April 2016), 23–36. doi:10.1007/s12152-016-9247-x
+[74] Ben Shneiderman. 2020. Human-centered artificial intelligence: <result confidence="0.90">Three fresh ideas</result>. AIS Transactions on Human-Computer Interaction 12, 3 (2020), 109–124.
+
+[74] Ben Shneiderman. 2020. Human-centered artificial intelligence: Three fresh ideas. AIS Transactions on Human-Computer Interaction 12, 3 (2020), 109–124. https://aisel.aisnet.org/thci/vol12/iss3/1/
+<br>[75] Will Simm, Maria Angela Ferrario, Adrian Gradinar, and Jon Whittle. 2014. <method confidence="0.95">Prototyping ’clasp’</method>: <result confidence="0.90">implications for designing digital technology for and with adults with autism</result>. In Proceedings of the 2014 conference on Designing interactive systems. ACM, Vancouver BC Canada, 345–354. doi:10.1145/2598510.2600880
+<br>[76] Jesper Simonsen, Helena Karasti, and Morten Hertzum. 2020. <method confidence="0.90">Infrastructuring and Participatory Design: Exploring Infrastructural Inversion as Analytic, Empirical and Generative</method>. Computer Supported Cooperative Work (CSCW) 29, 1 (April 2020), 115–151. doi:10.1007/s10606-019-09365-w
+<br>[77] Judy Singer. 2017. NeuroDiversity: The Birth of an Idea. Judy Singer, Lexington.
+<br>[78] Katta Spiel, Christopher Frauenberger, Os Keyes, and Geraldine Fitzpatrick. 2019. Agency of Autistic Children in Technology Research—A <method confidence="0.95">Critical Literature Review</method>. ACM Trans. Comput.-Hum. Interact. 26, 6 (Nov. 2019), 38:1–38:40. doi:10.1145/3344919
+<br>[79] Deborah Sturm, Michael Kholodovsky, Rayan Arab, David Shane Smith, Pavel Asanov, and Kristen Gillespie-Lynch. 2019. <method confidence="0.95">Participatory Design of a Hybrid Kinect Game</method> <goal confidence="0.98">to Promote Collaboration between Autistic Players and Their Peers</goal>. International Journal of Human–Computer Interaction 35, 8 (May 2019), 706–723. doi:10.1080/10447318.2018.1550180.
+<br>[80] Nick Walker. 2021. Neuroqueer Heresies: Notes on the Neurodiversity Paradigm, Autistic Empowerment, and Postnormal Possibilities. Autonomous Press, Fort Worth.
+<br>[81] Nina Wallerstein and Bonnie Duran. 2003. The conceptual, historical and practical roots of <method confidence="0.90">community based participatory research</method> and related participatory traditions. In Community Based Participatory Research for Health: From Process to Outcomes, Meredith Minkler and Nina Wallerstein (Eds.). Jossey-Bass, San Francisco, 27–52. Section: 2.
+<br>[82] Edith Walsh, Helena Lydon, and Jennifer Holloway. 2020. <method confidence="0.95">An Evaluation of Assistive Technology</method> in <goal confidence="0.95">Determining Job-Specific Preference for Adults With Autism and Intellectual Disabilities</goal>. Behavior Analysis in Practice 13, 2 (June 2020), 434–444. doi:10.1007/s40617-019-00380-3
+<br>[83] Manhua Wang and Myounghoon Jeon. 2024. Assistive Technology for Adults on the Autism Spectrum: A <method confidence="0.95">Systematic Survey</method>. International Journal of Human–Computer Interaction 40, 10 (May 2024), 2433–2452. doi:10.1080/10447318.2022.2163568.
+<br>[84] Shannon Wooldridge. 2023. Writing Respectfully: Person-First and Identity-First Language. https://www.nih.gov/about-nih/what-we-do/science-health-public-trust/perspectives/writing-respectfully-person-first-identity-first-language
+<br>[85] Wei Xu, Marvin J. Dainoff, Liezhong Ge, and Zaifeng Gao. 2023. Transitioning to Human Interaction with AI Systems: New Challenges and Opportunities for HCI Professionals <goal confidence="0.90">to Enable Human-Centered AI</goal>. International Journal of Human–Computer Interaction 39, 3 (Feb. 2023), 494–518. doi:10.1080/10447318.2022.2041900
+<br>[86] Anon Ymous, Katta Spiel, Os Keyes, Rua M. Williams, Judith Good, Eva Hornecker, and Cynthia L. Bennett. 2020. <result confidence="0.95">"I am just terrified of my future" — Epistemic Violence in Disability Related Technology Research</result>. In Extended Abstracts of the 2020 CHI Conference on Human Factors in Computing Systems (CHI EA ’20). Association for Computing Machinery, New York, NY, USA, 1–16. doi:10.1145/3334480.3381828
+<br>[87] Lidan Zheng, Kitty-Rose Foley, Rachel Grove, Kieran Elley, Scott Andrew Brown, Dawn-joy Leong, Xue Li, Elizabeth Pellicano, Julian N Trollor, and Ye In (Jane) Hwang. 2022. <result confidence="0.85">The use of everyday and assistive technology in the lives of older autistic adults</result>. Autism 26, 6 (Aug. 2022), 1550–1562. doi:10.1177/13623613211058519
+<br>[88] Doăa Çorlu, Şeyma Taşel, Semra Gülce Turan, Athanasios Gatos, and Asim Evren Yantaç. 2017. Involving Autistics in User Experience Studies: A <method confidence="0.95">Critical Review</method>. In Proceedings of the 2017 Conference on Designing Interactive Systems (DIS ’17). Association for Computing Machinery, New York, NY, USA, 43–55. doi:10.1145/3064663.3064771</div></div></main></div></div>
+    <script type="module" src="./Vite + React + TS_files/main.tsx"></script>
+  
+
+</body></html>

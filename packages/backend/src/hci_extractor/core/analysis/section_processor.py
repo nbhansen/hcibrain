@@ -21,7 +21,7 @@ from hci_extractor.core.events import (
     SectionProcessingStarted,
 )
 from hci_extractor.core.models import DetectedSection, ExtractedElement, LLMError, Paper
-from hci_extractor.providers import LLMProvider
+from hci_extractor.core.ports import LLMProviderPort
 
 # Simple error handling - let the LLM handle the understanding
 from hci_extractor.utils.json_recovery import JsonRecoveryOptions, recover_json
@@ -71,7 +71,7 @@ class LLMSectionProcessor(SectionProcessor):
 
     def __init__(
         self,
-        llm_provider: LLMProvider,
+        llm_provider: LLMProviderPort,
         config: ExtractorConfig,
         event_bus: EventBus,
         chunk_size: int = 8000,

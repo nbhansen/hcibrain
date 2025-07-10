@@ -148,7 +148,11 @@ run_frontend_linting() {
     
     # Count errors (excluding warnings)
     local error_count
-    error_count=$(echo "$eslint_output" | grep -c "error" 2>/dev/null | head -1 || echo "0")
+    if echo "$eslint_output" | grep -q "error" 2>/dev/null; then
+        error_count=$(echo "$eslint_output" | grep -c "error" 2>/dev/null)
+    else
+        error_count=0
+    fi
     
     if [[ "$error_count" -gt 10 ]]; then
         error "🚨 FRONTEND LINTING FAILED - TOO MANY ERRORS (${error_count})!"

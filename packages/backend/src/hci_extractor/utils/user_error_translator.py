@@ -313,7 +313,9 @@ def format_error_for_cli(
             related_docs=user_message.related_docs,
         )
 
-    return _error_translator.format_for_cli(user_message)
+    # Create translator instance instead of using global reference
+    translator = UserErrorTranslator()
+    return translator.format_for_cli(user_message)
 
 
 def create_user_friendly_exception(

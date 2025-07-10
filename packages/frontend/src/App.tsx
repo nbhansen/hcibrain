@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import './App.css';
 import { UI_TEXT, API_ENDPOINTS } from './constants';
 
@@ -31,6 +32,7 @@ function App() {
   // TOC state
   const [tocItems, setTocItems] = useState<TocItem[]>([]);
   const [activeSection, setActiveSection] = useState<string>('');
+  const [processedHtml, setProcessedHtml] = useState<string>('');
   const markupContentRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   
@@ -86,6 +88,7 @@ function App() {
     setError(null);
     setTocItems([]);
     setActiveSection('');
+    setProcessedHtml('');
     
     // Clean up intersection observer
     if (observerRef.current) {
@@ -93,6 +96,24 @@ function App() {
       observerRef.current = null;
     }
   };
+
+  // Add IDs to headings in HTML content for navigation
+  const addHeadingIds = useCallback((htmlContent: string): string => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    
+    // Add IDs to headings that don't already have them
+    Array.from(headings)
+      .filter((heading) => heading.textContent && heading.textContent.trim().length > 0)
+      .forEach((heading, index) => {
+        if (!heading.id) {
+          heading.id = `heading-${index}`;
+        }
+      });
+    
+    return doc.body.innerHTML;
+  }, []);
 
   // Generate TOC from HTML content
   const generateTOC = useCallback((htmlContent: string): TocItem[] => {
@@ -103,7 +124,7 @@ function App() {
     return Array.from(headings)
       .filter((heading) => heading.textContent && heading.textContent.trim().length > 0)
       .map((heading, index) => ({
-        id: `heading-${index}`,
+        id: heading.id || `heading-${index}`,
         text: heading.textContent?.trim() || '',
         level: parseInt(heading.tagName.charAt(1)),
       }));
@@ -120,19 +141,6 @@ function App() {
 
     const headings = markupContentRef.current.querySelectorAll('h1, h2, h3, h4, h5, h6');
     
-    // Add IDs to headings for navigation and update TOC items with element references
-    const updatedTocItems = tocItems.map((item, index) => {
-      const heading = headings[index];
-      if (heading) {
-        heading.id = item.id; // Use the same ID from TOC generation
-        return { ...item, element: heading as HTMLElement };
-      }
-      return item;
-    });
-    
-    // Update TOC items with element references
-    setTocItems(updatedTocItems);
-
     // Create intersection observer
     const options = {
       root: markupContentRef.current,
@@ -162,7 +170,7 @@ function App() {
         observerRef.current.observe(heading);
       }
     });
-  }, [tocItems]);
+  }, []);
 
   // Handle TOC item click with smooth scrolling
   const handleTocClick = useCallback((itemId: string) => {
@@ -191,23 +199,28 @@ function App() {
     }));
   }, []);
 
-  // Setup TOC when markup result is available
+  // Setup TOC and processed HTML when markup result is available
   useEffect(() => {
     if (markupResult?.paper_full_text_with_markup) {
-      const toc = generateTOC(markupResult.paper_full_text_with_markup);
+      // Process HTML to add heading IDs
+      const htmlWithIds = addHeadingIds(markupResult.paper_full_text_with_markup);
+      setProcessedHtml(htmlWithIds);
+      
+      // Generate TOC from processed HTML
+      const toc = generateTOC(htmlWithIds);
       setTocItems(toc);
     }
-  }, [markupResult, generateTOC]);
+  }, [markupResult, generateTOC, addHeadingIds]);
 
-  // Setup intersection observer when TOC items are ready
+  // Setup intersection observer when processed HTML is ready
   useEffect(() => {
-    if (tocItems.length > 0 && markupResult) {
+    if (processedHtml && tocItems.length > 0) {
       // Setup observer after DOM is updated
       setTimeout(() => {
         setupIntersectionObserver();
       }, 100);
     }
-  }, [tocItems, markupResult, setupIntersectionObserver]);
+  }, [processedHtml, tocItems.length, setupIntersectionObserver]);
 
   // Cleanup observer on unmount
   useEffect(() => {
@@ -350,7 +363,7 @@ function App() {
                   ref={markupContentRef}
                   className={`markup-content ${!filters.goals ? 'hide-goals' : ''} ${!filters.methods ? 'hide-methods' : ''} ${!filters.results ? 'hide-results' : ''}`}
                   dangerouslySetInnerHTML={{ 
-                    __html: markupResult.paper_full_text_with_markup 
+                    __html: DOMPurify.sanitize(processedHtml || markupResult.paper_full_text_with_markup) 
                   }}
                 />
               </div>

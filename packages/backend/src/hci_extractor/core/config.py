@@ -7,12 +7,35 @@ ensuring all settings are centralized in a single source of truth.
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from hci_extractor.infrastructure.configuration_service import (
-    ConfigurationData,
-    ConfigurationService,
-)
+from hci_extractor.core.ports import ConfigurationPort
+
+
+@dataclass(frozen=True)
+class ConfigurationData:
+    """Immutable configuration data loaded from configuration sources."""
+
+    # API configuration
+    api: Dict[str, Any]
+
+    # Extraction configuration
+    extraction: Dict[str, Any]
+
+    # Analysis configuration
+    analysis: Dict[str, Any]
+
+    # Retry configuration
+    retry: Dict[str, Any]
+
+    # Cache configuration
+    cache: Dict[str, Any]
+
+    # Export configuration
+    export: Dict[str, Any]
+
+    # General configuration
+    general: Dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -108,6 +131,10 @@ class ExtractorConfig:
         Raises:
             ConfigurationError: If config file cannot be loaded or is invalid
         """
+        from hci_extractor.infrastructure.configuration_service import (
+            ConfigurationService,
+        )
+
         config_service = ConfigurationService(config_path)
         config_data = config_service.load_configuration()
 
@@ -120,7 +147,7 @@ class ExtractorConfig:
     def from_configuration_data(
         cls,
         config_data: ConfigurationData,
-        config_service: ConfigurationService,
+        config_service: ConfigurationPort,
     ) -> "ExtractorConfig":
         """
         Create configuration from configuration data object.

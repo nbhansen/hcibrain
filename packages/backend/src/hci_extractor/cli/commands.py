@@ -857,34 +857,52 @@ def _test_api_key(api_key: str, progress: ProgressTracker) -> bool:
     try:
         progress.info("Testing API key...")
 
-        # Test the API key by temporarily setting environment and resolving provider
-        from hci_extractor.infrastructure.configuration_service import (
-            ConfigurationService,
+        # Create a test provider directly with the provided API key
+        # This avoids manipulating global environment state
+        from pathlib import Path
+
+        from hci_extractor.core.events import EventBus
+        from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+        from hci_extractor.providers.gemini_provider import GeminiProvider
+        from hci_extractor.providers.provider_config import GeminiProviderConfig
+
+        # Create minimal test configuration
+        test_config = GeminiProviderConfig(
+            api_key=api_key,
+            model="gemini-1.5-flash",
+            timeout=30.0,
+            max_retries=1,
         )
 
-        config_service = ConfigurationService()
-        original_key = config_service.get_environment_variable("GEMINI_API_KEY")
-        try:
-            os.environ["GEMINI_API_KEY"] = api_key
+        # Create minimal dependencies for testing
+        event_bus = EventBus()
 
-            # Use DI container to create provider with the test API key
-            container_factory = get_cli_container_factory()
-            container = container_factory.create_container_with_cli_config()
-            provider = container.resolve(LLMProvider)  # type: ignore
+        # Use current working directory for prompts (fallback)
+        prompts_dir = Path.cwd() / "prompts"
+        if not prompts_dir.exists():
+            # Try to find prompts directory relative to package
+            package_root = Path(__file__).parent.parent.parent.parent
+            prompts_dir = package_root / "prompts"
 
-            # Make a simple test call using the async method
-            async def test_call() -> Dict[str, Any]:
-                return await provider._make_api_request("Say 'test' in one word only.")
+        prompt_loader = MarkupPromptLoader(prompts_dir)
 
-            test_response = asyncio.run(test_call())
+        # Create provider for testing
+        provider = GeminiProvider(
+            provider_config=test_config,
+            event_bus=event_bus,
+            markup_prompt_loader=prompt_loader,
+            model_name="gemini-1.5-flash",
+        )
 
-            return bool(test_response and isinstance(test_response, dict))
-        finally:
-            # Restore original API key
-            if original_key is not None:
-                os.environ["GEMINI_API_KEY"] = original_key
-            elif "GEMINI_API_KEY" in os.environ:
-                del os.environ["GEMINI_API_KEY"]
+        # Make a simple test call using the public interface
+        async def test_call() -> str:
+            return await provider.generate_markup(
+                "This is a test paper about AI research. Our goal is to test the API."
+            )
+
+        test_response = asyncio.run(test_call())
+
+        return bool(test_response and isinstance(test_response, str))
 
     except Exception as e:
         progress.warning(f"API key test failed: {e}")
@@ -1324,57 +1342,10 @@ def export(
 
 
 def _export_to_csv(elements: List[Dict[str, Any]]) -> str:
-    """Export elements to CSV format."""
-    if not elements:
-        return ""
+    """Export elements to CSV format using domain service."""
+    from hci_extractor.core.domain.export_service import ExportService
 
-    # Get all possible field names
-    fieldnames: set[str] = set()
-    for element in elements:
-        fieldnames.update(element.keys())
-
-    # Ensure consistent ordering
-    ordered_fields = [
-        # Paper metadata
-        "paper_title",
-        "paper_authors",
-        "paper_venue",
-        "paper_year",
-        "source_file",
-        # Paper summary fields
-        "paper_summary",
-        "paper_summary_confidence",
-        # Element core fields
-        "element_type",
-        "evidence_type",
-        "section",
-        "text",
-        "confidence",
-        "page_number",
-        "element_id",
-        # Optional context fields for manual comparison
-        "supporting_evidence",
-        "methodology_context",
-        "study_population",
-        "limitations",
-        "surrounding_context",
-    ]
-
-    # Add any additional fields not in the ordered list
-    remaining_fields = sorted(fieldnames - set(ordered_fields))
-    fieldnames_list: List[str] = [
-        f for f in ordered_fields if f in fieldnames
-    ] + remaining_fields
-
-    # Generate CSV
-    import io
-
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=fieldnames_list)
-    writer.writeheader()
-    writer.writerows(elements)
-
-    return output.getvalue()
+    return ExportService.export_to_csv(elements)
 
 
 def _export_to_json(
@@ -1399,7 +1370,10 @@ def _export_to_markdown(
     elements: List[Dict[str, Any]],
     papers_info: List[Dict[str, Any]],
 ) -> str:
-    """Export elements to Markdown format."""
+    """Export elements to Markdown format using domain service."""
+    from hci_extractor.core.domain.export_service import ExportService
+
+    return ExportService.export_to_markdown(elements, papers_info)
     lines = []
 
     # Header

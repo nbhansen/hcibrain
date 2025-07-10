@@ -9,7 +9,6 @@ while maintaining the existing configuration architecture.
 """
 
 import argparse
-import os
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -84,17 +83,40 @@ class ConfigurationBuilder:
         new_builder = ConfigurationBuilder(self._base_config)
         new_builder._overrides = self._overrides.copy()
 
-        # Process environment variables
-        for env_var, env_value in os.environ.items():
-            if not env_var.startswith(env_prefix):
-                continue
+        # Process environment variables using ConfigurationService
+        from hci_extractor.infrastructure.configuration_service import (
+            ConfigurationService,
+        )
 
-            # Convert environment variable name to config path
-            config_path = self._env_var_to_config_path(env_var, env_prefix)
-            if config_path:
-                # Convert string value to appropriate type
-                typed_value = self._convert_env_value(config_path, env_value)
-                new_builder._overrides[config_path] = typed_value
+        config_service = ConfigurationService()
+
+        # Get environment variables that match our prefix
+        # Note: We still need to check environment variables for config overrides
+        # but we use the configuration service interface
+        env_vars_to_check = [
+            "HCI_EXTRACTION_MAX_FILE_SIZE_MB",
+            "HCI_EXTRACTION_TIMEOUT_SECONDS",
+            "HCI_EXTRACTION_NORMALIZE_TEXT",
+            "HCI_ANALYSIS_MODEL_NAME",
+            "HCI_ANALYSIS_CHUNK_SIZE",
+            "HCI_ANALYSIS_CHUNK_OVERLAP",
+            "HCI_RETRY_MAX_ATTEMPTS",
+            "HCI_RETRY_INITIAL_DELAY",
+            "HCI_RETRY_MAX_DELAY",
+            "HCI_CACHE_ENABLED",
+            "HCI_CACHE_TTL_HOURS",
+            "HCI_CACHE_MAX_SIZE_MB",
+        ]
+
+        for env_var in env_vars_to_check:
+            env_value = config_service.get_environment_value(env_var)
+            if env_value is not None:
+                # Convert environment variable name to config path
+                config_path = self._env_var_to_config_path(env_var, env_prefix)
+                if config_path:
+                    # Convert string value to appropriate type
+                    typed_value = self._convert_env_value(config_path, env_value)
+                    new_builder._overrides[config_path] = typed_value
 
         return new_builder
 

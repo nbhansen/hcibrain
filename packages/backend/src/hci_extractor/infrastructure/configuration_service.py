@@ -1,41 +1,17 @@
 """YAML-based configuration service for HCIBrain."""
 
-from dataclasses import dataclass
+import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 import yaml
 
+from hci_extractor.core.config import ConfigurationData
 from hci_extractor.core.models.exceptions import ConfigurationError
+from hci_extractor.core.ports import ConfigurationPort
 
 
-@dataclass(frozen=True)
-class ConfigurationData:
-    """Immutable configuration data loaded from YAML."""
-
-    # API configuration
-    api: Dict[str, Any]
-
-    # Extraction configuration
-    extraction: Dict[str, Any]
-
-    # Analysis configuration
-    analysis: Dict[str, Any]
-
-    # Retry configuration
-    retry: Dict[str, Any]
-
-    # Cache configuration
-    cache: Dict[str, Any]
-
-    # Export configuration
-    export: Dict[str, Any]
-
-    # General configuration
-    general: Dict[str, Any]
-
-
-class ConfigurationService:
+class ConfigurationService(ConfigurationPort):
     """Service for loading YAML-based configuration."""
 
     def __init__(self, config_path: Optional[Path] = None):
@@ -185,7 +161,6 @@ class ConfigurationService:
         Returns:
             Environment variable value or default
         """
-        import os
 
         return os.environ.get(key, default)
 
@@ -198,7 +173,6 @@ class ConfigurationService:
         Returns:
             True if environment variable exists
         """
-        import os
 
         return key in os.environ
 
@@ -226,3 +200,44 @@ class ConfigurationService:
             Log level from environment or None
         """
         return self.get_environment_variable("HCI_LOG_LEVEL")
+
+    # ConfigurationPort interface implementation
+
+    def get_api_key(self, provider: str) -> Optional[str]:
+        """Get API key for a specific provider."""
+        if provider.lower() == "gemini":
+            return self.get_environment_variable("GEMINI_API_KEY")
+        if provider.lower() == "openai":
+            return self.get_environment_variable("OPENAI_API_KEY")
+        return self.get_environment_variable(f"{provider.upper()}_API_KEY")
+
+    def get_environment_value(
+        self, key: str, default: Optional[str] = None
+    ) -> Optional[str]:
+        """Get environment variable value."""
+        return self.get_environment_variable(key, default)
+
+    def get_configuration_dict(self) -> Dict[str, Any]:
+        """Get the complete configuration as a dictionary."""
+        try:
+            config_data = self.load_configuration()
+            return {
+                "api": config_data.api,
+                "extraction": config_data.extraction,
+                "analysis": config_data.analysis,
+                "retry": config_data.retry,
+                "cache": config_data.cache,
+                "export": config_data.export,
+                "general": config_data.general,
+            }
+        except ConfigurationError:
+            return {}
+
+    def validate_configuration(self) -> bool:
+        """Validate that the configuration is complete and valid."""
+        try:
+            config_data = self.load_configuration()
+            self.validate_api_configuration(config_data)
+            return True
+        except (ConfigurationError, Exception):
+            return False

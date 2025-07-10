@@ -12,7 +12,7 @@ from hci_extractor.core.events import (
     SectionProcessingStarted,
 )
 from hci_extractor.core.metrics import LLMMetricsContext
-from hci_extractor.providers.base import LLMProvider
+from hci_extractor.core.ports import LLMProviderPort
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class SectionAnalysisService:
 
     def __init__(
         self,
-        llm_provider: LLMProvider,
+        llm_provider: LLMProviderPort,
         config: ExtractorConfig,
         event_bus: EventBus,
     ):
@@ -127,7 +127,7 @@ class PaperSummaryService:
 
     def __init__(
         self,
-        llm_provider: LLMProvider,
+        llm_provider: LLMProviderPort,
         config: ExtractorConfig,
         event_bus: EventBus,
     ):

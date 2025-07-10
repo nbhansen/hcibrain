@@ -63,7 +63,8 @@ class MarkupPromptLoader:
 
                 # Add chunk context if available
                 chunk_context = self._prompts.get("chunk_processing", {}).get(
-                    "chunk_context", "",
+                    "chunk_context",
+                    "",
                 )
                 if chunk_context:
                     template += f"\n\n{chunk_context}"
@@ -101,7 +102,9 @@ class MarkupPromptLoader:
         # Format rules as numbered list (old format expected list)
         rules = markup_config.get("rules", [])
         if isinstance(rules, list):
-            formatted_rules = "\n".join(f"{i + 1}. {rule}" for i, rule in enumerate(rules))
+            formatted_rules = "\n".join(
+                f"{i + 1}. {rule}" for i, rule in enumerate(rules)
+            )
         else:
             formatted_rules = str(rules)
 

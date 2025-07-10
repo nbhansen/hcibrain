@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.extraction.pdf_extractor import PdfExtractor
-from hci_extractor.providers import LLMProvider
+from hci_extractor.core.ports.llm_provider_port import LLMProviderPort
 from hci_extractor.web.dependencies import (
     get_extractor_config,
     get_llm_provider,
@@ -42,7 +42,7 @@ def _extract_summary_from_response(text: str) -> str:
 async def extract_pdf_markup(
     file: UploadFile = File(...),
     config: ExtractorConfig = Depends(get_extractor_config),
-    llm_provider: LLMProvider = Depends(get_llm_provider),
+    llm_provider: LLMProviderPort = Depends(get_llm_provider),
 ) -> MarkupExtractionResponse:
     """
     Extract PDF and return full text with HTML markup for highlights.

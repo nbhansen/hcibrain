@@ -83,10 +83,17 @@ Our code is complete when:
 
 ## Project Structure
 ```
-src/           # Backend Python code
-tests/         # Backend test files
-docs/          # Documentation
-academic-paper-skimming-assistant/  # Frontend Next.js app
+packages/
+├── backend/           # Backend Python code
+│   ├── src/          # Source code (hci_extractor package)
+│   ├── tests/        # Backend test files
+│   └── pyproject.toml
+├── frontend/         # Frontend React/TypeScript app
+│   ├── src/          # React components and assets
+│   ├── dist/         # Built frontend files
+│   └── package.json
+├── config.yaml       # Main configuration file
+└── prompts/          # Prompt templates and examples
 ```
 
 ## TypeScript Standards (Frontend)

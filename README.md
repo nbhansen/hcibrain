@@ -17,8 +17,8 @@ Upload PDFs → Get highlighted Goals, Methods, and Results with precise coordin
 ./hcibrain.sh lint
 ```
 
-**Access the app**: http://localhost:3000  
-**API docs**: http://localhost:8000/docs
+**Access the app**: http://localhost:5173  
+**API documentation**: http://localhost:8000
 
 ## 📁 Monorepo Structure
 
@@ -31,11 +31,11 @@ hcibrain/
 │   │   ├── prompts/      # AI extraction prompts
 │   │   ├── config.yaml   # Configuration
 │   │   └── venv/         # Python virtual environment
-│   └── frontend/         # Next.js TypeScript frontend
-│       ├── app/          # App router pages
-│       ├── components/   # React components
-│       ├── services/     # API client services
-│       └── types/        # TypeScript definitions
+│   └── frontend/         # React + Vite TypeScript frontend
+│       ├── src/          # Source code
+│       │   ├── App.tsx   # Main application
+│       │   └── App.css   # Styling
+│       └── package.json  # Dependencies
 ├── hcibrain.sh          # One-click startup script
 ├── package.json         # Monorepo configuration
 └── docs/               # Documentation
@@ -50,7 +50,7 @@ source venv/bin/activate
 uvicorn src.hci_extractor.web.app:app --reload
 ```
 
-### Frontend (Next.js TypeScript)  
+### Frontend (React + Vite TypeScript)  
 ```bash
 cd packages/frontend
 npm run dev
@@ -65,27 +65,26 @@ python -m mypy src/
 
 # Frontend linting  
 cd packages/frontend
-npm run check:fix
-npm run typecheck
+npm run lint
 ```
 
 ## ✨ Features
 
 - **AI-powered extraction** using Google Gemini
-- **Coordinate-mapped highlights** with PDF.js viewer
+- **HTML markup generation** with inline highlighting
 - **Three-category system**: Goals, Methods, Results
-- **Interactive controls**: Opacity, confidence filtering
-- **Real-time progress tracking** via WebSocket
+- **Chunked processing** for large academic papers
+- **Text cleaning** removes academic artifacts while preserving references
 - **Enterprise-grade code quality** with comprehensive linting
 - **Type-safe throughout** Python + TypeScript
 
 ## 🏗️ Architecture
 
 - **Backend**: FastAPI + PyMuPDF + Google Gemini
-- **Frontend**: Next.js 14 + TypeScript + Tailwind CSS + shadcn/ui  
-- **Quality**: Ruff + MyPy + Biome linting with zero-tolerance policy
+- **Frontend**: React + Vite + TypeScript + CSS
+- **Quality**: Ruff + MyPy + ESLint linting with zero-tolerance policy
 - **Config**: YAML-based configuration with template system
-- **Deployment**: Production-ready with Docker support
+- **Design**: Hexagonal architecture with dependency injection
 
 ## 📋 Requirements
 
@@ -99,19 +98,38 @@ npm run typecheck
 2. Add your Gemini API key
 3. Customize extraction settings as needed
 
+## 🧪 Testing
+
+### Quick Health Check
+```bash
+./quick_test.sh          # Basic health check (no API key needed)
+```
+
+### Configuration Setup
+```bash
+./setup_config.sh        # Interactive config setup wizard
+```
+
+### Full API Testing
+```bash
+./test_api.sh            # Comprehensive API testing with PDF extraction
+./test_api.sh --quick     # Quick health and config tests only
+./test_api.sh --keep-server  # Leave server running for manual testing
+```
+
 ## 📚 Documentation
 
-- [Quick Start Guide](./QUICKSTART.md)
-- [API Testing Guide](./API_TESTING.md) 
-- [Architecture Overview](./docs/ARCHITECTURE.md)
-- [Developer Guide](./docs/DEVELOPER_GUIDE.md)
+- [Architecture Overview](./ARCHITECTURE.md)
+- [Development Guidelines](./CLAUDE.md)
+- [Code Review Findings](./CODEREVIEW.md)
 
 ## 🎯 Current Status
 
 **Production Ready!** ✅
-- 92 Python linting issues (down from 453 - 79% improvement!)
-- TypeScript compilation passing
-- All services start and run cleanly
+- All linting issues resolved (Python + TypeScript)
+- Full architecture compliance with hexagonal design
+- Complete immutability implementation
+- Frontend follows React/TypeScript best practices
 - Comprehensive quality gates enforced
 
 ---

@@ -18,7 +18,18 @@
     "backend:lint": "cd packages/backend && source venv/bin/activate && python -m ruff check src/",
     "frontend:lint": "cd packages/frontend && npm run check",
     "test": "cd packages/backend && source venv/bin/activate && python -m pytest tests/",
-    "setup": "./setup_config.sh"
+    "setup": "./setup_config.sh",
+    "python:install": "pip install -e .[dev]",
+    "python:lint": "ruff check",
+    "python:format": "black packages/backend/src/ packages/backend/tests/",
+    "python:format:check": "black --check --diff packages/backend/src/ packages/backend/tests/",
+    "python:type-check": "mypy",
+    "python:test": "pytest",
+    "python:test:cov": "pytest --cov-report=xml --cov-report=term-missing",
+    "python:security": "bandit -r packages/backend/src/ -ll",
+    "python:complexity": "radon cc packages/backend/src/ -s -n B && radon mi packages/backend/src/ -s -n B",
+    "python:dead-code": "vulture packages/backend/src/ --min-confidence 80",
+    "quality:all": "npm run python:format:check && npm run python:lint && npm run python:type-check && npm run python:security && npm run python:complexity && npm run python:test:cov"
   },
   "keywords": [
     "hci",

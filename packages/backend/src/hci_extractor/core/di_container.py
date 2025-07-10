@@ -169,10 +169,11 @@ def configure_services(container: DIContainer) -> None:
     )
     from hci_extractor.core.events import EventBus
     from hci_extractor.core.extraction import PdfExtractor
+    from hci_extractor.core.ports import LLMProviderPort
 
     # Register configuration service and configuration as singletons
     from hci_extractor.infrastructure.configuration_service import ConfigurationService
-    from hci_extractor.providers import GeminiProvider, LLMProvider
+    from hci_extractor.providers import GeminiProvider
     from hci_extractor.utils.retry_handler import RetryHandler
 
     container.register_singleton(ConfigurationService, ConfigurationService)
@@ -241,7 +242,7 @@ def configure_services(container: DIContainer) -> None:
         config: ExtractorConfig,
         event_bus: EventBus,
         markup_prompt_loader: MarkupPromptLoader,
-    ) -> LLMProvider:
+    ) -> LLMProviderPort:
         from hci_extractor.providers.provider_config import (
             ExtractorConfigurationAdapter,
         )
@@ -264,7 +265,7 @@ def configure_services(container: DIContainer) -> None:
         raise ValueError(f"Unsupported provider type: {provider_type}")
 
     # Register the configurable provider factory for the abstract interface
-    container.register_factory(LLMProvider, create_llm_provider)
+    container.register_factory(LLMProviderPort, create_llm_provider)
 
     # Also register GeminiProvider specifically for backward compatibility
     def create_gemini_provider(
@@ -288,7 +289,7 @@ def configure_services(container: DIContainer) -> None:
     # Register LLMSectionProcessor factory
     # Register LLMSectionProcessor factory
     def create_section_processor(
-        llm_provider: LLMProvider,
+        llm_provider: LLMProviderPort,
         config: ExtractorConfig,
         event_bus: EventBus,
     ) -> Any:  # Using Any to avoid circular import
@@ -303,14 +304,14 @@ def configure_services(container: DIContainer) -> None:
 
     # Register domain services
     def create_section_analysis_service(
-        llm_provider: LLMProvider,
+        llm_provider: LLMProviderPort,
         config: ExtractorConfig,
         event_bus: EventBus,
     ) -> SectionAnalysisService:
         return SectionAnalysisService(llm_provider, config, event_bus)
 
     def create_paper_summary_service(
-        llm_provider: LLMProvider,
+        llm_provider: LLMProviderPort,
         config: ExtractorConfig,
         event_bus: EventBus,
     ) -> PaperSummaryService:
@@ -318,6 +319,11 @@ def configure_services(container: DIContainer) -> None:
 
     container.register_factory(SectionAnalysisService, create_section_analysis_service)
     container.register_factory(PaperSummaryService, create_paper_summary_service)
+
+    # Register TextProcessingService as singleton (stateless domain service)
+    from hci_extractor.core.domain.text_processing_service import TextProcessingService
+
+    container.register_singleton(TextProcessingService, TextProcessingService)
 
 
 def create_configured_container() -> DIContainer:
