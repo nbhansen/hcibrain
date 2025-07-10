@@ -15,6 +15,7 @@ from hci_extractor.core.ports.llm_provider_port import LLMProviderPort
 from hci_extractor.web.dependencies import (
     get_extractor_config,
     get_llm_provider,
+    get_pdf_extractor,
 )
 from hci_extractor.web.models.markup_responses import MarkupExtractionResponse
 
@@ -43,6 +44,7 @@ async def extract_pdf_markup(
     file: UploadFile = File(...),
     config: ExtractorConfig = Depends(get_extractor_config),
     llm_provider: LLMProviderPort = Depends(get_llm_provider),
+    pdf_extractor: PdfExtractor = Depends(get_pdf_extractor),
 ) -> MarkupExtractionResponse:
     """
     Extract PDF and return full text with HTML markup for highlights.
@@ -81,7 +83,6 @@ async def extract_pdf_markup(
         start_time = time.time()
 
         # Extract PDF content
-        pdf_extractor = PdfExtractor(config)
         pdf_content = pdf_extractor.extract_content(temp_file_path)
 
         # DEBUG: Log PDF extraction results

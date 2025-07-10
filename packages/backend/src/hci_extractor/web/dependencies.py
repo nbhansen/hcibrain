@@ -7,6 +7,7 @@ from fastapi import Depends
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.di_container import DIContainer, create_configured_container
 from hci_extractor.core.events import EventBus
+from hci_extractor.core.extraction.pdf_extractor import PdfExtractor
 from hci_extractor.core.ports.llm_provider_port import LLMProviderPort
 from hci_extractor.web.progress import WebSocketManager
 
@@ -81,3 +82,18 @@ def get_websocket_manager(
         WebSocketManager instance for WebSocket connections
     """
     return container.resolve(WebSocketManager)
+
+
+def get_pdf_extractor(
+    container: DIContainer = Depends(get_container),
+) -> PdfExtractor:
+    """
+    FastAPI dependency that resolves PdfExtractor from DI container.
+
+    Args:
+        container: DI container instance
+
+    Returns:
+        PdfExtractor instance for extracting content from PDF files
+    """
+    return container.resolve(PdfExtractor)

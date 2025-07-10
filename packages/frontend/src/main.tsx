@@ -4,7 +4,12 @@ import './index.css'
 import App from './App.tsx'
 import ErrorBoundary from './ErrorBoundary.tsx'
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element not found. Make sure you have a div with id="root" in your HTML.');
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <ErrorBoundary>
       <App />
