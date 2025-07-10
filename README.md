@@ -1,73 +1,76 @@
-# 🧠 HCIBrain
+# HCIBrain
 
-**AI-Powered Research Paper Analysis Tool**
+**Academic Paper Analysis System**
 
-Extract and highlight key research elements (Goals, Methods, Results) from academic papers using an LLM. Useful for reading assistance.
+An AI-powered system for extracting and highlighting key research components from academic papers. The system identifies research goals, methodologies, and results using large language models to assist in academic paper review and analysis.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![React](https://img.shields.io/badge/React-19.0-blue.svg)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://typescriptlang.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## 🎯 Overview
+## Overview
 
-HCIBrain processes research papers, automatically extracting and highlighting key information the PDFs. Using an LLM , it identifies and categorizes:
+HCIBrain processes PDF research papers and automatically identifies and categorizes key academic components:
 
-- **🎯 Research Goals** - Objectives, research questions, and hypotheses
-- **🔬 Methods** - Approaches, techniques, and methodologies  
-- **📊 Results** - Findings, outcomes, and discoveries
-- **📝 Plain Language Summaries** - Accessible explanations for non-researchers
+- **Research Goals** - Objectives, research questions, and hypotheses
+- **Methods** - Approaches, techniques, and methodologies  
+- **Results** - Findings, outcomes, and empirical data
+- **Plain Language Summaries** - Accessible explanations for broader audiences
 
-### Key Features
+### System Features
 
-✅ **Smart PDF Processing** - Handles large documents with automatic text chunking  
-✅ **Interactive UI** - Filter highlights, navigate via table of contents  
-✅ **Mobile Responsive** - Works seamlessly (COUGH) on desktop, tablet, and mobile  
-✅ **Enterprise Architecture** - Hexagonal design with 100% test coverage   (NOBODY CARES BUT I DO)
-✅ **Security First** - XSS protection and input sanitization  
+- Smart PDF processing with automatic text chunking for large documents
+- Interactive web interface with filtering and navigation capabilities
+- Mobile-responsive design for cross-platform access
+- Hexagonal architecture with comprehensive test coverage
+- Security-focused implementation with input sanitization
 
 ---
 
-## 🚀 Quick Start
+## Installation and Setup
 
 ### Prerequisites
 
-- **Python 3.11+** with `pip`
-- **Node.js 18+** with `npm`
-- **Google Gemini API Key** ([Get yours here](https://aistudio.google.com/app/apikey))
+- Python 3.11 or higher with pip
+- Node.js 18 or higher with npm
+- Google Gemini API key (obtain from [Google AI Studio](https://aistudio.google.com/app/apikey))
 
-### 1. Clone and Setup
+### System Setup
+
+1. **Clone and initialize the repository:**
 
 ```bash
 git clone https://github.com/yourusername/hcibrain.git
 cd hcibrain
+```
 
-# Create Python virtual environment
+2. **Setup backend environment:**
+
+```bash
 cd packages/backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e .
+```
 
-# Install frontend dependencies
+3. **Setup frontend environment:**
+
+```bash
 cd ../frontend
 npm install
-
-# Return to project root
 cd ../..
 ```
 
-### 2. Configure API Key
-
-Create your configuration file:
+4. **Configure API access:**
 
 ```bash
 cp packages/backend/config.template.yaml packages/backend/config.yaml
 ```
 
-Edit `packages/backend/config.yaml` and add your Gemini API key:
+Edit `packages/backend/config.yaml` with your API credentials:
 
 ```yaml
 api:
@@ -77,112 +80,112 @@ api:
   max_retries: 3
 ```
 
-### 3. Start the Application
+### Application Startup
+
+Start both backend and frontend services:
 
 ```bash
-# One-command startup (includes quality checks)
+# Complete startup with quality checks
 ./hcibrain.sh
 
-# Or skip code quality checks for faster startup
+# Quick startup without linting
 ./hcibrain.sh --skip-lint
 ```
 
-### 4. Use the Application
-
-🌐 **Open your browser to:** [http://localhost:5173](http://localhost:5173)
-
-1. **Upload a PDF** research paper
-2. **Wait for AI processing** (with real-time progress)
-3. **Explore highlighted results** with interactive filtering
-4. **Navigate easily** using the auto-generated table of contents
+Access the web interface at [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 📖 Usage Examples
+## System Usage
 
 ### Web Interface
 
-The primary way to use HCIBrain is through the modern web interface:
+The primary interface provides:
 
-- **📤 Drag & Drop PDFs** - Simple file upload with validation
-- **⏱️ Real-time Progress** - See processing status as it happens
-- **🎨 Color-coded Highlights** - Blue (Goals), Amber (Methods), Rose (Results)
-- **🔍 Smart Filtering** - Toggle highlight types on/off
-- **📑 Navigation** - Click table of contents to jump to sections
-- **📱 Mobile Friendly** - Responsive design for all devices
+- PDF upload with file validation
+- Real-time processing status updates
+- Color-coded highlighting system for different content types
+- Interactive filtering controls for content categories
+- Automatic table of contents generation and navigation
+- Responsive layout for various screen sizes
 
 ### API Integration
 
-REST API available for programmatic access:
+REST API endpoints for programmatic access:
 
 ```bash
-# Health check
+# System health verification
 curl http://localhost:8000/api/v1/health
 
-# Process a paper
+# Document processing
 curl -X POST http://localhost:8000/api/v1/extract/markup \
-  -F "file=@paper.pdf"
+  -F "file=@document.pdf"
 
-# View API documentation
-open http://localhost:8000/docs
+# API documentation
+curl http://localhost:8000/docs
 ```
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-HCIBrain follows **hexagonal architecture** principles with strict separation of concerns:
+### System Structure
+
+The system implements hexagonal architecture principles with clear separation between domain logic and infrastructure concerns:
 
 ```
 packages/
 ├── backend/                 # Python FastAPI Backend
 │   ├── src/hci_extractor/
-│   │   ├── core/           # 🏛️ Domain Logic (Business Rules)
-│   │   ├── infrastructure/ # 🔌 External Adapters
-│   │   ├── providers/      # 🤖 LLM Provider Integrations  
-│   │   ├── web/           # 🌐 REST API & WebSocket
-│   │   └── cli/           # 💻 Command Line Interface
-│   ├── tests/             # 🧪 Comprehensive Test Suite
-│   └── config.yaml        # ⚙️ Configuration
-└── frontend/               # ⚛️ React TypeScript Frontend
+│   │   ├── core/           # Domain Logic and Business Rules
+│   │   ├── infrastructure/ # External Service Adapters
+│   │   ├── providers/      # LLM Provider Integrations  
+│   │   ├── web/           # REST API and WebSocket Interface
+│   │   └── utils/         # Utility Functions and Helpers
+│   ├── tests/             # Comprehensive Test Suite
+│   ├── config.yaml        # System Configuration
+│   └── prompts/           # LLM Prompt Templates
+└── frontend/               # React TypeScript Frontend
     ├── src/
     │   ├── App.tsx        # Main Application Component
     │   ├── ErrorBoundary.tsx  # Error Handling
     │   └── constants.ts   # Configuration Constants
-    └── dist/              # 📦 Production Build
+    └── dist/              # Production Build Output
 ```
 
-### Key Architectural Principles
+### Design Principles
 
-- **🔄 Immutability First** - All data structures are frozen and immutable
-- **💉 Dependency Injection** - Zero global state, comprehensive DI container
-- **📡 Event-Driven** - Loose coupling through domain events
-- **🛡️ Type Safety** - Full TypeScript and Python type annotations
-- **🧪 Testable Design** - 100% architecture compliance with automated tests
+- **Immutable Data Structures** - All objects are frozen and immutable
+- **Dependency Injection** - Comprehensive DI container with no global state
+- **Event-Driven Architecture** - Loose coupling through domain events
+- **Type Safety** - Complete TypeScript and Python type annotations
+- **Test-Driven Development** - Comprehensive test coverage with architecture compliance verification
 
 ---
 
-## 🛠️ Development
+## Development
 
-### Project Structure
+### Project Organization
 
-The project uses a **monorepo structure** with separate backend and frontend packages:
+The monorepo structure separates concerns between:
 
-- **Backend** (`packages/backend/`) - Python FastAPI application
-- **Frontend** (`packages/frontend/`) - React TypeScript SPA
-- **Shared** - Configuration, documentation, and scripts
+- **Backend** (`packages/backend/`) - Python FastAPI application with domain logic
+- **Frontend** (`packages/frontend/`) - React TypeScript single-page application
+- **Configuration** - Shared configuration files and development scripts
 
 ### Development Workflow
 
-1. **Quality First** - All code must pass linting and type checking
-2. **Test Driven** - Comprehensive test suite with architecture compliance
-3. **Security Focused** - Input validation and XSS protection
-4. **Performance Optimized** - Async processing and efficient memory usage
+1. **Code Quality Enforcement** - All code must pass linting and type checking
+2. **Test-Driven Development** - Comprehensive test suite with architectural compliance testing
+3. **Security-First Approach** - Input validation and XSS protection measures
+4. **Performance Optimization** - Asynchronous processing and efficient memory management
 
-### Running Tests
+### Testing
+
+Execute the test suite:
 
 ```bash
-# Backend tests (architecture + functional)
+# Backend comprehensive testing
 cd packages/backend
 source venv/bin/activate
 python -m pytest
@@ -191,38 +194,38 @@ python -m pytest
 cd packages/frontend
 npm run build
 
-# Full quality check
+# Complete system quality verification
 ./hcibrain.sh lint
 ```
 
 ### Code Quality Standards
 
-The project enforces strict code quality with zero tolerance policies:
+The system enforces strict quality standards:
 
-- **🐍 Python**: `ruff check` + `ruff format` (linting + formatting)
-- **🔧 TypeScript**: `biome check` (ESLint replacement)
-- **🏗️ Architecture**: 20 automated compliance tests
-- **🔒 Security**: Input validation and sanitization
+- **Python**: Ruff for linting and formatting
+- **TypeScript**: ESLint for code quality verification
+- **Architecture**: Automated compliance testing for design principles
+- **Security**: Input validation and content sanitization
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
 ```bash
-# Required
+# Required configuration
 GEMINI_API_KEY=your-api-key-here
 
-# Optional
+# Optional settings
 HCI_LOG_LEVEL=INFO
 HCI_MAX_FILE_SIZE=50MB
 HCI_TIMEOUT_SECONDS=30
 ```
 
-### Configuration File
+### Configuration File Options
 
-The `config.yaml` supports comprehensive customization:
+The `config.yaml` file supports comprehensive system customization:
 
 ```yaml
 api:
@@ -236,56 +239,60 @@ extraction:
   chunk_size: 12000
   chunk_overlap: 200
 
-processing:
+analysis:
   confidence_threshold: 0.50
-  max_concurrent_chunks: 3
+  max_concurrent_sections: 3
+  temperature: 0.1
 ```
 
 ---
 
-## 🔧 API Reference
+## API Reference
 
 ### REST Endpoints
 
-#### Health Check
+#### System Health Check
 ```http
 GET /api/v1/health
 ```
 
-#### Extract Markup
+Returns system status and availability information.
+
+#### Document Markup Extraction
 ```http
 POST /api/v1/extract/markup
 Content-Type: multipart/form-data
 
-file: PDF file (required)
+file: PDF document (required)
 ```
 
-**Response:**
+**Response Format:**
 ```json
 {
-  "paper_full_text_with_markup": "<goal confidence=\"0.95\">...</goal>",
+  "paper_full_text_with_markup": "<goal confidence=\"0.95\">Research objective</goal>",
   "paper_info": {
-    "title": "Paper Title",
-    "authors": ["Author 1", "Author 2"],
-    "paper_id": "unique-id"
+    "title": "Document Title",
+    "authors": ["Author Name"],
+    "paper_id": "unique-identifier"
   },
-  "plain_language_summary": "This research aimed to...",
+  "plain_language_summary": "Research summary description",
   "processing_time_seconds": 45.2
 }
 ```
 
-### WebSocket Events
+### WebSocket Interface
+
+Real-time progress updates available via WebSocket connection:
 
 ```javascript
-// Connect to progress updates
 const ws = new WebSocket('ws://localhost:8000/api/v1/progress');
 
-// Progress event format
+// Progress update format
 {
   "type": "progress",
   "data": {
     "progress": 0.75,
-    "message": "Processing chunk 3/4",
+    "message": "Processing section 3 of 4",
     "stage": "analysis"
   }
 }
@@ -293,116 +300,99 @@ const ws = new WebSocket('ws://localhost:8000/api/v1/progress');
 
 ---
 
-## 🤝 Contributing
+## Performance Characteristics
 
-We welcome contributions! Please follow these guidelines:
+### Processing Benchmarks
 
-### Getting Started
+- **Small Documents** (under 5 pages): 15-30 seconds
+- **Medium Documents** (5-15 pages): 30-90 seconds  
+- **Large Documents** (15+ pages): 90-300 seconds
 
-1. **Fork the repository** and create a feature branch
-2. **Setup development environment** following the Quick Start guide
-3. **Run quality checks** with `./hcibrain.sh lint`
-4. **Write tests** for new functionality
-5. **Submit a pull request** with clear description
-
-### Code Standards
-
-- **Python**: Follow PEP 8, use type hints, write docstrings
-- **TypeScript**: Strict mode, no `any` types, proper error handling
-- **Architecture**: Maintain hexagonal architecture principles
-- **Testing**: All new code must have corresponding tests
-
-### Commit Message Format
-
-```
-type(scope): brief description
-
-Detailed explanation of changes...
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
----
-
-## 📊 Performance
-
-### Benchmarks
-
-- **Small Papers** (< 5 pages): ~15-30 seconds
-- **Medium Papers** (5-15 pages): ~30-90 seconds  
-- **Large Papers** (15+ pages): ~90-300 seconds
-
-*Performance depends on paper complexity, API response time, and system resources.*
+Performance varies based on document complexity, API response latency, and system resources.
 
 ### Optimization Features
 
-- **🔄 Chunked Processing** - Handles large documents without memory issues
-- **⚡ Async Operations** - Non-blocking I/O for better responsiveness
-- **📦 Immutable Objects** - Efficient memory reuse and garbage collection
-- **🎯 Smart Caching** - Reduces redundant API calls
+- **Chunked Processing** - Handles large documents without memory constraints
+- **Asynchronous Operations** - Non-blocking I/O for improved responsiveness
+- **Immutable Object Design** - Efficient memory utilization and garbage collection
+- **Intelligent Caching** - Reduces redundant API requests
 
 ---
 
-## 🔒 Security
+## Security Implementation
 
-HCIBrain implements multiple security layers:
+### Security Measures
 
-- **🛡️ Input Validation** - File type, size, and content validation
-- **🧹 HTML Sanitization** - DOMPurify prevents XSS attacks
-- **🔐 Environment Secrets** - No hardcoded API keys or credentials
-- **🚦 Rate Limiting** - Prevents API abuse and quota exhaustion
-- **🔍 Error Sanitization** - No sensitive data in error responses
-
----
-
-## 📝 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
+- **Input Validation** - Comprehensive file type, size, and content verification
+- **HTML Sanitization** - DOMPurify integration prevents cross-site scripting attacks
+- **Credential Management** - Environment-based secret management with no hardcoded keys
+- **Rate Limiting** - API request throttling to prevent abuse and quota exhaustion
+- **Error Sanitization** - Prevents sensitive information disclosure in error responses
 
 ---
 
-## 🆘 Support
+## Development Guidelines
 
-### Troubleshooting
+### Contributing Standards
 
-**🚨 Common Issues:**
+1. **Repository Setup** - Fork the repository and create feature branches
+2. **Development Environment** - Follow the installation and setup procedures
+3. **Quality Verification** - Execute `./hcibrain.sh lint` before submitting changes
+4. **Test Coverage** - Include comprehensive tests for new functionality
+5. **Documentation** - Update relevant documentation for system changes
 
-- **Backend won't start** - Check API key in `config.yaml`
-- **No highlights showing** - Verify PDF contains readable text
-- **Slow processing** - Large papers take time; check network connection
-- **Build failures** - Run `./hcibrain.sh lint` to check code quality
+### Code Standards
 
-**📋 Getting Help:**
-
-1. **Check logs** - `backend.log` and `frontend.log` for detailed errors
-2. **Run diagnostics** - `python -m hci_extractor diagnose`
-3. **Verify setup** - `./hcibrain.sh status`
-4. **Quality check** - `./hcibrain.sh lint`
-
+- **Python Development** - Adhere to PEP 8, include type hints, write comprehensive docstrings
+- **TypeScript Development** - Use strict mode, avoid `any` types, implement proper error handling
+- **Architecture Compliance** - Maintain hexagonal architecture design principles
+- **Testing Requirements** - All new functionality must include corresponding test coverage
 
 ---
 
-## 🎯 Roadmap
+## System Diagnostics
 
-### Upcoming Features
+### Troubleshooting Common Issues
 
-- **🤖 Multi-LLM Support** - OpenAI, Anthropic, local models (architecture is already there)
-- **💾 Persistent Storage** - Database integration for processed papers (for now we just let the LLM return the full markup - crude but efficient)
-- **🐳 Docker Support** - Containerized deployment (I dont really want to support a docker but also nobody probably cares about this software)
+**Backend Service Issues:**
+- Verify API key configuration in `config.yaml`
+- Check service logs in `backend.log` for detailed error information
+- Confirm Python virtual environment activation
 
-### Long-term Vision (just a repo of dumb ideas)
+**Frontend Application Issues:**
+- Verify Node.js dependencies are installed with `npm install`
+- Check TypeScript compilation with `npm run build`
+- Review browser console for JavaScript errors
 
-- **🔬 Advanced Analysis** - Citation networks, methodology comparison - extracting "methods" across papers etc? 
-- **🎨 Custom Highlighting** - User-defined categories and rules
-- **📈 Research Insights** - Trend analysis across paper collections
+**Processing Performance Issues:**
+- Large documents require extended processing time
+- Verify network connectivity for API requests
+- Monitor system resource utilization during processing
+
+### Diagnostic Commands
+
+```bash
+# Service status verification
+./hcibrain.sh status
+
+# Comprehensive quality verification
+./hcibrain.sh lint
+
+# Log file examination
+tail -f backend.log frontend.log
+```
 
 ---
 
-<div align="center">
+## License
 
-**⭐ Star this repo if you find it useful!**
+This project is licensed under the MIT License. See the LICENSE file for complete terms and conditions.
 
-Made with ❤️ by Nicolai Brodersen Hansen --> https://www.nbhansen.dk
+---
 
-</div>
+## Contact and Support
+
+**Author:** Nicolai Brodersen Hansen  
+**Website:** [https://www.nbhansen.dk](https://www.nbhansen.dk)
+
+For technical support, please review the troubleshooting section and examine system logs before reporting issues.
