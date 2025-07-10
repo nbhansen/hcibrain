@@ -22,8 +22,22 @@ dependencies = [
     "python-levenshtein>=0.12.0",
 ]
 
-# Note: Dev dependencies moved to root pyproject.toml for workspace-level management
-# This keeps the backend package focused on runtime dependencies
+[project.optional-dependencies]
+dev = [
+    # Code formatting and linting
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+    
+    # Testing
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    
+    # Type checking
+    "mypy>=1.0.0",
+    
+    # Security analysis
+    "bandit>=1.7.0",
+]
 
 [project.scripts]
 hci-extractor = "hci_extractor.main:cli"
@@ -39,6 +53,12 @@ strict = true
 [tool.ruff]
 target-version = "py39"
 line-length = 88
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.ruff.lint]
 select = [
@@ -78,8 +98,8 @@ ignore = [
     "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
     "D200", "D205", "D212", "D400", "D401", "D415",
     
-    # Annotations (we'll enable gradually)
-    "ANN001", "ANN002", "ANN003", "ANN101", "ANN102", "ANN201", "ANN202",
+    # Annotations (we'll enable gradually) - removed deprecated ANN101, ANN102
+    "ANN001", "ANN002", "ANN003", "ANN201", "ANN202",
     
     # Allow TODO comments for now
     "TD002", "TD003", "FIX002",
@@ -94,6 +114,9 @@ ignore = [
     "PLC0415",  # Import outside top-level (common in CLI and lazy loading)
     "B904",     # Raise without from (acceptable in domain boundaries)
     "TRY003",   # Vanilla exceptions (acceptable for domain-specific errors)
+    
+    # Formatter conflicts
+    "COM812",   # Conflicts with ruff format
 ]
 
 [tool.ruff.lint.mccabe]

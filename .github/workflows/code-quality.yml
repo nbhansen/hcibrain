@@ -33,10 +33,10 @@ jobs:
         cd packages/backend
         pip install -e ".[dev]"
         
-    - name: Run Black (Code Formatting)
+    - name: Run Ruff (Code Formatting)
       run: |
         cd packages/backend
-        black --check --diff src/ tests/
+        ruff format --check --diff src/ tests/
         
     - name: Run Ruff (Linting & Code Quality)
       run: |

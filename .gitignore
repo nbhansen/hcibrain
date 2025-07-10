@@ -51,6 +51,7 @@ env/
 ENV/
 env.bak/
 venv.bak/
+packages/backend/venv/
 
 # Testing
 .pytest_cache/
@@ -302,3 +303,4 @@ docs/archived/
 
 # GitHub Actions (if sensitive)
 # .github/
+
