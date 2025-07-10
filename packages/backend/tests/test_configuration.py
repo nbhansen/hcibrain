@@ -1,7 +1,6 @@
 """Test configuration loading and immutability."""
 
 import pytest
-from pathlib import Path
 
 from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.di_container import create_configured_container

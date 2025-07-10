@@ -144,7 +144,8 @@ class GeminiProvider(LLMProvider):
                 print(f"🔄 Processing chunk {i + 1}/{len(chunks)} ({len(chunk)} chars)")
                 print(f"   First 100 chars: {chunk[:100]!r}")
                 logger.info(
-                    f"🔍 MARKUP DEBUG - Processing chunk {i + 1}/{len(chunks)} ({len(chunk)} chars)",
+                    f"🔍 MARKUP DEBUG - Processing chunk {i + 1}/{len(chunks)} "
+                    f"({len(chunk)} chars)"
                 )
 
                 try:
@@ -168,7 +169,7 @@ class GeminiProvider(LLMProvider):
                 except Exception as e:
                     print(f"❌ Chunk {i + 1} failed: {e}")
                     logger.warning(
-                        f"🔍 MARKUP DEBUG - Chunk {i + 1} failed: {e}, using original text",
+                        f"🔍 MARKUP DEBUG - Chunk {i + 1} failed: {e}, using original text"
                     )
                     marked_chunks.append(chunk)  # Fallback to unmarked text
 
@@ -200,7 +201,7 @@ class GeminiProvider(LLMProvider):
         total_chunks: int = 1,
     ) -> str:
         """Process a single chunk of text for markup generation."""
-        # Generate prompt using prompt loader if available, otherwise fallback to hardcoded
+        # Generate prompt using prompt loader if available, otherwise fallback
         if self.markup_prompt_loader:
             prompt = self.markup_prompt_loader.get_markup_prompt(
                 text,
@@ -212,8 +213,10 @@ class GeminiProvider(LLMProvider):
             chunk_info = (
                 f" (chunk {chunk_index}/{total_chunks})" if total_chunks > 1 else ""
             )
-            prompt = f"""
-You are an expert at analyzing academic papers. Please read the following paper text{chunk_info} and perform TWO tasks:
+            prompt = (
+                f"You are an expert at analyzing academic papers. "
+                f"Please read the following paper text{chunk_info} and perform TWO tasks:\n\n"
+            ) + """
 
 TASK 1 - CLEAN THE TEXT:
 Remove ONLY these academic artifacts:
@@ -223,12 +226,13 @@ Remove ONLY these academic artifacts:
 - Copyright notices
 - Journal metadata
 
-PRESERVE: Reference content, citations, and bibliographies as they are scientifically important
+PRESERVE: Reference content, citations, and bibliographies as they are 
+scientifically important
 
 TASK 2 - ADD MARKUP TAGS:
 Add these tags around relevant text:
 - <goal confidence="0.XX">text</goal> for research objectives, questions, and hypotheses
-- <method confidence="0.XX">text</method> for approaches, techniques, and methodologies  
+- <method confidence="0.XX">text</method> for approaches, techniques, and methodologies
 - <result confidence="0.XX">text</result> for findings, outcomes, and discoveries
 
 Rules:
@@ -238,7 +242,8 @@ Rules:
 4. Only mark text that clearly fits the categories
 5. Do NOT use any other HTML tags or formatting
 6. Escape any existing < > characters in the text as &lt; &gt;
-7. This may be part of a larger document - focus on marking up what's clearly identifiable in this section
+7. This may be part of a larger document - focus on marking up what's clearly 
+identifiable in this section
 
 Paper text:
 {text}

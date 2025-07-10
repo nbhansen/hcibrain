@@ -55,7 +55,6 @@ class TestDependencyInjection:
 
     def test_transient_services_return_different_instances(self):
         """Test that transient services return different instances."""
-        container = create_configured_container()
 
         # For services registered as transient (if any)
         # Note: Most services are currently singletons, but this tests the pattern

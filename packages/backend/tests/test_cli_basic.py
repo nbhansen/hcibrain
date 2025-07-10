@@ -1,6 +1,5 @@
 """Minimal CLI functionality test."""
 
-import pytest
 from click.testing import CliRunner
 
 from hci_extractor.cli.commands import cli

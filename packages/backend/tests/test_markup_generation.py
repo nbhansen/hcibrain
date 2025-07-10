@@ -25,7 +25,7 @@ class TestMarkupGeneration:
         # Sample academic paper text
         test_text = """
         Abstract: This study investigates user interaction patterns.
-        
+
         1. Introduction
         The goal of this research is to understand how users interact with interfaces.
         We employed a mixed-methods approach combining surveys and observations.

@@ -427,10 +427,10 @@ class TestCodebaseStructuralCompliance:
 
         # Test key modules can be imported independently
         try:
-            from hci_extractor.core.config import ExtractorConfig
-            from hci_extractor.core.events import EventBus
-            from hci_extractor.core.models import Paper
-            from hci_extractor.providers.base import LLMProvider
+            from hci_extractor.core.config import ExtractorConfig  # noqa: F401
+            from hci_extractor.core.events import EventBus  # noqa: F401
+            from hci_extractor.core.models import Paper  # noqa: F401
+            from hci_extractor.providers.base import LLMProvider  # noqa: F401
         except ImportError as e:
             pytest.fail(f"Circular import detected: {e}")
 
