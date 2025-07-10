@@ -5,8 +5,8 @@ import logging
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from hci_extractor.core.events import EventBus
-from hci_extractor.web.dependencies import get_event_bus
-from hci_extractor.web.progress import WebSocketProgressHandler, websocket_manager
+from hci_extractor.web.dependencies import get_event_bus, get_websocket_manager
+from hci_extractor.web.progress import WebSocketManager, WebSocketProgressHandler
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ async def progress_websocket(
     websocket: WebSocket,
     session_id: str,
     event_bus: EventBus = Depends(get_event_bus),
+    websocket_manager: WebSocketManager = Depends(get_websocket_manager),
 ) -> None:
     """
     WebSocket endpoint for real-time progress tracking.
@@ -53,7 +54,7 @@ async def progress_websocket(
             except WebSocketDisconnect:
                 logger.info(f"WebSocket disconnected for session {session_id}")
                 break
-            except Exception as e:
+            except Exception:
                 logger.exception(f"Error in WebSocket loop for session {session_id}")
                 break
 
@@ -64,7 +65,9 @@ async def progress_websocket(
 
 
 @router.get("/sessions/new")
-async def create_session() -> dict[str, str]:
+async def create_session(
+    websocket_manager: WebSocketManager = Depends(get_websocket_manager),
+) -> dict[str, str]:
     """
     Create a new session ID for progress tracking.
 

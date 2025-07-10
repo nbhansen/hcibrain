@@ -71,13 +71,25 @@ class ConfigurationService:
                 config_dict = yaml.safe_load(f)
 
             if not isinstance(config_dict, dict):
-                raise ConfigurationError("Configuration file must contain a YAML dictionary")
+                raise ConfigurationError(
+                    "Configuration file must contain a YAML dictionary",
+                )
 
             # Validate required sections exist
-            required_sections = ["api", "extraction", "analysis", "retry", "cache", "export", "general"]
+            required_sections = [
+                "api",
+                "extraction",
+                "analysis",
+                "retry",
+                "cache",
+                "export",
+                "general",
+            ]
             for section in required_sections:
                 if section not in config_dict:
-                    raise ConfigurationError(f"Missing required configuration section: {section}")
+                    raise ConfigurationError(
+                        f"Missing required configuration section: {section}",
+                    )
 
             return ConfigurationData(
                 api=config_dict["api"],
@@ -92,7 +104,9 @@ class ConfigurationService:
         except yaml.YAMLError as e:
             raise ConfigurationError(f"Invalid YAML in configuration file: {e}") from e
         except FileNotFoundError:
-            raise ConfigurationError(f"Configuration file not found: {self.config_path}")
+            raise ConfigurationError(
+                f"Configuration file not found: {self.config_path}",
+            )
         except Exception as e:
             raise ConfigurationError(f"Failed to load configuration: {e}") from e
 
@@ -153,5 +167,62 @@ class ConfigurationService:
 
         if not any(key and key != "your-gemini-api-key-here" for key in api_keys):
             raise ConfigurationError(
-                "No valid API key configured. Please set at least one API key in config.yaml",
+                "No valid API key configured. Please set at least one API key in "
+                "config.yaml",
             )
+
+    def get_environment_variable(
+        self,
+        key: str,
+        default: Optional[str] = None,
+    ) -> Optional[str]:
+        """Get environment variable value through configuration service.
+
+        Args:
+            key: Environment variable key
+            default: Default value if not found
+
+        Returns:
+            Environment variable value or default
+        """
+        import os
+
+        return os.environ.get(key, default)
+
+    def has_environment_variable(self, key: str) -> bool:
+        """Check if environment variable exists.
+
+        Args:
+            key: Environment variable key
+
+        Returns:
+            True if environment variable exists
+        """
+        import os
+
+        return key in os.environ
+
+    def get_debug_mode(self) -> bool:
+        """Get debug mode from environment or config.
+
+        Returns:
+            True if debug mode is enabled
+        """
+        debug_value = self.get_environment_variable("DEBUG", "false")
+        return debug_value.lower() in ("true", "1", "yes") if debug_value else False
+
+    def get_config_path_from_env(self) -> Optional[str]:
+        """Get configuration path from environment variable.
+
+        Returns:
+            Configuration path from environment or None
+        """
+        return self.get_environment_variable("HCI_CONFIG_PATH")
+
+    def get_log_level_from_env(self) -> Optional[str]:
+        """Get log level from environment variable.
+
+        Returns:
+            Log level from environment or None
+        """
+        return self.get_environment_variable("HCI_LOG_LEVEL")

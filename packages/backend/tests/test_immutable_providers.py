@@ -60,7 +60,8 @@ def test_gemini_provider_has_no_mutable_state():
             if attr_name.startswith("_"):  # Skip private attributes from parent classes
                 continue
             assert not isinstance(
-                attr_value, (list, dict, set)
+                attr_value,
+                (list, dict, set),
             ), f"Mutable attribute found: {attr_name} is a {type(attr_value)}"
 
 

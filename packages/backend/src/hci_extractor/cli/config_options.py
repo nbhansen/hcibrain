@@ -108,7 +108,8 @@ CLI_CONFIG_MAPPING: Dict[str, CliConfigOption] = {
         help_text="Maximum tokens per LLM response. Higher values allow more "
         "extractions per section.",
         validator=lambda x: max(
-            500, min(x, 8000),
+            500,
+            min(x, 8000),
         ),  # Reasonable bounds for token limits
         priority="medium",
     ),
@@ -135,7 +136,8 @@ CLI_CONFIG_MAPPING: Dict[str, CliConfigOption] = {
         cli_name="--log-level",
         config_path="log_level",
         cli_type=click.Choice(
-            ["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False,
+            ["DEBUG", "INFO", "WARNING", "ERROR"],
+            case_sensitive=False,
         ),
         default_description="INFO",
         help_text="Logging level for debugging and monitoring.",
@@ -313,12 +315,12 @@ def validate_cli_value(option: CliConfigOption, value: Any) -> Any:
                 )
             return validated_value
 
-        return value
-
     except Exception as e:
         raise click.BadParameter(
             f"Invalid value for {option.cli_name}: {value}. {e!s}",
         ) from e
+    else:
+        return value
 
 
 # Command-specific option sets for different CLI commands

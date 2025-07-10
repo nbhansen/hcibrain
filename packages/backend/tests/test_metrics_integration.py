@@ -27,8 +27,8 @@ async def test_gemini_provider_collects_metrics():
                     "text": "Test finding",
                     "evidence_type": "quantitative",
                     "confidence": 0.9,
-                }
-            ]
+                },
+            ],
         }
 
         with patch.object(provider, "_make_api_request", return_value=mock_response):
@@ -66,7 +66,9 @@ async def test_metrics_collection_with_errors():
 
         # Mock API to raise an error
         with patch.object(
-            provider, "_make_api_request", side_effect=Exception("API Error")
+            provider,
+            "_make_api_request",
+            side_effect=Exception("API Error"),
         ):
             with pytest.raises(Exception):
                 await provider.analyze_section("Test text", "results")

@@ -15,14 +15,12 @@ class HciExtractorError(Exception):
     """
 
 
-
 class ProcessingError(HciExtractorError):
     """Issues during document or data processing.
 
     Base class for all processing-related errors including PDF extraction,
     text normalization, and LLM analysis.
     """
-
 
 
 # PDF Processing Exceptions
@@ -89,7 +87,6 @@ class LLMError(ProcessingError):
     """
 
 
-
 class RateLimitError(LLMError):
     """LLM rate limit exceeded.
 
@@ -97,7 +94,11 @@ class RateLimitError(LLMError):
     need to be retried after a delay.
     """
 
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: Optional[float] = None):
+    def __init__(
+        self,
+        message: str = "Rate limit exceeded",
+        retry_after: Optional[float] = None,
+    ):
         """Initialize with optional retry delay information.
 
         Args:
@@ -233,7 +234,6 @@ class ContentFilterError(LLMError):
     """
 
 
-
 class GeminiAuthenticationError(ApiKeyError):
     """Gemini authentication error."""
 
@@ -263,7 +263,6 @@ class ModelNotFoundError(LLMError):
     """
 
 
-
 # Data Processing Exceptions
 class DataError(ProcessingError):
     """Data validation and integrity issues.
@@ -273,13 +272,11 @@ class DataError(ProcessingError):
     """
 
 
-
 class SerializationError(DataError):
     """Data serialization/deserialization failed.
 
     Raised when converting data to/from JSON, CSV, or other formats fails.
     """
-
 
 
 class DataValidationError(DataError):
@@ -289,14 +286,12 @@ class DataValidationError(DataError):
     """
 
 
-
 # PDF Model Validation Exceptions
 class PdfModelValidationError(DataValidationError):
     """PDF model validation failed.
 
     Base class for all PDF data model validation errors.
     """
-
 
 
 class InvalidCharacterPosition(PdfModelValidationError):
@@ -364,14 +359,12 @@ class ConfigurationError(HciExtractorError):
     """
 
 
-
 class DependencyError(ConfigurationError):
     """Required dependency is missing or incompatible.
 
     Raised when optional dependencies are required for specific functionality
     but are not installed or are incompatible versions.
     """
-
 
 
 # Additional PDF Processing Exceptions
@@ -438,5 +431,5 @@ except ImportError:
             super().__init__(message)
 
     # Assign to the same names for compatibility
-    ClickProfileError = ClickProfileErrorDummy
-    ClickParameterError = ClickParameterErrorDummy
+    ClickProfileError = ClickProfileErrorDummy  # type: ignore[misc,assignment]
+    ClickParameterError = ClickParameterErrorDummy  # type: ignore[misc,assignment]

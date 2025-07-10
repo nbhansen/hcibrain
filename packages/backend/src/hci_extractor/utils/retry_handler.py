@@ -151,7 +151,10 @@ class RetryHandler:
         self._event_bus = event_bus if publish_events else None
 
     async def execute_with_retry(
-        self, operation: Callable[[], Awaitable[Any]], *args: Any, **kwargs: Any,
+        self,
+        operation: Callable[[], Awaitable[Any]],
+        *args: Any,
+        **kwargs: Any,
     ) -> RetryResult:
         """
         Execute an async operation with retry logic.
@@ -171,7 +174,8 @@ class RetryHandler:
                 # Apply timeout if configured
                 if self._policy.timeout_seconds:
                     result = await asyncio.wait_for(
-                        operation(*args, **kwargs), timeout=self._policy.timeout_seconds,
+                        operation(*args, **kwargs),
+                        timeout=self._policy.timeout_seconds,
                     )
                 else:
                     result = await operation(*args, **kwargs)
@@ -260,7 +264,10 @@ class RetryHandler:
         )
 
     def execute_with_retry_sync(
-        self, operation: Callable[[], Any], *args: Any, **kwargs: Any,
+        self,
+        operation: Callable[[], Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> RetryResult:
         """
         Execute a synchronous operation with retry logic.
@@ -328,12 +335,16 @@ class RetryHandler:
         """Check if an exception should not be retried."""
         # Check non-retryable exceptions first (takes precedence)
         if self._policy.non_retryable_exceptions and isinstance(
-            exception, self._policy.non_retryable_exceptions,
+            exception,
+            self._policy.non_retryable_exceptions,
         ):
             return True
 
         # Check if it's in the retryable exceptions
-        return bool(self._policy.retryable_exceptions and not isinstance(exception, self._policy.retryable_exceptions))
+        return bool(
+            self._policy.retryable_exceptions
+            and not isinstance(exception, self._policy.retryable_exceptions),
+        )
 
     def _calculate_delay(self, attempt: int, exception: Exception) -> float:
         """Calculate delay before next retry attempt."""

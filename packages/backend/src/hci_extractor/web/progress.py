@@ -2,7 +2,8 @@
 
 import asyncio
 import logging
-from typing import Any, Dict, Optional
+from dataclasses import dataclass
+from typing import Any, Dict, Optional, Tuple
 from uuid import uuid4
 
 from fastapi import WebSocket
@@ -11,6 +12,42 @@ from pydantic import BaseModel
 from hci_extractor.core.events import DomainEvent, EventHandler
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class ProgressState:
+    """Immutable progress state for tracking operation progress."""
+
+    current_progress: float
+    sections_processed: int = 0
+    total_sections: int = 0
+
+    def with_progress(self, progress: float) -> "ProgressState":
+        """Create new state with updated progress."""
+        return ProgressState(
+            current_progress=progress,
+            sections_processed=self.sections_processed,
+            total_sections=self.total_sections,
+        )
+
+    def with_section_completed(self) -> "ProgressState":
+        """Create new state with incremented section count."""
+        new_sections = self.sections_processed + 1
+        # Calculate progress based on sections completed
+        progress = min(0.9, 0.1 + (new_sections * 0.15))
+        return ProgressState(
+            current_progress=progress,
+            sections_processed=new_sections,
+            total_sections=self.total_sections,
+        )
+
+    def with_total_sections(self, total: int) -> "ProgressState":
+        """Create new state with total sections count."""
+        return ProgressState(
+            current_progress=self.current_progress,
+            sections_processed=self.sections_processed,
+            total_sections=total,
+        )
 
 
 class ProgressMessage(BaseModel):
@@ -67,7 +104,7 @@ class WebSocketManager:
             websocket = self.active_connections[session_id]
             try:
                 await websocket.send_json(message.model_dump())
-            except Exception as e:
+            except Exception:
                 logger.exception(f"Error sending progress to {session_id}")
                 self.disconnect(session_id)
 
@@ -87,7 +124,7 @@ class WebSocketProgressHandler(EventHandler):
     def __init__(self, manager: WebSocketManager, session_id: str) -> None:
         self.manager = manager
         self.session_id = session_id
-        self.progress = 0.0
+        self._progress_state = ProgressState(current_progress=0.0)
 
     def handle(self, event: DomainEvent) -> None:
         """
@@ -98,82 +135,102 @@ class WebSocketProgressHandler(EventHandler):
         """
         try:
             # Map different event types to progress messages
-            if (
-                hasattr(event, "operation_id")
-                and event.operation_id != self.session_id
-            ):
+            if hasattr(event, "operation_id") and event.operation_id != self.session_id:
                 return  # Not for this session
 
-            message = self._map_event_to_progress(event)
-            if message:
-                # Schedule the async call in the event loop and store reference
-                task = asyncio.create_task(self.manager.send_progress(self.session_id, message))
-                # Add error handling for the task
-                task.add_done_callback(lambda t: logger.error(f"Progress send error: {t.exception()}") if t.exception() else None)
+            result = self._map_event_to_progress(event)
+            if result:
+                message, new_state = result
+                # Update progress state immutably
+                self._progress_state = new_state
 
-        except Exception as e:
+                # Schedule the async call in the event loop and store reference
+                task = asyncio.create_task(
+                    self.manager.send_progress(self.session_id, message),
+                )
+                # Add error handling for the task
+                task.add_done_callback(
+                    lambda t: logger.error(f"Progress send error: {t.exception()}")
+                    if t.exception()
+                    else None,
+                )
+
+        except Exception:
             logger.exception("Error handling event in WebSocket handler")
 
-    def _map_event_to_progress(self, event: DomainEvent) -> Optional[ProgressMessage]:
+    def _map_event_to_progress(
+        self,
+        event: DomainEvent,
+    ) -> Optional[Tuple[ProgressMessage, ProgressState]]:
         """
-        Map domain event to progress message.
+        Map domain event to progress message and new state.
 
         Args:
             event: Domain event
 
         Returns:
-            Progress message or None if event should be ignored
+            Tuple of (progress message, new state) or None if event should be ignored
         """
         event_name = event.__class__.__name__
 
         # Map specific events to progress
         if event_name == "PaperProcessingStarted":
-            return ProgressMessage(
+            new_state = self._progress_state.with_progress(0.0)
+            message = ProgressMessage(
                 session_id=self.session_id,
                 status="started",
                 progress=0.0,
                 message="Starting paper processing",
                 data={"event": event_name},
             )
+            return (message, new_state)
 
         if event_name == "SectionDetected":
-            self.progress = 0.1
-            return ProgressMessage(
+            new_state = self._progress_state.with_progress(0.1)
+            sections_count = getattr(event, "sections_count", 0)
+            if sections_count > 0:
+                new_state = new_state.with_total_sections(sections_count)
+
+            message = ProgressMessage(
                 session_id=self.session_id,
                 status="processing",
-                progress=self.progress,
+                progress=new_state.current_progress,
                 message="Detected paper sections",
                 data={
                     "event": event_name,
-                    "sections_found": getattr(event, "sections_count", 0),
+                    "sections_found": sections_count,
                 },
             )
+            return (message, new_state)
 
         if event_name == "SectionProcessingStarted":
-            return ProgressMessage(
+            message = ProgressMessage(
                 session_id=self.session_id,
                 status="processing",
-                progress=self.progress,
+                progress=self._progress_state.current_progress,
                 message=f"Processing {getattr(event, 'section_name', 'section')}",
                 data={"event": event_name},
             )
+            return (message, self._progress_state)
 
         if event_name == "SectionProcessingCompleted":
             # Update progress based on completed sections
-            self.progress = min(0.9, self.progress + 0.15)
-            return ProgressMessage(
+            new_state = self._progress_state.with_section_completed()
+            message = ProgressMessage(
                 session_id=self.session_id,
                 status="processing",
-                progress=self.progress,
+                progress=new_state.current_progress,
                 message=f"Completed {getattr(event, 'section_name', 'section')}",
                 data={
                     "event": event_name,
                     "elements_found": getattr(event, "elements_count", 0),
                 },
             )
+            return (message, new_state)
 
         if event_name == "PaperProcessingCompleted":
-            return ProgressMessage(
+            new_state = self._progress_state.with_progress(1.0)
+            message = ProgressMessage(
                 session_id=self.session_id,
                 status="completed",
                 progress=1.0,
@@ -183,28 +240,30 @@ class WebSocketProgressHandler(EventHandler):
                     "total_elements": getattr(event, "total_elements", 0),
                 },
             )
+            return (message, new_state)
 
         if event_name == "ExtractionFailed":
-            return ProgressMessage(
+            message = ProgressMessage(
                 session_id=self.session_id,
                 status="failed",
-                progress=self.progress,
+                progress=self._progress_state.current_progress,
                 message="Extraction failed",
                 data={
                     "event": event_name,
                     "error": str(getattr(event, "error", "Unknown error")),
                 },
             )
+            return (message, self._progress_state)
 
         # Return generic progress for other events
-        return ProgressMessage(
+        message = ProgressMessage(
             session_id=self.session_id,
             status="processing",
-            progress=self.progress,
+            progress=self._progress_state.current_progress,
             message=f"Processing: {event_name}",
             data={"event": event_name},
         )
+        return (message, self._progress_state)
 
 
-# Global WebSocket manager instance
-websocket_manager = WebSocketManager()
+# WebSocket manager will be managed via DI container - no global instance

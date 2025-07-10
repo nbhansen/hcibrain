@@ -2,18 +2,18 @@
 
 from .chunking_service import (
     ChunkingMode,
-    IChunkingStrategy, 
+    IChunkingStrategy,
     MarkupChunkingService,
     SentenceBasedChunking,
     WordBasedChunking,
-    create_markup_chunking_service
+    create_markup_chunking_service,
 )
 
 __all__ = [
     "ChunkingMode",
     "IChunkingStrategy",
-    "MarkupChunkingService", 
+    "MarkupChunkingService",
     "SentenceBasedChunking",
     "WordBasedChunking",
-    "create_markup_chunking_service"
+    "create_markup_chunking_service",
 ]

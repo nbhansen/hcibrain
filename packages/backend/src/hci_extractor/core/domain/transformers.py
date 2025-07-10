@@ -64,7 +64,8 @@ class ElementTransformer:
 
     @classmethod
     def transform_elements(
-        cls, elements: List[Dict[str, Any]],
+        cls,
+        elements: List[Dict[str, Any]],
     ) -> Tuple[Dict[str, Any], ...]:
         """
         Transform a list of elements to immutable tuple of cleaned elements.
@@ -100,13 +101,14 @@ class ElementTransformer:
         }
 
 
-
 class ResponseParser:
     """Parses LLM responses with error recovery."""
 
     @classmethod
     def parse_json_response(
-        cls, response_text: str, expected_structure: Optional[Dict[str, type]] = None,
+        cls,
+        response_text: str,
+        expected_structure: Optional[Dict[str, type]] = None,
     ) -> Dict[str, Any]:
         """
         Parse JSON response with automatic error recovery.
@@ -152,7 +154,8 @@ class ResponseParser:
             Parsed and validated response
         """
         response_data = cls.parse_json_response(
-            response_text, expected_structure={"elements": list},
+            response_text,
+            expected_structure={"elements": list},
         )
 
         # Validate before returning

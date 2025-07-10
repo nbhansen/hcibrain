@@ -85,7 +85,9 @@ class ExtractionProgress:
         )
 
     def with_current_paper(
-        self, paper_name: str, total_sections: int,
+        self,
+        paper_name: str,
+        total_sections: int,
     ) -> "ExtractionProgress":
         """Return new progress with current paper information."""
         return ExtractionProgress(
@@ -142,7 +144,8 @@ class ProgressTracker:
     def start_batch(self, total_papers: int) -> ExtractionProgress:
         """Start tracking batch extraction progress."""
         self._current_state = ExtractionProgress(
-            total_papers=total_papers, completed_papers=0,
+            total_papers=total_papers,
+            completed_papers=0,
         )
 
         # Initialize rich progress display
@@ -160,7 +163,8 @@ class ProgressTracker:
 
         # Create main progress task
         self.paper_task = self.progress.add_task(
-            "Processing papers...", total=total_papers,
+            "Processing papers...",
+            total=total_papers,
         )
 
         return self._current_state
@@ -171,7 +175,8 @@ class ProgressTracker:
             raise ValueError("Must call start_batch first")
 
         self._current_state = self._current_state.with_current_paper(
-            paper_name, total_sections,
+            paper_name,
+            total_sections,
         )
 
         # Update main task description
@@ -186,7 +191,8 @@ class ProgressTracker:
             # Add section progress task if we have sections
             if total_sections > 0:
                 self.section_task = self.progress.add_task(
-                    "└─ Detecting sections...", total=total_sections,
+                    "└─ Detecting sections...",
+                    total=total_sections,
                 )
 
         return self._current_state
@@ -275,7 +281,7 @@ class ProgressTracker:
 
     def info(self, message: str) -> None:
         """Display info message."""
-        self.console.print(f"ℹ️  [bold blue]Info:[/bold blue] {message}")
+        self.console.print(f"i  [bold blue]Info:[/bold blue] {message}")
 
 
 def create_progress_tracker(verbose: bool = False) -> ProgressTracker:

@@ -8,7 +8,7 @@ system performance without adding mutable state to core components.
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
 
@@ -73,17 +73,17 @@ class MetricsCollector:
     """
 
     def __init__(self) -> None:
-        self._llm_metrics: List[LLMUsageMetric] = []
-        self._extraction_metrics: List[ExtractionMetric] = []
-        self._start_time = datetime.now()
+        self._llm_metrics: tuple[LLMUsageMetric, ...] = ()
+        self._extraction_metrics: tuple[ExtractionMetric, ...] = ()
+        self._start_time = datetime.now(timezone.utc)
 
     def record_llm_usage(self, metric: LLMUsageMetric) -> None:
         """Record a new LLM usage metric."""
-        self._llm_metrics.append(metric)
+        self._llm_metrics = (*self._llm_metrics, metric)
 
     def record_extraction(self, metric: ExtractionMetric) -> None:
         """Record a new extraction metric."""
-        self._extraction_metrics.append(metric)
+        self._extraction_metrics = (*self._extraction_metrics, metric)
 
     def get_llm_summary(self) -> MetricsSummary:
         """Get an immutable summary of LLM usage metrics."""
@@ -129,7 +129,7 @@ class MetricsCollector:
 
         return MetricsSummary(
             period_start=self._start_time,
-            period_end=datetime.now(),
+            period_end=datetime.now(timezone.utc),
             total_requests=total_requests,
             successful_requests=successful,
             failed_requests=failed,
@@ -178,7 +178,7 @@ class MetricsCollector:
         """Create an empty summary when no metrics exist."""
         return MetricsSummary(
             period_start=self._start_time,
-            period_end=datetime.now(),
+            period_end=datetime.now(timezone.utc),
             total_requests=0,
             successful_requests=0,
             failed_requests=0,
@@ -200,18 +200,13 @@ class MetricsCollector:
 
     def clear(self) -> None:
         """Clear all collected metrics."""
-        self._llm_metrics.clear()
-        self._extraction_metrics.clear()
-        self._start_time = datetime.now()
+        self._llm_metrics = ()
+        self._extraction_metrics = ()
+        self._start_time = datetime.now(timezone.utc)
 
 
-# Global metrics collector
-_metrics_collector = MetricsCollector()
-
-
-def get_metrics_collector() -> MetricsCollector:
-    """Get the global metrics collector instance."""
-    return _metrics_collector
+# Note: Global metrics collector removed - use dependency injection
+# Metrics collector should be injected through the DI container
 
 
 # Context managers for easy metrics collection
@@ -246,8 +241,10 @@ class LLMMetricsContext:
         success = exc_type is None
         error_type = exc_type.__name__ if exc_type else None
 
-        metric = LLMUsageMetric(
-            timestamp=datetime.now(),
+        # Note: Metrics collection now requires MetricsCollector to be injected
+        # This context manager is no longer functional without DI
+        _ = LLMUsageMetric(
+            timestamp=datetime.now(timezone.utc),
             provider=self.provider,
             model=self.model,
             operation=self.operation,
@@ -261,7 +258,8 @@ class LLMMetricsContext:
             section_type=self.section_type,
         )
 
-        get_metrics_collector().record_llm_usage(metric)
+        # Note: Metrics collection now requires MetricsCollector to be injected
+        # This context manager is no longer functional without DI
 
         # Don't suppress exceptions
         return False

@@ -67,7 +67,8 @@ async def llm_error_handler(request: Request, exc: LLMError) -> JSONResponse:
 
 
 async def configuration_error_handler(
-    request: Request, exc: ConfigurationError,
+    request: Request,
+    exc: ConfigurationError,
 ) -> JSONResponse:
     """
     Handle configuration errors.

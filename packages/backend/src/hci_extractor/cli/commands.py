@@ -6,7 +6,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, NoReturn, Optional
 
 import click
 from dotenv import load_dotenv
@@ -158,20 +158,36 @@ def _show_debug_config_info() -> None:
     click.echo("\n🔎 " + click.style("Configuration Debug Info", bold=True, fg="blue"))
     click.echo("-" * 35)
 
-    # Show environment variables
+    # Show environment variables through configuration service
     click.echo("🌍 Environment Variables:")
-    hci_vars = {
-        k: v
-        for k, v in os.environ.items()
-        if k.startswith("HCI_") or k == "GEMINI_API_KEY"
-    }
+    from hci_extractor.infrastructure.configuration_service import ConfigurationService
+
+    config_service = ConfigurationService()
+
+    # Get relevant environment variables through configuration service
+    env_vars_to_check = [
+        "HCI_LOG_LEVEL",
+        "HCI_CONFIG_PATH",
+        "HCI_DEBUG",
+        "GEMINI_API_KEY",
+        "HCI_EXTRACTION_MAX_FILE_SIZE_MB",
+        "HCI_ANALYSIS_CHUNK_SIZE",
+    ]
+
+    hci_vars = {}
+    for var in env_vars_to_check:
+        value = config_service.get_environment_variable(var)
+        if value is not None:
+            hci_vars[var] = value
     if hci_vars:
         for var, value in hci_vars.items():
             # Mask sensitive values
             display_value = (
                 value
                 if "key" not in var.lower()
-                else f"{value[:8]}..." if len(value) > 8 else "***"
+                else f"{value[:8]}..."
+                if len(value) > 8
+                else "***"
             )
             click.echo(f"   {var}={display_value}")
     else:
@@ -455,7 +471,9 @@ def diagnose() -> None:
 
 @cli.command()
 @click.option(
-    "--dry-run", is_flag=True, help="Test configuration without making API calls",
+    "--dry-run",
+    is_flag=True,
+    help="Test configuration without making API calls",
 )
 @click.option(
     "--profile",
@@ -478,14 +496,18 @@ def test_config(dry_run: bool, profile: Optional[str]) -> None:
     click.echo("=" * 30)
     click.echo()
 
+    def _raise_unknown_profile_error(profile_name: str) -> NoReturn:
+        """Raise an error for unknown profile."""
+        raise click.ClickException(f"Unknown profile: {profile_name}")
+
     try:
         # Set up DI container with optional profile configuration
         ctx = click.get_current_context()
 
         if profile:
             profile_obj = get_profile(profile)
-            if not profile_obj:
-                raise click.ClickException(f"Unknown profile: {profile}")
+            if profile_obj is None:
+                _raise_unknown_profile_error(profile)
 
             click.echo(f"🎯 Testing profile: {profile_obj.name}")
             click.echo(f"📝 {profile_obj.description}")
@@ -580,7 +602,9 @@ def test_config(dry_run: bool, profile: Optional[str]) -> None:
                 )
 
                 formatted_error = format_error_for_cli(
-                    e, {"operation": "api_test"}, verbose=False,
+                    e,
+                    {"operation": "api_test"},
+                    verbose=False,
                 )
                 click.echo(formatted_error)
                 return
@@ -631,7 +655,8 @@ def quickstart() -> None:
     click.echo(
         "📚 "
         + click.style(
-            "Welcome! Let's get you extracting academic insights in minutes.", bold=True,
+            "Welcome! Let's get you extracting academic insights in minutes.",
+            bold=True,
         ),
     )
     click.echo()
@@ -796,7 +821,8 @@ def setup() -> None:
 
     cpu_cores = multiprocessing.cpu_count()
     recommended_concurrency = min(
-        max(cpu_cores // 2, 1), 5,
+        max(cpu_cores // 2, 1),
+        5,
     )  # Conservative but not too slow
 
     click.echo(f"💻 Detected {cpu_cores} CPU cores")
@@ -832,7 +858,12 @@ def _test_api_key(api_key: str, progress: ProgressTracker) -> bool:
         progress.info("Testing API key...")
 
         # Test the API key by temporarily setting environment and resolving provider
-        original_key = os.getenv("GEMINI_API_KEY")
+        from hci_extractor.infrastructure.configuration_service import (
+            ConfigurationService,
+        )
+
+        config_service = ConfigurationService()
+        original_key = config_service.get_environment_variable("GEMINI_API_KEY")
         try:
             os.environ["GEMINI_API_KEY"] = api_key
 
@@ -883,7 +914,8 @@ def _save_api_key(api_key: str) -> None:
 
 
 def _run_test_extraction(
-    pdf_path: Path, progress: ProgressTracker,
+    pdf_path: Path,
+    progress: ProgressTracker,
 ) -> Optional[Dict[str, Any]]:
     """Run a quick test extraction to verify everything works."""
     try:
@@ -1074,7 +1106,9 @@ def doctor() -> None:
         click.echo(
             "🎉 "
             + click.style(
-                "All checks passed! Your system is ready.", bold=True, fg="green",
+                "All checks passed! Your system is ready.",
+                bold=True,
+                fg="green",
             ),
         )
         click.echo()
@@ -1086,7 +1120,9 @@ def doctor() -> None:
         click.echo(
             "🔧 "
             + click.style(
-                "Issues found - here's how to fix them:", bold=True, fg="yellow",
+                "Issues found - here's how to fix them:",
+                bold=True,
+                fg="yellow",
             ),
         )
         click.echo()
@@ -1117,7 +1153,8 @@ def doctor() -> None:
 
 @cli.command()
 @click.argument(
-    "results_dir", type=click.Path(exists=True, file_okay=False, path_type=Path),
+    "results_dir",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
 )
 @click.option(
     "--format",
@@ -1155,6 +1192,22 @@ def export(
     log_level: Optional[str],
 ) -> None:
     """Export extraction results from a directory to various formats."""
+
+    def _raise_no_result_files_error(results_dir: Path) -> None:
+        """Raise an error when no result files are found."""
+        click.echo(f"❌ No extraction result files found in {results_dir}")
+        click.echo("💡 Result files should match pattern '*_extraction.json'")
+        raise click.Abort()
+
+    def _raise_no_elements_error() -> None:
+        """Raise an error when no elements are found."""
+        click.echo("❌ No elements found matching the specified filters")
+        raise click.Abort()
+
+    def _raise_unsupported_format_error(format_name: str) -> None:
+        """Raise an error for unsupported format."""
+        raise click.ClickException(f"Unsupported format: {format_name}")
+
     # Check virtual environment
     _check_virtual_environment()
 
@@ -1174,9 +1227,7 @@ def export(
         # Find all extraction result files
         result_files = list(results_dir.glob("*_extraction.json"))
         if not result_files:
-            click.echo(f"❌ No extraction result files found in {results_dir}")
-            click.echo("💡 Result files should match pattern '*_extraction.json'")
-            raise click.Abort()
+            _raise_no_result_files_error(results_dir)
 
         click.echo(f"📂 Found {len(result_files)} extraction files")
 
@@ -1222,10 +1273,12 @@ def export(
                             "source_file": result_file.stem.replace("_extraction", ""),
                             # Paper summary fields
                             "paper_summary": extraction_summary.get(
-                                "paper_summary", "",
+                                "paper_summary",
+                                "",
                             ),
                             "paper_summary_confidence": extraction_summary.get(
-                                "paper_summary_confidence", "",
+                                "paper_summary_confidence",
+                                "",
                             ),
                         },
                     )
@@ -1239,8 +1292,7 @@ def export(
                 continue
 
         if not all_elements:
-            click.echo("❌ No elements found matching the specified filters")
-            raise click.Abort()
+            _raise_no_elements_error()
 
         click.echo(
             f"📝 Exporting {len(all_elements)} elements in "
@@ -1255,7 +1307,7 @@ def export(
         elif output_format == "markdown":
             output_content = _export_to_markdown(all_elements, papers_info)
         else:
-            raise click.ClickException(f"Unsupported format: {output_format}")
+            _raise_unsupported_format_error(output_format)
 
         # Write output
         if output:
@@ -1326,7 +1378,8 @@ def _export_to_csv(elements: List[Dict[str, Any]]) -> str:
 
 
 def _export_to_json(
-    elements: List[Dict[str, Any]], papers_info: List[Dict[str, Any]],
+    elements: List[Dict[str, Any]],
+    papers_info: List[Dict[str, Any]],
 ) -> str:
     """Export elements to JSON format."""
     export_data = {
@@ -1343,7 +1396,8 @@ def _export_to_json(
 
 
 def _export_to_markdown(
-    elements: List[Dict[str, Any]], papers_info: List[Dict[str, Any]],
+    elements: List[Dict[str, Any]],
+    papers_info: List[Dict[str, Any]],
 ) -> str:
     """Export elements to Markdown format."""
     lines = []
@@ -1429,7 +1483,8 @@ def _export_single_paper_to_csv(papers_data: List[Dict[str, Any]]) -> str:
                     # Paper summary fields
                     "paper_summary": extraction_summary.get("paper_summary", ""),
                     "paper_summary_confidence": extraction_summary.get(
-                        "paper_summary_confidence", "",
+                        "paper_summary_confidence",
+                        "",
                     ),
                 },
             )
@@ -1462,7 +1517,8 @@ def _export_single_paper_to_markdown(papers_data: List[Dict[str, Any]]) -> str:
                     # Paper summary fields
                     "paper_summary": extraction_summary.get("paper_summary", ""),
                     "paper_summary_confidence": extraction_summary.get(
-                        "paper_summary_confidence", "",
+                        "paper_summary_confidence",
+                        "",
                     ),
                 },
             )
@@ -1678,7 +1734,10 @@ def serve(host: str, port: int, reload: bool) -> None:
     try:
         import uvicorn
 
-        from hci_extractor.web.app import app
+        from hci_extractor.web.app import create_app
+
+        # Create app instance instead of importing global one
+        app = create_app()
 
         click.echo()
         click.echo(

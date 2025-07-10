@@ -32,11 +32,15 @@ class TestPaper:
     def test_paper_creation_with_auto_id(self):
         """Test Paper.create_with_auto_id generates unique IDs."""
         paper1 = Paper.create_with_auto_id(
-            title="Test Paper 1", authors=("Dr. Test",), venue="Test Conference"
+            title="Test Paper 1",
+            authors=("Dr. Test",),
+            venue="Test Conference",
         )
 
         paper2 = Paper.create_with_auto_id(
-            title="Test Paper 2", authors=("Dr. Test",), venue="Test Conference"
+            title="Test Paper 2",
+            authors=("Dr. Test",),
+            venue="Test Conference",
         )
 
         # Should have unique IDs
@@ -47,7 +51,8 @@ class TestPaper:
     def test_paper_immutability(self):
         """Test that Paper objects are truly immutable."""
         paper = Paper.create_with_auto_id(
-            title="Immutable Test", authors=("Dr. Frozen",)
+            title="Immutable Test",
+            authors=("Dr. Frozen",),
         )
 
         # Should not be able to modify any field
@@ -77,7 +82,8 @@ class TestPaper:
     def test_paper_authors_immutable_tuple(self):
         """Test that authors field uses immutable tuple."""
         paper = Paper.create_with_auto_id(
-            title="Authors Test", authors=["Dr. A", "Dr. B"]  # Pass list
+            title="Authors Test",
+            authors=["Dr. A", "Dr. B"],  # Pass list
         )
 
         # Should be converted to tuple
@@ -286,7 +292,9 @@ class TestExtractionResult:
         )
 
         result = ExtractionResult(
-            paper=paper, elements=elements, extraction_metadata={"test": True}
+            paper=paper,
+            elements=elements,
+            extraction_metadata={"test": True},
         )
 
         assert result.paper == paper
@@ -301,7 +309,8 @@ class TestExtractionResult:
 
         with pytest.raises((AttributeError, TypeError)):
             result.paper = Paper.create_with_auto_id(
-                title="Different", authors=("Other",)
+                title="Different",
+                authors=("Other",),
             )
 
         with pytest.raises((AttributeError, TypeError)):

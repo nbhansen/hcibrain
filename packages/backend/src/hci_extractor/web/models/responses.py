@@ -33,17 +33,20 @@ class ExtractionSummary(BaseModel):
 
     total_elements: int = Field(..., description="Total number of elements extracted")
     elements_by_type: Dict[str, int] = Field(
-        ..., description="Count of elements by type",
+        ...,
+        description="Count of elements by type",
     )
     elements_by_section: Dict[str, int] = Field(
-        ..., description="Count of elements by section",
+        ...,
+        description="Count of elements by section",
     )
     average_confidence: float = Field(..., description="Average confidence score")
     processing_time_seconds: float = Field(..., description="Total processing time")
     created_at: str = Field(..., description="Extraction timestamp")
     paper_summary: Optional[str] = Field(None, description="AI-generated paper summary")
     paper_summary_confidence: Optional[float] = Field(
-        None, description="Summary confidence score",
+        None,
+        description="Summary confidence score",
     )
 
 
@@ -52,32 +55,42 @@ class ExtractedElement(BaseModel):
 
     element_id: str = Field(..., description="Unique element identifier")
     element_type: str = Field(
-        ..., description="Type: goal, method, or result",
+        ...,
+        description="Type: goal, method, or result",
     )
     text: str = Field(..., description="Verbatim extracted text")
     section: str = Field(..., description="Paper section where element was found")
     confidence: float = Field(
-        ..., ge=0.0, le=1.0, description="Extraction confidence score",
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Extraction confidence score",
     )
     evidence_type: str = Field(
-        ..., description="Evidence type: quantitative, qualitative, etc.",
+        ...,
+        description="Evidence type: quantitative, qualitative, etc.",
     )
     page_number: Optional[int] = Field(
-        None, description="Page number where element appears",
+        None,
+        description="Page number where element appears",
     )
     coordinates: Optional[ElementCoordinates] = Field(
-        None, description="Coordinate information for highlighting",
+        None,
+        description="Coordinate information for highlighting",
     )
     supporting_evidence: Optional[str] = Field(
-        None, description="Supporting evidence mentioned",
+        None,
+        description="Supporting evidence mentioned",
     )
     methodology_context: Optional[str] = Field(
-        None, description="Methodological context",
+        None,
+        description="Methodological context",
     )
     study_population: Optional[str] = Field(None, description="Study population info")
     limitations: Optional[str] = Field(None, description="Limitations mentioned")
     surrounding_context: Optional[str] = Field(
-        None, description="Context before/after element",
+        None,
+        description="Context before/after element",
     )
 
 
@@ -86,13 +99,16 @@ class ExtractionResponse(BaseModel):
 
     paper: PaperInfo = Field(..., description="Paper information")
     extraction_summary: ExtractionSummary = Field(
-        ..., description="Extraction summary statistics",
+        ...,
+        description="Extraction summary statistics",
     )
     extracted_elements: List[ExtractedElement] = Field(
-        ..., description="All extracted elements",
+        ...,
+        description="All extracted elements",
     )
     paper_full_text: Optional[str] = Field(
-        None, description="Full text content of the PDF for text-based rendering",
+        None,
+        description="Full text content of the PDF for text-based rendering",
     )
 
     class Config:

@@ -95,7 +95,11 @@ class TestRetryHandler:
     async def test_successful_operation_no_retry(self, simple_policy):
         """Test operation that succeeds on first attempt."""
         event_bus = EventBus()
-        handler = RetryHandler(policy=simple_policy, operation_name="test_op", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=simple_policy,
+            operation_name="test_op",
+            event_bus=event_bus,
+        )
 
         async def successful_operation():
             return "success"
@@ -110,11 +114,17 @@ class TestRetryHandler:
 
     @pytest.mark.asyncio
     async def test_operation_succeeds_after_retries(
-        self, simple_policy, event_collector
+        self,
+        simple_policy,
+        event_collector,
     ):
         """Test operation that fails then succeeds."""
         event_bus = EventBus()
-        handler = RetryHandler(policy=simple_policy, operation_name="test_retry", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=simple_policy,
+            operation_name="test_retry",
+            event_bus=event_bus,
+        )
 
         call_count = 0
 
@@ -151,7 +161,11 @@ class TestRetryHandler:
     async def test_all_retries_exhausted(self, simple_policy, event_collector):
         """Test operation that always fails."""
         event_bus = EventBus()
-        handler = RetryHandler(policy=simple_policy, operation_name="always_fails", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=simple_policy,
+            operation_name="always_fails",
+            event_bus=event_bus,
+        )
 
         async def always_fails():
             raise LLMError("Persistent failure")
@@ -184,7 +198,11 @@ class TestRetryHandler:
             non_retryable_exceptions=(ValueError,),
         )
         event_bus = EventBus()
-        handler = RetryHandler(policy=policy, operation_name="non_retryable", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=policy,
+            operation_name="non_retryable",
+            event_bus=event_bus,
+        )
 
         async def raises_value_error():
             raise ValueError("This should not be retried")
@@ -206,7 +224,11 @@ class TestRetryHandler:
                 self.retry_after = retry_after
 
         event_bus = EventBus()
-        handler = RetryHandler(policy=simple_policy, operation_name="rate_limited", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=simple_policy,
+            operation_name="rate_limited",
+            event_bus=event_bus,
+        )
 
         call_count = 0
 
@@ -230,10 +252,16 @@ class TestRetryHandler:
     async def test_timeout_handling(self):
         """Test timeout handling."""
         policy = RetryPolicy(
-            max_attempts=2, timeout_seconds=0.1, initial_delay_seconds=0.05
+            max_attempts=2,
+            timeout_seconds=0.1,
+            initial_delay_seconds=0.05,
         )
         event_bus = EventBus()
-        handler = RetryHandler(policy=policy, operation_name="timeout_test", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=policy,
+            operation_name="timeout_test",
+            event_bus=event_bus,
+        )
 
         async def slow_operation():
             await asyncio.sleep(0.2)  # Longer than timeout
@@ -248,7 +276,11 @@ class TestRetryHandler:
     def test_synchronous_retry(self, simple_policy):
         """Test synchronous retry functionality."""
         event_bus = EventBus()
-        handler = RetryHandler(policy=simple_policy, operation_name="sync_test", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=simple_policy,
+            operation_name="sync_test",
+            event_bus=event_bus,
+        )
 
         call_count = 0
 
@@ -278,7 +310,11 @@ class TestRetryStrategies:
             backoff_multiplier=2.0,
         )
         event_bus = EventBus()
-        handler = RetryHandler(policy=policy, operation_name="exponential_test", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=policy,
+            operation_name="exponential_test",
+            event_bus=event_bus,
+        )
 
         # Test delay calculation directly
         exception = LLMError("Test error")
@@ -300,7 +336,11 @@ class TestRetryStrategies:
             initial_delay_seconds=0.1,
         )
         event_bus = EventBus()
-        handler = RetryHandler(policy=policy, operation_name="linear_test", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=policy,
+            operation_name="linear_test",
+            event_bus=event_bus,
+        )
 
         exception = LLMError("Test error")
 
@@ -321,7 +361,11 @@ class TestRetryStrategies:
             initial_delay_seconds=0.15,
         )
         event_bus = EventBus()
-        handler = RetryHandler(policy=policy, operation_name="fixed_test", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=policy,
+            operation_name="fixed_test",
+            event_bus=event_bus,
+        )
 
         exception = LLMError("Test error")
 
@@ -344,7 +388,11 @@ class TestRetryStrategies:
             max_delay_seconds=2.0,
         )
         event_bus = EventBus()
-        handler = RetryHandler(policy=policy, operation_name="max_delay_test", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=policy,
+            operation_name="max_delay_test",
+            event_bus=event_bus,
+        )
 
         exception = LLMError("Test error")
 
@@ -440,7 +488,9 @@ class TestEventIntegration:
         """Test that events can be disabled."""
         policy = RetryPolicy(max_attempts=2, initial_delay_seconds=0.01)
         handler = RetryHandler(
-            policy=policy, operation_name="no_events", publish_events=False
+            policy=policy,
+            operation_name="no_events",
+            publish_events=False,
         )
 
         async def always_fails():
@@ -457,7 +507,11 @@ class TestEventIntegration:
         """Test detailed event information."""
         policy = RetryPolicy(max_attempts=3, initial_delay_seconds=0.05)
         event_bus = EventBus()
-        handler = RetryHandler(policy=policy, operation_name="detailed_events", event_bus=event_bus)
+        handler = RetryHandler(
+            policy=policy,
+            operation_name="detailed_events",
+            event_bus=event_bus,
+        )
 
         call_count = 0
 
@@ -466,7 +520,7 @@ class TestEventIntegration:
             call_count += 1
             if call_count == 1:
                 raise LLMError("First failure")
-            elif call_count == 2:
+            if call_count == 2:
                 raise RateLimitError("Rate limited")
             return "success"
 

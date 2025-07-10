@@ -1,11 +1,10 @@
 """Gemini API provider implementation."""
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import google.generativeai as genai
 
-from hci_extractor.core.domain.transformers import ResponseParser
 from hci_extractor.core.events import EventBus
 from hci_extractor.core.models.exceptions import (
     EmptyResponseError,
@@ -18,7 +17,6 @@ from hci_extractor.core.models.exceptions import (
     ProviderInitializationError,
     RateLimitError,
 )
-from hci_extractor.prompts import PromptManager
 from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
 from hci_extractor.providers.base import LLMProvider
 from hci_extractor.providers.provider_config import LLMProviderConfig
@@ -34,7 +32,6 @@ class GeminiProvider(LLMProvider):
         self,
         provider_config: LLMProviderConfig,
         event_bus: EventBus,
-        prompt_manager: Optional[PromptManager] = None,
         markup_prompt_loader: Optional[MarkupPromptLoader] = None,
         model_name: str = "gemini-1.5-flash",
     ):
@@ -44,15 +41,11 @@ class GeminiProvider(LLMProvider):
         Args:
             provider_config: Provider-specific configuration
             event_bus: Event bus for publishing events
-            prompt_manager: PromptManager instance for prompt templates
             markup_prompt_loader: MarkupPromptLoader for markup generation prompts
             model_name: Gemini model to use
         """
         # Initialize base class with provider-specific configuration
         super().__init__(provider_config, event_bus)
-
-        # Initialize PromptManager for this provider
-        self.prompt_manager = prompt_manager or PromptManager()
 
         # Initialize markup prompt loader
         self.markup_prompt_loader = markup_prompt_loader
@@ -98,83 +91,14 @@ class GeminiProvider(LLMProvider):
         # Store model name for metrics
         self.model_name = model_name
 
-    async def analyze_section(
-        self,
-        section_text: str,
-        section_type: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
-        """Make API call to analyze section - pure infrastructure operation."""
-        if not section_text.strip():
-            return []
-
-        try:
-            # Build the prompt using PromptManager
-            prompt = self.prompt_manager.get_analysis_prompt(
-                section_text=section_text,
-                section_type=section_type,
-                context=context,
-                include_examples=True,
-            )
-
-            # Make API request with retry logic
-            response = await self._retry_with_backoff(self._make_api_request, prompt)
-
-            # Parse response and return raw elements
-            # Domain layer will handle validation and transformation
-            raw_text = response.get("raw_response", "")
-            response_data = ResponseParser.parse_analysis_response(raw_text)
-
-            elements = response_data.get("elements", [])
-            return elements if isinstance(elements, list) else []
-
-        except Exception as e:
-            logger.exception(f"Gemini API error for section {section_type}")
-            if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
-                raise
-            raise GeminiApiError()
-
-    async def generate_paper_summary(
-        self,
-        abstract_text: str,
-        introduction_text: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """Make API call to generate summary - pure infrastructure operation."""
-        if not abstract_text.strip() and not introduction_text.strip():
-            return {"summary": "", "confidence": 0.0, "source_sections": []}
-
-        try:
-            # Build the summary prompt using PromptManager
-            prompt = self.prompt_manager.get_paper_summary_prompt(
-                abstract_text=abstract_text,
-                introduction_text=introduction_text,
-                context=context,
-            )
-
-            # Make API request with retry logic
-            response = await self._retry_with_backoff(self._make_api_request, prompt)
-
-            # Parse response and return raw summary
-            # Domain layer will handle validation and transformation
-            raw_text = response.get("raw_response", "")
-            return ResponseParser.parse_summary_response(raw_text)
-
-
-        except Exception as e:
-            logger.exception("Gemini API error for summary generation")
-            if isinstance(e, (LLMError, RateLimitError, LLMValidationError)):
-                raise
-            raise GeminiApiError()
-
     async def generate_markup(self, full_text: str) -> str:
         """
         Generate HTML markup for the full text with goal/method/result tags.
         Uses chunking for long documents to avoid token limits.
-        
+
         Args:
             full_text: Complete text to analyze and mark up
-            
+
         Returns:
             Full text with HTML markup tags for highlights
         """
@@ -192,12 +116,16 @@ class GeminiProvider(LLMProvider):
             max_single_chunk_size = 15000  # Conservative limit for reliable processing
 
             if len(full_text) <= max_single_chunk_size:
-                logger.info("🔍 MARKUP DEBUG - Text fits in single chunk, processing directly")
+                logger.info(
+                    "🔍 MARKUP DEBUG - Text fits in single chunk, processing directly",
+                )
                 return await self._process_single_chunk(full_text)
 
             # Use chunking for large documents
             logger.info("🔍 MARKUP DEBUG - Text too large, using chunking approach")
-            chunking_service = create_markup_chunking_service(ChunkingMode.SENTENCE_BASED)
+            chunking_service = create_markup_chunking_service(
+                ChunkingMode.SENTENCE_BASED,
+            )
 
             # Prepare chunks with overlap for context continuity
             chunks = chunking_service.prepare_chunks_for_markup(
@@ -206,19 +134,29 @@ class GeminiProvider(LLMProvider):
                 overlap_size=300,  # Moderate overlap for context
             )
 
-            logger.info(f"🔍 MARKUP DEBUG - Created {len(chunks)} chunks for processing")
+            logger.info(
+                f"🔍 MARKUP DEBUG - Created {len(chunks)} chunks for processing",
+            )
 
             # Process chunks with rate limiting
             marked_chunks = []
             for i, chunk in enumerate(chunks):
-                print(f"🔄 Processing chunk {i+1}/{len(chunks)} ({len(chunk)} chars)")
+                print(f"🔄 Processing chunk {i + 1}/{len(chunks)} ({len(chunk)} chars)")
                 print(f"   First 100 chars: {chunk[:100]!r}")
-                logger.info(f"🔍 MARKUP DEBUG - Processing chunk {i+1}/{len(chunks)} ({len(chunk)} chars)")
+                logger.info(
+                    f"🔍 MARKUP DEBUG - Processing chunk {i + 1}/{len(chunks)} ({len(chunk)} chars)",
+                )
 
                 try:
-                    marked_chunk = await self._process_single_chunk(chunk, chunk_index=i+1, total_chunks=len(chunks))
+                    marked_chunk = await self._process_single_chunk(
+                        chunk,
+                        chunk_index=i + 1,
+                        total_chunks=len(chunks),
+                    )
 
-                    print(f"✅ Chunk {i+1} complete ({len(marked_chunk)} chars output)")
+                    print(
+                        f"✅ Chunk {i + 1} complete ({len(marked_chunk)} chars output)",
+                    )
                     print(f"   First 100 chars of result: {marked_chunk[:100]!r}")
 
                     marked_chunks.append(marked_chunk)
@@ -228,16 +166,24 @@ class GeminiProvider(LLMProvider):
                         await asyncio.sleep(0.5)
 
                 except Exception as e:
-                    print(f"❌ Chunk {i+1} failed: {e}")
-                    logger.warning(f"🔍 MARKUP DEBUG - Chunk {i+1} failed: {e}, using original text")
+                    print(f"❌ Chunk {i + 1} failed: {e}")
+                    logger.warning(
+                        f"🔍 MARKUP DEBUG - Chunk {i + 1} failed: {e}, using original text",
+                    )
                     marked_chunks.append(chunk)  # Fallback to unmarked text
 
             # Merge chunks back together
             full_marked_text = self._merge_marked_chunks(marked_chunks)
 
-            logger.info(f"🔍 MARKUP DEBUG - Final merged text: {len(full_marked_text)} chars")
-            logger.info(f"🔍 MARKUP DEBUG - Merged first 200 chars: {full_marked_text[:200]!r}")
-            logger.info(f"🔍 MARKUP DEBUG - Merged last 200 chars: {full_marked_text[-200:]!r}")
+            logger.info(
+                f"🔍 MARKUP DEBUG - Final merged text: {len(full_marked_text)} chars",
+            )
+            logger.info(
+                f"🔍 MARKUP DEBUG - Merged first 200 chars: {full_marked_text[:200]!r}",
+            )
+            logger.info(
+                f"🔍 MARKUP DEBUG - Merged last 200 chars: {full_marked_text[-200:]!r}",
+            )
 
             return full_marked_text
 
@@ -247,14 +193,25 @@ class GeminiProvider(LLMProvider):
                 raise
             raise GeminiApiError()
 
-    async def _process_single_chunk(self, text: str, chunk_index: int = 1, total_chunks: int = 1) -> str:
+    async def _process_single_chunk(
+        self,
+        text: str,
+        chunk_index: int = 1,
+        total_chunks: int = 1,
+    ) -> str:
         """Process a single chunk of text for markup generation."""
         # Generate prompt using prompt loader if available, otherwise fallback to hardcoded
         if self.markup_prompt_loader:
-            prompt = self.markup_prompt_loader.get_markup_prompt(text, chunk_index, total_chunks)
+            prompt = self.markup_prompt_loader.get_markup_prompt(
+                text,
+                chunk_index,
+                total_chunks,
+            )
         else:
             # Fallback to hardcoded prompt (for backwards compatibility)
-            chunk_info = f" (chunk {chunk_index}/{total_chunks})" if total_chunks > 1 else ""
+            chunk_info = (
+                f" (chunk {chunk_index}/{total_chunks})" if total_chunks > 1 else ""
+            )
             prompt = f"""
 You are an expert at analyzing academic papers. Please read the following paper text{chunk_info} and perform TWO tasks:
 
@@ -299,7 +256,7 @@ Paper text:
         return raw_response.strip()
 
     def _merge_marked_chunks(self, marked_chunks: list[str]) -> str:
-        """Merge marked chunks back together, handling overlap intelligently."""
+        """Merge marked chunks back together with paragraph breaks."""
         if not marked_chunks:
             return ""
 
@@ -307,7 +264,7 @@ Paper text:
             return marked_chunks[0]
 
         # Simple merge - join with double newlines to preserve structure
-        # TODO: Could be enhanced to detect and remove duplicate content from overlaps
+        # The chunking service handles overlap intelligently, so simple concatenation works well
         merged = marked_chunks[0]
 
         for chunk in marked_chunks[1:]:
@@ -316,21 +273,31 @@ Paper text:
 
         return merged
 
-    async def _make_markup_api_request(self, prompt: str, **kwargs: Any) -> Dict[str, Any]:
+    async def _make_markup_api_request(
+        self,
+        prompt: str,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
         """Make API request to Gemini for markup generation - plain text output."""
         try:
-            logger.info("🔍 MARKUP DEBUG - Making Gemini API request with plain text config")
+            logger.info(
+                "🔍 MARKUP DEBUG - Making Gemini API request with plain text config",
+            )
 
             # Generate content using Gemini with markup-specific config
             response = await self.model.generate_content_async(
-                prompt, generation_config=self.markup_generation_config, **kwargs,
+                prompt,
+                generation_config=self.markup_generation_config,
+                **kwargs,
             )
 
             # Check for successful response
             if not response.text:
                 raise EmptyResponseError()
 
-            logger.info(f"🔍 MARKUP DEBUG - Gemini returned {len(response.text)} characters")
+            logger.info(
+                f"🔍 MARKUP DEBUG - Gemini returned {len(response.text)} characters",
+            )
 
             # Return raw text - no JSON parsing for markup
             return {"raw_response": response.text}
@@ -352,7 +319,9 @@ Paper text:
         try:
             # Generate content using Gemini
             response = await self.model.generate_content_async(
-                prompt, generation_config=self.generation_config, **kwargs,
+                prompt,
+                generation_config=self.generation_config,
+                **kwargs,
             )
 
             # Check for successful response

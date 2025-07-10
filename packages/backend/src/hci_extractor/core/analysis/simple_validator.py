@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 def validate_extracted_elements(
-    elements: Tuple[ExtractedElement, ...], pdf_content: PdfContent,
+    elements: Tuple[ExtractedElement, ...],
+    pdf_content: PdfContent,
 ) -> Tuple[ExtractedElement, ...]:
     """
     Simple validation: verify text exists in source and remove duplicates.

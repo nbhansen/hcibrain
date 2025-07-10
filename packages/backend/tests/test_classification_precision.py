@@ -134,7 +134,7 @@ class TestClassificationPrecision:
                             "evidence_type": item["expected_evidence_type"],
                             "confidence": item["confidence_threshold"]
                             + 0.1,  # Slightly above threshold
-                        }
+                        },
                     )
             return results
 
@@ -146,7 +146,8 @@ class TestClassificationPrecision:
         total_classifications = 0
 
         paper = Paper.create_with_auto_id(
-            title="Classification Test Paper", authors=("Dr. Test",)
+            title="Classification Test Paper",
+            authors=("Dr. Test",),
         )
 
         # Group ground truth by section
@@ -201,9 +202,9 @@ class TestClassificationPrecision:
         )
 
         # Should meet 90% precision requirement
-        assert (
-            precision >= 0.90
-        ), f"Classification precision {precision:.2%} below 90% requirement"
+        assert precision >= 0.90, (
+            f"Classification precision {precision:.2%} below 90% requirement"
+        )
         assert total_classifications > 0, "No classifications to test"
 
     @pytest.mark.asyncio
@@ -230,7 +231,7 @@ class TestClassificationPrecision:
                             "text": item["text"],
                             "evidence_type": item["expected_evidence_type"],
                             "confidence": 0.95,
-                        }
+                        },
                     )
             return results
 
@@ -238,7 +239,8 @@ class TestClassificationPrecision:
         processor = LLMSectionProcessor(llm_provider=mock_llm)
 
         paper = Paper.create_with_auto_id(
-            title="Evidence Test", authors=("Dr. Evidence",)
+            title="Evidence Test",
+            authors=("Dr. Evidence",),
         )
 
         # Test each ground truth item individually
@@ -273,9 +275,9 @@ class TestClassificationPrecision:
         for evidence_type, stats in evidence_type_accuracy.items():
             if stats["total"] > 0:
                 precision = stats["correct"] / stats["total"]
-                assert (
-                    precision >= 0.85
-                ), f"{evidence_type} evidence classification precision {precision:.2%} too low"
+                assert precision >= 0.85, (
+                    f"{evidence_type} evidence classification precision {precision:.2%} too low"
+                )
 
     def test_classification_confidence_thresholds(self):
         """Test that classification confidence thresholds work correctly."""
@@ -363,7 +365,7 @@ class TestClassificationPrecision:
                             "text": case["text"],
                             "evidence_type": case["expected_evidence_type"],
                             "confidence": confidence,
-                        }
+                        },
                     )
             return results
 
@@ -393,13 +395,13 @@ class TestClassificationPrecision:
             # Confidence should reflect ambiguity
             for element in elements:
                 if case["is_ambiguous"]:
-                    assert (
-                        element.confidence <= 0.80
-                    ), f"Ambiguous case should have lower confidence: {element.text}"
+                    assert element.confidence <= 0.80, (
+                        f"Ambiguous case should have lower confidence: {element.text}"
+                    )
                 else:
-                    assert (
-                        element.confidence >= 0.85
-                    ), f"Clear case should have higher confidence: {element.text}"
+                    assert element.confidence >= 0.85, (
+                        f"Clear case should have higher confidence: {element.text}"
+                    )
 
     def test_classification_statistics(self):
         """Test calculation of classification precision statistics."""
@@ -474,14 +476,15 @@ class TestClassificationPrecision:
                 "text": "Users completed tasks faster",
                 "evidence_type": "quantitative",
                 "confidence": 0.92,
-            }
+            },
         ]
 
         mock_llm.analyze_section.return_value = consistent_result
         processor = LLMSectionProcessor(llm_provider=mock_llm)
 
         paper = Paper.create_with_auto_id(
-            title="Consistency Test", authors=("Dr. Consistent",)
+            title="Consistency Test",
+            authors=("Dr. Consistent",),
         )
         section = DetectedSection.create_with_auto_id(
             section_type="results",
@@ -559,7 +562,7 @@ class TestClassificationBenchmarking:
                 "description": "Confusing methodology with results",
                 "acceptable_rate": 0.02,  # Only 2% acceptable
                 "example": "We measured task completion time",  # Clearly method
-            }
+            },
         ]
 
         # Error analysis should guide improvement efforts

@@ -9,6 +9,7 @@ def test_cli_version():
     """Test that the CLI version command works."""
     result = subprocess.run(
         [sys.executable, "-m", "hci_extractor", "--version"],
+        check=False,
         capture_output=True,
         text=True,
         cwd=Path(__file__).parent.parent,
@@ -21,6 +22,7 @@ def test_cli_help():
     """Test that the CLI help command works."""
     result = subprocess.run(
         [sys.executable, "-m", "hci_extractor", "--help"],
+        check=False,
         capture_output=True,
         text=True,
         cwd=Path(__file__).parent.parent,

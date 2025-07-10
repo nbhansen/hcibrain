@@ -66,7 +66,7 @@ def mock_llm_provider():
             "text": "Test finding from section",
             "evidence_type": "quantitative",
             "confidence": 0.9,
-        }
+        },
     ]
     return provider
 
@@ -84,7 +84,7 @@ def mock_pdf_extractor():
                     page_number=1,
                     text="Title of the Paper\n\nAbstract\n\nThis is a test abstract with findings and results that should be detected by the section detector.\n\n1. Introduction\n\nThis is the introduction section with background information.",
                     char_count=len(
-                        "Title of the Paper\n\nAbstract\n\nThis is a test abstract with findings and results that should be detected by the section detector.\n\n1. Introduction\n\nThis is the introduction section with background information."
+                        "Title of the Paper\n\nAbstract\n\nThis is a test abstract with findings and results that should be detected by the section detector.\n\n1. Introduction\n\nThis is the introduction section with background information.",
                     ),
                     dimensions=(612.0, 792.0),
                     char_positions=(),
@@ -97,7 +97,10 @@ def mock_pdf_extractor():
 
 @pytest.mark.asyncio
 async def test_extraction_events_published(
-    event_collector, mock_llm_provider, mock_pdf_extractor, tmp_path
+    event_collector,
+    mock_llm_provider,
+    mock_pdf_extractor,
+    tmp_path,
 ):
     """Test that extraction pipeline publishes expected events."""
     # Create a test PDF path
@@ -147,7 +150,8 @@ async def test_extraction_failure_events(event_collector, mock_llm_provider, tmp
         # Run extraction expecting failure
         with pytest.raises(Exception):
             await extract_paper_simple(
-                pdf_path=pdf_path, llm_provider=mock_llm_provider
+                pdf_path=pdf_path,
+                llm_provider=mock_llm_provider,
             )
 
     # Check extraction started event was published
@@ -166,7 +170,9 @@ async def test_section_processing_events(event_collector, mock_llm_provider):
     """Test that section processing publishes expected events."""
     # Create test data
     paper = Paper.create_with_auto_id(
-        title="Test Paper", authors=("Test Author",), file_path="test.pdf"
+        title="Test Paper",
+        authors=("Test Author",),
+        file_path="test.pdf",
     )
 
     section_text = "This is a test methodology section with important findings."
@@ -207,7 +213,9 @@ async def test_chunked_section_events(event_collector, mock_llm_provider):
     """Test that chunked sections publish correct events."""
     # Create test data with a large section
     paper = Paper.create_with_auto_id(
-        title="Test Paper", authors=("Test Author",), file_path="test.pdf"
+        title="Test Paper",
+        authors=("Test Author",),
+        file_path="test.pdf",
     )
 
     # Create a large section that will be chunked
@@ -225,7 +233,9 @@ async def test_chunked_section_events(event_collector, mock_llm_provider):
 
     # Create processor with small chunk size to force chunking
     processor = LLMSectionProcessor(
-        mock_llm_provider, chunk_size=1000, chunk_overlap=100
+        mock_llm_provider,
+        chunk_size=1000,
+        chunk_overlap=100,
     )
     await processor.process_section(section, paper)
 
@@ -245,7 +255,10 @@ async def test_chunked_section_events(event_collector, mock_llm_provider):
 
 @pytest.mark.asyncio
 async def test_concurrent_event_handling(
-    event_collector, mock_llm_provider, mock_pdf_extractor, tmp_path
+    event_collector,
+    mock_llm_provider,
+    mock_pdf_extractor,
+    tmp_path,
 ):
     """Test that events work correctly with concurrent operations."""
     # Create multiple test PDFs
@@ -299,8 +312,10 @@ def test_event_handler_protocol():
     # Publish events
     event_bus.publish(
         ExtractionStarted(
-            pdf_path="test.pdf", paper_id="test-123", file_size_bytes=1000
-        )
+            pdf_path="test.pdf",
+            paper_id="test-123",
+            file_size_bytes=1000,
+        ),
     )
 
     event_bus.publish(
@@ -309,7 +324,7 @@ def test_event_handler_protocol():
             pages_extracted=10,
             characters_extracted=5000,
             duration_seconds=5.0,
-        )
+        ),
     )
 
     # Handler should only receive ExtractionStarted

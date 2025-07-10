@@ -131,23 +131,28 @@ class ConfigurationBuilder:
 
         # Apply overrides to create new configuration objects
         new_extraction = self._apply_overrides_to_dataclass(
-            self._base_config.extraction, override_dict.get("extraction", {}),
+            self._base_config.extraction,
+            override_dict.get("extraction", {}),
         )
 
         new_analysis = self._apply_overrides_to_dataclass(
-            self._base_config.analysis, override_dict.get("analysis", {}),
+            self._base_config.analysis,
+            override_dict.get("analysis", {}),
         )
 
         new_retry = self._apply_overrides_to_dataclass(
-            self._base_config.retry, override_dict.get("retry", {}),
+            self._base_config.retry,
+            override_dict.get("retry", {}),
         )
 
         new_cache = self._apply_overrides_to_dataclass(
-            self._base_config.cache, override_dict.get("cache", {}),
+            self._base_config.cache,
+            override_dict.get("cache", {}),
         )
 
         new_export = self._apply_overrides_to_dataclass(
-            self._base_config.export, override_dict.get("export", {}),
+            self._base_config.export,
+            override_dict.get("export", {}),
         )
 
         # Create new main configuration
@@ -160,7 +165,8 @@ class ConfigurationBuilder:
             export=new_export,
             log_level=override_dict.get("log_level", self._base_config.log_level),
             prompts_directory=override_dict.get(
-                "prompts_directory", self._base_config.prompts_directory,
+                "prompts_directory",
+                self._base_config.prompts_directory,
             ),
         )
 
@@ -233,14 +239,17 @@ class ConfigurationBuilder:
                 return float(env_value)
             if current_type == Path:
                 return Path(env_value)
-            return env_value  # String or unknown type
 
         except (AttributeError, ValueError):
             # If we can't determine the type, return as string
             return env_value
+        else:
+            return env_value  # String or unknown type
 
     def _apply_overrides_to_dataclass(
-        self, original: Any, overrides: Dict[str, Any],
+        self,
+        original: Any,
+        overrides: Dict[str, Any],
     ) -> Any:
         """Apply overrides to a dataclass, returning a new instance."""
         if not overrides:
@@ -284,7 +293,10 @@ def merge_configurations(
     return builder.build()
 
 
-def create_config_from_click_context(ctx: Any, base_config: Optional[ExtractorConfig] = None) -> ExtractorConfig:
+def create_config_from_click_context(
+    ctx: Any,
+    base_config: Optional[ExtractorConfig] = None,
+) -> ExtractorConfig:
     """
     Create configuration from Click context.
 
@@ -308,6 +320,48 @@ def create_config_from_click_context(ctx: Any, base_config: Optional[ExtractorCo
     return base_config or ExtractorConfig.from_yaml()
 
 
+def _validate_extraction_config(config: ExtractorConfig, issues: list[str]) -> None:
+    """Validate extraction configuration settings."""
+    if config.extraction.max_file_size_mb <= 0:
+        issues.append("max_file_size_mb must be positive")
+
+    if config.extraction.timeout_seconds <= 0:
+        issues.append("timeout_seconds must be positive")
+
+
+def _validate_analysis_config(config: ExtractorConfig, issues: list[str]) -> None:
+    """Validate analysis configuration settings."""
+    if config.analysis.chunk_size < 100:
+        issues.append("chunk_size must be at least 100 characters")
+
+    if config.analysis.chunk_overlap >= config.analysis.chunk_size:
+        issues.append("chunk_overlap must be less than chunk_size")
+
+    if config.analysis.max_concurrent_sections <= 0:
+        issues.append("max_concurrent_sections must be positive")
+
+    if not (0.0 <= config.analysis.temperature <= 2.0):
+        issues.append("temperature must be between 0.0 and 2.0")
+
+
+def _validate_retry_config(config: ExtractorConfig, issues: list[str]) -> None:
+    """Validate retry configuration settings."""
+    if config.retry.max_attempts <= 0:
+        issues.append("max_attempts must be positive")
+
+    if config.retry.initial_delay_seconds < 0:
+        issues.append("initial_delay_seconds cannot be negative")
+
+    if config.retry.backoff_multiplier < 1.0:
+        issues.append("backoff_multiplier must be at least 1.0")
+
+
+def _validate_export_config(config: ExtractorConfig, issues: list[str]) -> None:
+    """Validate export configuration settings."""
+    if not (0.0 <= config.export.min_confidence_threshold <= 1.0):
+        issues.append("min_confidence_threshold must be between 0.0 and 1.0")
+
+
 def validate_configuration(config: ExtractorConfig) -> ExtractorConfig:
     """
     Validate a configuration object and return a corrected version if needed.
@@ -321,41 +375,13 @@ def validate_configuration(config: ExtractorConfig) -> ExtractorConfig:
     Raises:
         ValueError: If configuration contains invalid values that cannot be corrected
     """
-    issues = []
+    issues: list[str] = []
 
-    # Validate extraction configuration
-    if config.extraction.max_file_size_mb <= 0:
-        issues.append("max_file_size_mb must be positive")
-
-    if config.extraction.timeout_seconds <= 0:
-        issues.append("timeout_seconds must be positive")
-
-    # Validate analysis configuration
-    if config.analysis.chunk_size < 100:
-        issues.append("chunk_size must be at least 100 characters")
-
-    if config.analysis.chunk_overlap >= config.analysis.chunk_size:
-        issues.append("chunk_overlap must be less than chunk_size")
-
-    if config.analysis.max_concurrent_sections <= 0:
-        issues.append("max_concurrent_sections must be positive")
-
-    if not (0.0 <= config.analysis.temperature <= 2.0):
-        issues.append("temperature must be between 0.0 and 2.0")
-
-    # Validate retry configuration
-    if config.retry.max_attempts <= 0:
-        issues.append("max_attempts must be positive")
-
-    if config.retry.initial_delay_seconds < 0:
-        issues.append("initial_delay_seconds cannot be negative")
-
-    if config.retry.backoff_multiplier < 1.0:
-        issues.append("backoff_multiplier must be at least 1.0")
-
-    # Validate export configuration
-    if not (0.0 <= config.export.min_confidence_threshold <= 1.0):
-        issues.append("min_confidence_threshold must be between 0.0 and 1.0")
+    # Validate each configuration section
+    _validate_extraction_config(config, issues)
+    _validate_analysis_config(config, issues)
+    _validate_retry_config(config, issues)
+    _validate_export_config(config, issues)
 
     if issues:
         raise ValueError(f"Configuration validation failed: {'; '.join(issues)}")

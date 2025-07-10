@@ -63,6 +63,7 @@ class CacheConfig:
 class ApiConfig:
     """Configuration for API settings."""
 
+    provider_type: str  # "gemini", "openai", "anthropic"
     gemini_api_key: Optional[str]
     openai_api_key: Optional[str]
     anthropic_api_key: Optional[str]
@@ -136,14 +137,19 @@ class ExtractorConfig:
             analysis=AnalysisConfig(
                 chunk_size=int(config_data.analysis["chunk_size"]),
                 chunk_overlap=int(config_data.analysis["chunk_overlap"]),
-                max_concurrent_sections=int(config_data.analysis["max_concurrent_sections"]),
-                section_timeout_seconds=float(config_data.analysis["section_timeout_seconds"]),
+                max_concurrent_sections=int(
+                    config_data.analysis["max_concurrent_sections"],
+                ),
+                section_timeout_seconds=float(
+                    config_data.analysis["section_timeout_seconds"],
+                ),
                 min_section_length=int(config_data.analysis["min_section_length"]),
                 model_name=str(config_data.analysis["model_name"]),
                 temperature=float(config_data.analysis["temperature"]),
                 max_output_tokens=int(config_data.analysis["max_output_tokens"]),
             ),
             api=ApiConfig(
+                provider_type=str(config_data.api["provider_type"]),
                 gemini_api_key=config_data.api.get("gemini_api_key"),
                 openai_api_key=config_data.api.get("openai_api_key"),
                 anthropic_api_key=config_data.api.get("anthropic_api_key"),
@@ -165,7 +171,9 @@ class ExtractorConfig:
             export=ExportConfig(
                 include_metadata=bool(config_data.export["include_metadata"]),
                 include_confidence=bool(config_data.export["include_confidence"]),
-                min_confidence_threshold=float(config_data.export["min_confidence_threshold"]),
+                min_confidence_threshold=float(
+                    config_data.export["min_confidence_threshold"],
+                ),
                 timestamp_format=str(config_data.export["timestamp_format"]),
             ),
             prompts_directory=config_service.get_prompts_directory(config_data),

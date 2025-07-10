@@ -17,7 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 def detect_sections(
-    pdf_content: PdfContent, config: ExtractorConfig,
+    pdf_content: PdfContent,
+    config: ExtractorConfig,
 ) -> Tuple[DetectedSection, ...]:
     """
     Detect academic paper sections from PDF content.
@@ -54,7 +55,11 @@ def detect_sections(
     detected_sections = []
     for pattern_name, patterns in section_patterns.items():
         sections = _find_sections_by_pattern(
-            full_text, pdf_content, pattern_name, patterns, config,
+            full_text,
+            pdf_content,
+            pattern_name,
+            patterns,
+            config,
         )
         detected_sections.extend(sections)
 
@@ -222,14 +227,15 @@ def _find_section_end(full_text: str, start_pos: int) -> int:
     # Look for next section header patterns
     next_header_patterns = [
         r"(?i)\n\s*\d+\.?\s*[a-z][a-z\s]+\n",  # Numbered section
-        r"(?i)\n\s*[a-z][a-z\s]*(?:conclusion|reference|acknowledgment)",  # End sections
+        r"(?i)\n\s*[a-z][a-z\s]*(?:conclusion|reference|acknowledgment)",  # End
     ]
 
     min_end_pos = len(full_text)
 
     for pattern in next_header_patterns:
         matches = re.finditer(
-            pattern, full_text[start_pos + 100 :],
+            pattern,
+            full_text[start_pos + 100 :],
         )  # Skip current header
         for match in matches:
             actual_pos = start_pos + 100 + match.start()
@@ -239,7 +245,9 @@ def _find_section_end(full_text: str, start_pos: int) -> int:
 
 
 def _get_page_range(
-    pdf_content: PdfContent, char_start: int, char_end: int,
+    pdf_content: PdfContent,
+    char_start: int,
+    char_end: int,
 ) -> tuple[int, int]:
     """Map character positions to page numbers."""
     start_page = 1

@@ -36,7 +36,8 @@ except ImportError:
 
 
 @pytest.mark.skipif(
-    not SIMPLE_EXTRACTION_AVAILABLE, reason="Simple extraction not available"
+    not SIMPLE_EXTRACTION_AVAILABLE,
+    reason="Simple extraction not available",
 )
 class TestSimpleExtraction:
     """Test simple extraction pipeline."""
@@ -52,7 +53,7 @@ class TestSimpleExtraction:
                 "text": "Users performed 25% better",
                 "evidence_type": "quantitative",
                 "confidence": 0.9,
-            }
+            },
         ]
 
         # Create mock PDF file path (not actually used due to mocking)
@@ -69,7 +70,7 @@ class TestSimpleExtraction:
                         page_number=1,
                         text="Abstract\nUsers performed 25% better with our system.",
                         char_count=len(
-                            "Abstract\nUsers performed 25% better with our system."
+                            "Abstract\nUsers performed 25% better with our system.",
                         ),
                         dimensions=(612.0, 792.0),
                         char_positions=(),
@@ -107,7 +108,7 @@ class TestSimpleExtraction:
                 "text": "novel interaction method for touch-based devices",
                 "evidence_type": "theoretical",
                 "confidence": 0.85,
-            }
+            },
         ]
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
@@ -123,7 +124,7 @@ class TestSimpleExtraction:
                         page_number=1,
                         text="TouchGestures: A Novel Interaction Method\n\nAbstract\nThis paper presents a novel interaction method for touch-based devices that improves user performance and satisfaction through innovative gesture recognition.",
                         char_count=len(
-                            "TouchGestures: A Novel Interaction Method\n\nAbstract\nThis paper presents a novel interaction method for touch-based devices that improves user performance and satisfaction through innovative gesture recognition."
+                            "TouchGestures: A Novel Interaction Method\n\nAbstract\nThis paper presents a novel interaction method for touch-based devices that improves user performance and satisfaction through innovative gesture recognition.",
                         ),
                         dimensions=(612.0, 792.0),
                         char_positions=(),
@@ -160,7 +161,7 @@ class TestSimpleExtraction:
                 "text": "Test claim",
                 "evidence_type": "theoretical",
                 "confidence": 0.8,
-            }
+            },
         ]
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
@@ -218,7 +219,7 @@ class TestSimpleExtraction:
                 "text": "Controlled experiment design",
                 "evidence_type": "theoretical",
                 "confidence": 0.85,
-            }
+            },
         ]
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
@@ -233,7 +234,7 @@ class TestSimpleExtraction:
                         page_number=1,
                         text="Methodology\nControlled experiment design was used to evaluate the effectiveness of our new interaction technique with 30 participants over a two-week period.",
                         char_count=len(
-                            "Methodology\nControlled experiment design was used to evaluate the effectiveness of our new interaction technique with 30 participants over a two-week period."
+                            "Methodology\nControlled experiment design was used to evaluate the effectiveness of our new interaction technique with 30 participants over a two-week period.",
                         ),
                         dimensions=(612.0, 792.0),
                         char_positions=(),
@@ -272,7 +273,7 @@ class TestSimpleExtraction:
                     "text": "Claim 1",
                     "evidence_type": "theoretical",
                     "confidence": 0.8,
-                }
+                },
             ],
             # Second paper results
             [
@@ -281,7 +282,7 @@ class TestSimpleExtraction:
                     "text": "Finding 1",
                     "evidence_type": "quantitative",
                     "confidence": 0.9,
-                }
+                },
             ],
         ]
 
@@ -289,7 +290,8 @@ class TestSimpleExtraction:
         pdf_paths = []
         for i in range(2):
             tmp_file = tempfile.NamedTemporaryFile(
-                suffix=f"_paper_{i}.pdf", delete=False
+                suffix=f"_paper_{i}.pdf",
+                delete=False,
             )
             pdf_paths.append(Path(tmp_file.name))
             tmp_file.close()
@@ -306,7 +308,7 @@ class TestSimpleExtraction:
                             page_number=1,
                             text=f"Paper {paper_num}\nAbstract\nTest content for paper {paper_num}. This abstract describes the key contributions and findings of our research work in human-computer interaction.",
                             char_count=len(
-                                f"Paper {paper_num}\nAbstract\nTest content for paper {paper_num}. This abstract describes the key contributions and findings of our research work in human-computer interaction."
+                                f"Paper {paper_num}\nAbstract\nTest content for paper {paper_num}. This abstract describes the key contributions and findings of our research work in human-computer interaction.",
                             ),
                             dimensions=(612.0, 792.0),
                             char_positions=(),
@@ -320,7 +322,8 @@ class TestSimpleExtraction:
                 side_effect=mock_extract_pdf,
             ):
                 results = await extract_multiple_papers(
-                    pdf_paths=pdf_paths, llm_provider=mock_llm
+                    pdf_paths=pdf_paths,
+                    llm_provider=mock_llm,
                 )
 
             # Should return results for all papers
@@ -345,7 +348,8 @@ class TestSimpleExtraction:
 
 
 @pytest.mark.skipif(
-    not SIMPLE_EXTRACTION_AVAILABLE, reason="Simple extraction not available"
+    not SIMPLE_EXTRACTION_AVAILABLE,
+    reason="Simple extraction not available",
 )
 class TestExtractionErrorHandling:
     """Test error handling in extraction pipeline."""
@@ -422,10 +426,9 @@ class TestExtractionErrorHandling:
                         "text": "Success",
                         "evidence_type": "theoretical",
                         "confidence": 0.8,
-                    }
+                    },
                 ]
-            else:
-                raise Exception("Second section failed")
+            raise Exception("Second section failed")
 
         mock_llm.analyze_section.side_effect = side_effect
 
@@ -442,7 +445,7 @@ class TestExtractionErrorHandling:
                         page_number=1,
                         text="Abstract\nSuccess claim.\n\n1. Introduction\nThis will fail.",
                         char_count=len(
-                            "Abstract\nSuccess claim.\n\n1. Introduction\nThis will fail."
+                            "Abstract\nSuccess claim.\n\n1. Introduction\nThis will fail.",
                         ),
                         dimensions=(612.0, 792.0),
                         char_positions=(),

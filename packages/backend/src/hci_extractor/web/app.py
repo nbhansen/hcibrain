@@ -69,5 +69,5 @@ def create_app() -> FastAPI:
     return app
 
 
-# Create the application instance
-app = create_app()
+# App instance should be created in main entry point, not at module level
+# This prevents global state and allows for proper configuration

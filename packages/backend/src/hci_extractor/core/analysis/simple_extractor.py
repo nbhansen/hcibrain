@@ -97,7 +97,9 @@ async def extract_paper_simple(
     # Publish extraction started event (for backward compatibility)
     event_bus.publish(
         ExtractionStarted(
-            pdf_path=str(pdf_path), paper_id=paper.paper_id, file_size_bytes=file_size,
+            pdf_path=str(pdf_path),
+            paper_id=paper.paper_id,
+            file_size_bytes=file_size,
         ),
     )
 
@@ -175,17 +177,21 @@ async def extract_paper_simple(
             return ExtractionResult(
                 paper=paper,
                 elements=(),
-                extraction_metadata=types.MappingProxyType({
-                    "pdf_pages": pdf_content.total_pages,
-                    "sections_found": 0,
-                    "elements_extracted": 0,
-                    "processing_status": "no_sections",
-                }),
+                extraction_metadata=types.MappingProxyType(
+                    {
+                        "pdf_pages": pdf_content.total_pages,
+                        "sections_found": 0,
+                        "elements_extracted": 0,
+                        "processing_status": "no_sections",
+                    },
+                ),
             )
 
         # Step 3.5: Generate paper summary from abstract and introduction
         paper_summary = await _generate_paper_summary(
-            sections, llm_provider, paper.paper_id,
+            sections,
+            llm_provider,
+            paper.paper_id,
         )
 
         # Step 4: Process sections with LLM
@@ -305,7 +311,9 @@ async def extract_paper_simple(
         # Publish extraction failed event (for backward compatibility)
         event_bus.publish(
             ExtractionFailed(
-                pdf_path=str(pdf_path), error_type="PdfError", error_message=str(e),
+                pdf_path=str(pdf_path),
+                error_type="PdfError",
+                error_message=str(e),
             ),
         )
         raise
@@ -328,7 +336,9 @@ async def extract_paper_simple(
         # Publish extraction failed event (for backward compatibility)
         event_bus.publish(
             ExtractionFailed(
-                pdf_path=str(pdf_path), error_type="LLMError", error_message=str(e),
+                pdf_path=str(pdf_path),
+                error_type="LLMError",
+                error_message=str(e),
             ),
         )
         raise
@@ -360,7 +370,8 @@ async def extract_paper_simple(
 
 
 def _create_paper_from_metadata(
-    pdf_path: Path, metadata: Optional[Dict[str, Any]],
+    pdf_path: Path,
+    metadata: Optional[Dict[str, Any]],
 ) -> Paper:
     """Create Paper object from metadata or defaults."""
     if metadata:
@@ -414,7 +425,7 @@ async def extract_multiple_papers(
     event_bus.publish(
         BatchProcessingStarted(
             total_papers=len(pdf_paths),
-            input_directory="multiple_paths",  # Could be enhanced to detect common directory
+            input_directory="multiple_paths",  # Could be enhanced
             output_directory="memory",  # In-memory results
             max_concurrent=1,  # Sequential processing for simplicity
             filter_pattern="*.pdf",
@@ -457,13 +468,13 @@ async def extract_multiple_papers(
             results.append(result)
             successful_count += 1
             logger.info(
-                f"✅ Completed paper {i+1}/{len(pdf_paths)}: {result.paper.title}",
+                f"✅ Completed paper {i + 1}/{len(pdf_paths)}: {result.paper.title}",
             )
 
-        except Exception as e:
+        except Exception:
             failed_count += 1
             logger.exception(
-                f"❌ Failed to process paper {i+1}/{len(pdf_paths)} ({pdf_path})",
+                f"❌ Failed to process paper {i + 1}/{len(pdf_paths)} ({pdf_path})",
             )
             # Continue with other papers - don't let one failure stop the batch
             continue
@@ -492,7 +503,9 @@ async def extract_multiple_papers(
 
 
 async def _generate_paper_summary(
-    sections: tuple[Any, ...], llm_provider: LLMProvider, paper_id: str,
+    sections: tuple[Any, ...],
+    llm_provider: LLMProvider,
+    paper_id: str,
 ) -> Optional[Dict[str, Any]]:
     """
     Generate paper summary from abstract and introduction sections.
@@ -572,6 +585,11 @@ def extract_paper_sync(
     """
     return asyncio.run(
         extract_paper_simple(
-            pdf_path, llm_provider, config, event_bus, paper_metadata, progress_callback,
+            pdf_path,
+            llm_provider,
+            config,
+            event_bus,
+            paper_metadata,
+            progress_callback,
         ),
     )

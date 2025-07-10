@@ -80,7 +80,7 @@ class TestCLIIntegration:
         with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
             # Create a minimal PDF file (this will fail PDF extraction, but should fail at API key check first)
             tmp_pdf.write(
-                b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF"
+                b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF",
             )
             tmp_pdf.flush()
 
@@ -111,7 +111,8 @@ class TestCLIIntegration:
         from hci_extractor.core.models import ExtractedElement, ExtractionResult, Paper
 
         mock_paper = Paper.create_with_auto_id(
-            title="Test Paper", authors=("Dr. Test",)
+            title="Test Paper",
+            authors=("Dr. Test",),
         )
 
         mock_elements = (
@@ -126,7 +127,9 @@ class TestCLIIntegration:
         )
 
         mock_result = ExtractionResult(
-            paper=mock_paper, elements=mock_elements, created_at=datetime.now()
+            paper=mock_paper,
+            elements=mock_elements,
+            created_at=datetime.now(),
         )
 
         mock_extract.return_value = mock_result
@@ -134,7 +137,7 @@ class TestCLIIntegration:
         with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
             # Create a basic PDF file
             tmp_pdf.write(
-                b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF"
+                b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF",
             )
             tmp_pdf.flush()
 
@@ -163,7 +166,8 @@ class TestCLIIntegration:
         from hci_extractor.core.models import ExtractedElement, ExtractionResult, Paper
 
         mock_paper = Paper.create_with_auto_id(
-            title="Test Output Paper", authors=("Dr. Output",)
+            title="Test Output Paper",
+            authors=("Dr. Output",),
         )
 
         mock_elements = (
@@ -178,7 +182,9 @@ class TestCLIIntegration:
         )
 
         mock_result = ExtractionResult(
-            paper=mock_paper, elements=mock_elements, created_at=datetime.now()
+            paper=mock_paper,
+            elements=mock_elements,
+            created_at=datetime.now(),
         )
 
         mock_extract.return_value = mock_result
@@ -191,12 +197,13 @@ class TestCLIIntegration:
             # Create PDF file
             with open(pdf_file, "wb") as f:
                 f.write(
-                    b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF"
+                    b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF",
                 )
 
             with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
                 result = runner.invoke(
-                    cli, ["extract", str(pdf_file), "--output", str(output_file)]
+                    cli,
+                    ["extract", str(pdf_file), "--output", str(output_file)],
                 )
 
                 assert result.exit_code == 0
@@ -249,7 +256,7 @@ class TestCLIIntegration:
                         "confidence": 0.9,
                         "evidence_type": "quantitative",
                         "page_number": 1,
-                    }
+                    },
                 ],
             }
 
@@ -258,7 +265,8 @@ class TestCLIIntegration:
 
             # Test CSV export
             result = runner.invoke(
-                cli, ["export", str(tmp_dir_path), "--format", "csv"]
+                cli,
+                ["export", str(tmp_dir_path), "--format", "csv"],
             )
 
             assert result.exit_code == 0

@@ -9,7 +9,7 @@ with immutable events.
 from abc import ABC
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Protocol, Type
+from typing import Any, Dict, Optional, Protocol, Type
 from uuid import uuid4
 
 
@@ -21,8 +21,6 @@ class DomainEvent(ABC):
     All events are immutable and contain metadata about when they occurred
     and a unique identifier for tracing.
     """
-
-
 
 
 @dataclass(frozen=True)
@@ -308,8 +306,8 @@ class EventBus:
     """
 
     def __init__(self) -> None:
-        self._handlers: Dict[Type[DomainEvent], List[EventHandler]] = {}
-        self._global_handlers: List[EventHandler] = []
+        self._handlers: Dict[Type[DomainEvent], tuple[EventHandler, ...]] = {}
+        self._global_handlers: tuple[EventHandler, ...] = ()
 
     def subscribe(self, event_type: Type[DomainEvent], handler: EventHandler) -> None:
         """
@@ -320,8 +318,8 @@ class EventBus:
             handler: The handler to call when the event is published
         """
         if event_type not in self._handlers:
-            self._handlers[event_type] = []
-        self._handlers[event_type].append(handler)
+            self._handlers[event_type] = ()
+        self._handlers[event_type] = self._handlers[event_type] + (handler,)
 
     def subscribe_all(self, handler: EventHandler) -> None:
         """
@@ -332,7 +330,7 @@ class EventBus:
         Args:
             handler: The handler to call for all events
         """
-        self._global_handlers.append(handler)
+        self._global_handlers = (*self._global_handlers, handler)
 
     def publish(self, event: DomainEvent) -> None:
         """
@@ -345,7 +343,7 @@ class EventBus:
             event: The event to publish
         """
         # Call specific handlers
-        for handler in self._handlers.get(type(event), []):
+        for handler in self._handlers.get(type(event), ()):
             try:
                 handler.handle(event)
             except Exception as e:
@@ -365,8 +363,8 @@ class EventBus:
 
     def clear(self) -> None:
         """Clear all event handlers."""
-        self._handlers.clear()
-        self._global_handlers.clear()
+        self._handlers = {}
+        self._global_handlers = ()
 
 
 # Example handlers for common use cases
@@ -382,8 +380,7 @@ class LoggingEventHandler:
         event_id = getattr(event, "event_id", "unknown")
         occurred_at = getattr(event, "occurred_at", "unknown")
         self.logger.debug(
-            f"Event {event.__class__.__name__} "
-            f"[{event_id}] at {occurred_at}",
+            f"Event {event.__class__.__name__} [{event_id}] at {occurred_at}",
         )
 
 
@@ -392,7 +389,7 @@ class MetricsEventHandler:
 
     def __init__(self) -> None:
         self.event_counts: Dict[str, int] = {}
-        self.processing_times: List[float] = []
+        self.processing_times: tuple[float, ...] = ()
 
     def handle(self, event: DomainEvent) -> None:
         # Count events by type
@@ -410,7 +407,7 @@ class MetricsEventHandler:
                 BatchProcessingCompleted,
             ),
         ):
-            self.processing_times.append(event.duration_seconds)
+            self.processing_times = (*self.processing_times, event.duration_seconds)
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get collected metrics as an immutable snapshot."""

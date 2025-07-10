@@ -63,7 +63,8 @@ class SectionAnalysisService:
         # Track metrics and publish events
         with LLMMetricsContext(
             provider=self._llm_provider.__class__.__name__.lower().replace(
-                "provider", "",
+                "provider",
+                "",
             ),
             model=getattr(self._llm_provider, "model_name", "unknown"),
             operation="analyze_section",
@@ -85,7 +86,9 @@ class SectionAnalysisService:
             try:
                 # Call provider for raw analysis
                 raw_elements = await self._llm_provider.analyze_section(
-                    section_text, section_type, context,
+                    section_text,
+                    section_type,
+                    context,
                 )
 
                 # Transform to domain objects
@@ -114,7 +117,7 @@ class SectionAnalysisService:
 
                 return cleaned_elements
 
-            except Exception as e:
+            except Exception:
                 logger.exception(f"Error analyzing section {section_type}")
                 raise
 
@@ -169,7 +172,8 @@ class PaperSummaryService:
         # Track metrics
         with LLMMetricsContext(
             provider=self._llm_provider.__class__.__name__.lower().replace(
-                "provider", "",
+                "provider",
+                "",
             ),
             model=getattr(self._llm_provider, "model_name", "unknown"),
             operation="generate_paper_summary",
@@ -179,7 +183,9 @@ class PaperSummaryService:
             try:
                 # Call provider for raw summary
                 raw_summary = await self._llm_provider.generate_paper_summary(
-                    abstract_text, introduction_text, context,
+                    abstract_text,
+                    introduction_text,
+                    context,
                 )
 
                 # Transform to domain format
@@ -197,6 +203,6 @@ class PaperSummaryService:
 
                 return cleaned_summary
 
-            except Exception as e:
+            except Exception:
                 logger.exception("Error generating paper summary")
                 raise

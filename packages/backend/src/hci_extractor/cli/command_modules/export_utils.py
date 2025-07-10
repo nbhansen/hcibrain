@@ -60,7 +60,8 @@ def _export_to_csv(elements: List[Dict[str, Any]]) -> str:
 
 
 def _export_to_json(
-    elements: List[Dict[str, Any]], papers_info: List[Dict[str, Any]],
+    elements: List[Dict[str, Any]],
+    papers_info: List[Dict[str, Any]],
 ) -> str:
     """Export elements to JSON format."""
     export_data = {
@@ -77,7 +78,8 @@ def _export_to_json(
 
 
 def _export_to_markdown(
-    elements: List[Dict[str, Any]], papers_info: List[Dict[str, Any]],
+    elements: List[Dict[str, Any]],
+    papers_info: List[Dict[str, Any]],
 ) -> str:
     """Export elements to Markdown format."""
     lines = []

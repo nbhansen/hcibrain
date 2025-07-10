@@ -194,7 +194,8 @@ def list_available_profiles() -> Dict[str, ConfigProfile]:
 
 
 def apply_profile_to_config(
-    profile: ConfigProfile, base_config: Optional[ExtractorConfig] = None,
+    profile: ConfigProfile,
+    base_config: Optional[ExtractorConfig] = None,
 ) -> ExtractorConfig:
     """
     Apply a configuration profile to create a new configuration.

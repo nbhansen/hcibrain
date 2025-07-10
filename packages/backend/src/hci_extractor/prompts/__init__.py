@@ -1,5 +1,6 @@
 """Prompt management system for HCI paper extraction."""
 
-from .prompt_manager import PromptManager
+# PromptManager removed - only markup generation is used now
+# Legacy JSON extraction prompts are no longer needed
 
-__all__ = ["PromptManager"]
+__all__ = []

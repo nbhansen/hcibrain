@@ -79,7 +79,9 @@ class ErrorClassifier:
         self._pattern_matchers = self._build_pattern_matchers()
 
     def classify_error(
-        self, error: Exception, context: Optional[Dict[str, Any]] = None,
+        self,
+        error: Exception,
+        context: Optional[Dict[str, Any]] = None,
     ) -> ErrorClassification:
         """
         Classify an error for intelligent handling.
@@ -102,7 +104,10 @@ class ErrorClassifier:
 
         # Combine and refine classifications
         final_classification = self._combine_classifications(
-            base_classification, message_classification, error, context,
+            base_classification,
+            message_classification,
+            error,
+            context,
         )
 
         logger.debug(
@@ -139,7 +144,9 @@ class ErrorClassifier:
         )
 
     def _classify_by_message(
-        self, error: Exception, context: Dict[str, Any],
+        self,
+        error: Exception,
+        context: Dict[str, Any],
     ) -> Optional[ErrorClassification]:
         """Classify error based on error message patterns."""
         message = str(error).lower()
@@ -400,7 +407,10 @@ class ErrorClassifier:
         }
 
     def _classify_network_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify network-related errors."""
         return ErrorClassification(
@@ -419,7 +429,10 @@ class ErrorClassifier:
         )
 
     def _classify_memory_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify memory-related errors."""
         return ErrorClassification(
@@ -437,7 +450,10 @@ class ErrorClassifier:
         )
 
     def _classify_disk_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify disk space errors."""
         return ErrorClassification(
@@ -455,7 +471,10 @@ class ErrorClassifier:
         )
 
     def _classify_resource_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify general resource errors."""
         return ErrorClassification(
@@ -474,7 +493,10 @@ class ErrorClassifier:
         )
 
     def _classify_quota_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify API quota errors."""
         return ErrorClassification(
@@ -492,7 +514,10 @@ class ErrorClassifier:
         )
 
     def _classify_auth_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify authentication errors."""
         return ErrorClassification(
@@ -510,7 +535,10 @@ class ErrorClassifier:
         )
 
     def _classify_permission_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify permission errors."""
         return ErrorClassification(
@@ -528,7 +556,10 @@ class ErrorClassifier:
         )
 
     def _classify_service_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify service availability errors."""
         return ErrorClassification(
@@ -547,7 +578,10 @@ class ErrorClassifier:
         )
 
     def _classify_file_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify file system errors."""
         return ErrorClassification(
@@ -565,7 +599,10 @@ class ErrorClassifier:
         )
 
     def _classify_file_lock_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify file lock errors."""
         return ErrorClassification(
@@ -584,7 +621,10 @@ class ErrorClassifier:
         )
 
     def _classify_json_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify JSON parsing errors."""
         return ErrorClassification(
@@ -603,7 +643,10 @@ class ErrorClassifier:
         )
 
     def _classify_parsing_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify general parsing errors."""
         return ErrorClassification(
@@ -622,7 +665,10 @@ class ErrorClassifier:
         )
 
     def _classify_timeout_error(
-        self, error: Exception, message: str, context: Dict[str, Any],
+        self,
+        error: Exception,
+        message: str,
+        context: Dict[str, Any],
     ) -> ErrorClassification:
         """Classify timeout errors."""
         return ErrorClassification(
@@ -641,89 +687,13 @@ class ErrorClassifier:
         )
 
 
-# Global error classifier instance
-_error_classifier = ErrorClassifier()
+# Note: Global error classifier removed - use dependency injection
+# Error classifier should be injected through the DI container
 
 
-def classify_error(
-    error: Exception, context: Optional[Dict[str, Any]] = None,
-) -> ErrorClassification:
-    """
-    Classify an error for intelligent handling.
-
-    Args:
-        error: The exception to classify
-        context: Additional context about the error occurrence
-
-    Returns:
-        ErrorClassification with recommended handling strategy
-    """
-    return _error_classifier.classify_error(error, context)
+# Note: Helper functions removed - use ErrorClassifier instance directly through DI
+# These functions relied on the removed global classify_error function or str(error)
 
 
-def is_retriable_error(
-    error: Exception, context: Optional[Dict[str, Any]] = None,
-) -> bool:
-    """
-    Check if an error should be retried.
-
-    Args:
-        error: The exception to check
-        context: Additional context about the error occurrence
-
-    Returns:
-        True if the error should be retried
-    """
-    classification = classify_error(error, context)
-    return classification.is_retriable
-
-
-def get_retry_strategy(
-    error: Exception, context: Optional[Dict[str, Any]] = None,
-) -> Optional[str]:
-    """
-    Get the recommended retry strategy for an error.
-
-    Args:
-        error: The exception to analyze
-        context: Additional context about the error occurrence
-
-    Returns:
-        Recommended retry strategy name, or None if not retriable
-    """
-    classification = classify_error(error, context)
-    return classification.retry_strategy if classification.is_retriable else None
-
-
-def get_user_friendly_message(
-    error: Exception, context: Optional[Dict[str, Any]] = None,
-) -> str:
-    """
-    Get a user-friendly error message.
-
-    Args:
-        error: The exception to translate
-        context: Additional context about the error occurrence
-
-    Returns:
-        User-friendly error message
-    """
-    classification = classify_error(error, context)
-    return classification.user_message or str(error)
-
-
-def get_remediation_steps(
-    error: Exception, context: Optional[Dict[str, Any]] = None,
-) -> List[str]:
-    """
-    Get remediation steps for an error.
-
-    Args:
-        error: The exception to analyze
-        context: Additional context about the error occurrence
-
-    Returns:
-        List of remediation steps
-    """
-    classification = classify_error(error, context)
-    return classification.remediation_steps or []
+# Note: get_remediation_steps function removed - use ErrorClassifier instance directly through DI
+# This function relied on the removed global classify_error function

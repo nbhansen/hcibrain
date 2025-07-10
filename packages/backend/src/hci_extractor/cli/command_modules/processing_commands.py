@@ -106,7 +106,7 @@ def _check_virtual_environment() -> None:
 
 def _export_single_paper_to_csv(papers_data: List[Dict[str, Any]]) -> str:
     """Export single paper data to CSV format."""
-    from hci_extractor.cli.commands.export_utils import _export_to_csv
+    from hci_extractor.cli.command_modules.export_utils import _export_to_csv
 
     all_elements = []
 
@@ -128,18 +128,20 @@ def _export_single_paper_to_csv(papers_data: List[Dict[str, Any]]) -> str:
                     # Paper summary fields
                     "paper_summary": extraction_summary.get("paper_summary", ""),
                     "paper_summary_confidence": extraction_summary.get(
-                        "paper_summary_confidence", "",
+                        "paper_summary_confidence",
+                        "",
                     ),
                 },
             )
             all_elements.append(element_with_paper)
 
-    return _export_to_csv(all_elements)
+    csv_result: str = _export_to_csv(all_elements)
+    return csv_result
 
 
 def _export_single_paper_to_markdown(papers_data: List[Dict[str, Any]]) -> str:
     """Export single paper data to Markdown format."""
-    from hci_extractor.cli.commands.export_utils import _export_to_markdown
+    from hci_extractor.cli.command_modules.export_utils import _export_to_markdown
 
     all_elements = []
     papers_info = []
@@ -163,13 +165,15 @@ def _export_single_paper_to_markdown(papers_data: List[Dict[str, Any]]) -> str:
                     # Paper summary fields
                     "paper_summary": extraction_summary.get("paper_summary", ""),
                     "paper_summary_confidence": extraction_summary.get(
-                        "paper_summary_confidence", "",
+                        "paper_summary_confidence",
+                        "",
                     ),
                 },
             )
             all_elements.append(element_with_paper)
 
-    return _export_to_markdown(all_elements, papers_info)
+    markdown_result: str = _export_to_markdown(all_elements, papers_info)
+    return markdown_result
 
 
 @click.command()
@@ -478,7 +482,7 @@ def extract(
             click.echo("\n--- 📝 Sample Extractions ---")
             for i, element in enumerate(result.elements[:5]):  # Show first 5
                 click.echo(
-                    f"{i+1}. [{element.element_type.upper()}] {element.text[:100]}...",
+                    f"{i + 1}. [{element.element_type.upper()}] {element.text[:100]}...",
                 )
                 click.echo(
                     f"   Section: {element.section} | "
@@ -498,7 +502,9 @@ def extract(
             "profile_used": profile or "default",
         }
         formatted_error = format_error_for_cli(
-            e, context, verbose=config.log_level == "DEBUG",
+            e,
+            context,
+            verbose=config.log_level == "DEBUG",
         )
         click.echo(formatted_error, err=True)
         raise click.Abort() from e
@@ -509,7 +515,9 @@ def extract(
             "file_size": str(pdf_path.stat().st_size) if pdf_path.exists() else "0",
         }
         formatted_error = format_error_for_cli(
-            e, context, verbose=config.log_level == "DEBUG",
+            e,
+            context,
+            verbose=config.log_level == "DEBUG",
         )
         click.echo(formatted_error, err=True)
         raise click.Abort() from e
@@ -554,16 +562,19 @@ def parse(pdf_path: Path, output: Optional[Path], normalize: bool) -> None:
         normalizer = TextNormalizer() if normalize else None
 
         # Create PDF extractor with basic configuration
-        config = ExtractorConfig()  # Default config
+        config = ExtractorConfig.from_yaml()  # Default config from YAML
         extractor = PdfExtractor(config)
 
         # Extract text
         click.echo(f"📄 Extracting text from {pdf_path}...")
-        text = extractor.extract_text(pdf_path)
+        content = extractor.extract_content(pdf_path)
+        # Get text from all pages
+        text = "\n".join(page.text for page in content.pages)
 
         # Apply normalization if requested
         if normalizer and text:
-            text = normalizer.normalize(text)
+            normalized_result = normalizer.normalize(text)
+            text = normalized_result.cleaned_text
 
         if not text:
             click.echo("❌ No text could be extracted from the PDF", err=True)
@@ -645,7 +656,7 @@ def validate(
             raise click.Abort()
 
         # Create basic configuration for validation
-        config = ExtractorConfig()
+        config = ExtractorConfig.from_yaml()
         extractor = PdfExtractor(config)
 
         # Test text extraction
@@ -654,7 +665,9 @@ def validate(
             import time
 
             start_time = time.time()
-            text = extractor.extract_text(pdf_path)
+            content = extractor.extract_content(pdf_path)
+            # Get text from all pages
+            text = "\n".join(page.text for page in content.pages)
             extraction_time = time.time() - start_time
 
             if extraction_time > extraction_timeout:
@@ -688,8 +701,8 @@ def validate(
             click.echo("🧹 Testing text normalization...")
             try:
                 normalizer = TextNormalizer()
-                normalized = normalizer.normalize(text)
-                reduction = len(text) - len(normalized)
+                normalized_result = normalizer.normalize(text)
+                reduction = len(text) - len(normalized_result.cleaned_text)
                 if reduction > 0:
                     click.echo(f"✅ Normalization cleaned {reduction:,} characters")
                 else:
@@ -728,7 +741,8 @@ def validate(
 
 @click.command()
 @click.argument(
-    "input_dir", type=click.Path(exists=True, file_okay=False, path_type=Path),
+    "input_dir",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
 )
 @click.argument("output_dir", type=click.Path(path_type=Path))
 @click.option(
@@ -738,10 +752,14 @@ def validate(
     help="Maximum number of concurrent PDF processing operations",
 )
 @click.option(
-    "--skip-errors", is_flag=True, help="Continue processing other files if some fail",
+    "--skip-errors",
+    is_flag=True,
+    help="Continue processing other files if some fail",
 )
 @click.option(
-    "--filter-pattern", default="*.pdf", help="File pattern to match (default: *.pdf)",
+    "--filter-pattern",
+    default="*.pdf",
+    help="File pattern to match (default: *.pdf)",
 )
 # Profile selection option
 @click.option(
@@ -1006,13 +1024,13 @@ def batch(
                 with open(output_file, "w", encoding="utf-8") as f:
                     json.dump(output_data, f, indent=2, ensure_ascii=False)
 
-                return True
-
             except Exception as e:
                 progress.error(f"Failed to process {pdf_path.name}: {e}")
                 if not skip_errors:
                     raise
                 return False
+            else:
+                return True
 
         async def process_batch() -> List[Any]:
             """Process all PDFs with concurrency control."""
@@ -1024,7 +1042,6 @@ def batch(
 
             tasks = [process_with_semaphore(pdf_path) for pdf_path in pdf_files]
             return await asyncio.gather(*tasks, return_exceptions=True)
-
 
         # Run batch processing
         click.echo(f"\n🚀 Starting batch processing of {len(pdf_files)} files...")
@@ -1103,7 +1120,9 @@ def batch(
             "profile_used": profile or "default",
         }
         formatted_error = format_error_for_cli(
-            e, context, verbose=config.log_level == "DEBUG",
+            e,
+            context,
+            verbose=config.log_level == "DEBUG",
         )
         click.echo(formatted_error, err=True)
         raise click.Abort() from e
@@ -1115,7 +1134,9 @@ def batch(
             "max_concurrent": max_concurrent,
         }
         formatted_error = format_error_for_cli(
-            e, context, verbose=config.log_level == "DEBUG",
+            e,
+            context,
+            verbose=config.log_level == "DEBUG",
         )
         click.echo(formatted_error, err=True)
         raise click.Abort() from e

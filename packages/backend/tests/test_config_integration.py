@@ -13,10 +13,10 @@ def test_section_detector_uses_config():
     """Test that section detector respects config min_section_length."""
     # Create two configs with different min section lengths
     config_30 = ExtractorConfig.for_testing(
-        analysis=AnalysisConfig(min_section_length=30)
+        analysis=AnalysisConfig(min_section_length=30),
     )
     config_150 = ExtractorConfig.for_testing(
-        analysis=AnalysisConfig(min_section_length=150)
+        analysis=AnalysisConfig(min_section_length=150),
     )
 
     # Create PDF with sections of different lengths
@@ -77,7 +77,9 @@ async def test_llm_processor_uses_config():
     # Create config with custom values
     config = ExtractorConfig.for_testing(
         analysis=AnalysisConfig(
-            chunk_size=500, chunk_overlap=50, section_timeout_seconds=10.0
+            chunk_size=500,
+            chunk_overlap=50,
+            section_timeout_seconds=10.0,
         ),
         retry=RetryConfig(max_attempts=1),
     )
@@ -96,7 +98,10 @@ async def test_llm_processor_uses_config():
 
     # Test backwards compatibility - explicit params override config
     processor2 = LLMSectionProcessor(
-        mock_llm, config=config, chunk_size=1000, max_retries=5
+        mock_llm,
+        config=config,
+        chunk_size=1000,
+        max_retries=5,
     )
     assert processor2.chunk_size == 1000  # Overridden
     assert processor2.chunk_overlap == 50  # From config
@@ -107,7 +112,7 @@ def test_config_integration_end_to_end():
     """Test that configuration flows through the system."""
     # Create a test config
     config = ExtractorConfig.for_testing(
-        analysis=AnalysisConfig(min_section_length=75, chunk_size=2000)
+        analysis=AnalysisConfig(min_section_length=75, chunk_size=2000),
     )
 
     # Create test PDF

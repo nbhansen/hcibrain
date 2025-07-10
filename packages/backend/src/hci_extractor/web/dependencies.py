@@ -9,6 +9,7 @@ from hci_extractor.core.config import ExtractorConfig
 from hci_extractor.core.di_container import DIContainer, create_configured_container
 from hci_extractor.core.events import EventBus
 from hci_extractor.providers import LLMProvider
+from hci_extractor.web.progress import WebSocketManager
 
 
 @lru_cache
@@ -64,3 +65,16 @@ def get_event_bus(container: DIContainer = Depends(get_container)) -> EventBus:
         EventBus instance for publishing domain events
     """
     return container.resolve(EventBus)
+
+
+def get_websocket_manager(container: DIContainer = Depends(get_container)) -> WebSocketManager:
+    """
+    FastAPI dependency that resolves WebSocketManager from DI container.
+
+    Args:
+        container: DI container instance
+
+    Returns:
+        WebSocketManager instance for WebSocket connections
+    """
+    return container.resolve(WebSocketManager)

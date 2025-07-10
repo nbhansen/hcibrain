@@ -71,7 +71,7 @@ class TestLLMProvider:
                         "text": "Test finding",
                         "evidence_type": "quantitative",
                         "confidence": 0.9,
-                    }
+                    },
                 ]
 
             def validate_response(self, response):
@@ -120,12 +120,14 @@ class TestGeminiProvider:
                         "text": "Test result",
                         "evidence_type": "quantitative",
                         "confidence": 0.9,
-                    }
-                ]
+                    },
+                ],
             }
 
             with patch.object(
-                provider, "_make_api_request", return_value=mock_response
+                provider,
+                "_make_api_request",
+                return_value=mock_response,
             ):
                 result = await provider.analyze_section("Test section text", "results")
 
@@ -146,8 +148,8 @@ class TestGeminiProvider:
                         "text": "Valid test finding",
                         "evidence_type": "quantitative",
                         "confidence": 0.95,
-                    }
-                ]
+                    },
+                ],
             }
             assert provider.validate_response(valid_response) is True
 
@@ -164,7 +166,9 @@ class TestGeminiProvider:
 
             # Mock API request that raises exception
             with patch.object(
-                provider, "_make_api_request", side_effect=Exception("API Error")
+                provider,
+                "_make_api_request",
+                side_effect=Exception("API Error"),
             ):
                 with pytest.raises(LLMError):
                     await provider.analyze_section("Test text", "results")
@@ -190,14 +194,16 @@ class TestPromptManager:
 
         # Should load default prompts for standard sections
         abstract_prompt = manager.get_analysis_prompt(
-            "Test abstract content", "abstract"
+            "Test abstract content",
+            "abstract",
         )
         assert len(abstract_prompt) > 100  # Should be a substantial prompt
         assert "test abstract content" in abstract_prompt.lower()
 
         # Should work with different section types
         intro_prompt = manager.get_analysis_prompt(
-            "Test introduction content", "introduction"
+            "Test introduction content",
+            "introduction",
         )
         assert len(intro_prompt) > 100  # Should be a substantial prompt
         assert "test introduction content" in intro_prompt.lower()

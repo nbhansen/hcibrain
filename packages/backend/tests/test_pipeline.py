@@ -69,7 +69,10 @@ We have presented a novel method for detection."""
         )
 
         pdf_content = PdfContent(
-            file_path="test.pdf", total_pages=1, pages=(page,), extraction_metadata={}
+            file_path="test.pdf",
+            total_pages=1,
+            pages=(page,),
+            extraction_metadata={},
         )
 
         sections = detect_sections(pdf_content)
@@ -137,7 +140,10 @@ Brief introduction here with sufficient content for detection."""
         )
 
         pdf_content = PdfContent(
-            file_path="test.pdf", total_pages=1, pages=(page,), extraction_metadata={}
+            file_path="test.pdf",
+            total_pages=1,
+            pages=(page,),
+            extraction_metadata={},
         )
 
         sections = detect_sections(pdf_content)
@@ -185,7 +191,7 @@ class TestSectionProcessor:
                 "text": "Users completed tasks 25% faster",
                 "evidence_type": "quantitative",
                 "confidence": 0.9,
-            }
+            },
         ]
 
         processor = LLMSectionProcessor(llm_provider=mock_llm)
@@ -228,7 +234,7 @@ class TestSectionProcessor:
                     "text": "Claim 1",
                     "evidence_type": "theoretical",
                     "confidence": 0.8,
-                }
+                },
             ],
             [
                 {
@@ -236,7 +242,7 @@ class TestSectionProcessor:
                     "text": "Finding 1",
                     "evidence_type": "quantitative",
                     "confidence": 0.9,
-                }
+                },
             ],
         ]
 
@@ -270,7 +276,10 @@ class TestSectionProcessor:
 
         # Process sections concurrently
         all_elements = await process_sections_batch(
-            sections=sections, paper=paper, processor=processor, max_concurrent=2
+            sections=sections,
+            paper=paper,
+            processor=processor,
+            max_concurrent=2,
         )
 
         # Should return all elements from all sections
@@ -293,7 +302,7 @@ class TestSectionProcessor:
                     "text": "Success",
                     "evidence_type": "theoretical",
                     "confidence": 0.8,
-                }
+                },
             ],
             Exception("LLM API Error"),
         ]
@@ -327,7 +336,10 @@ class TestSectionProcessor:
 
         # Should handle errors gracefully
         all_elements = await process_sections_batch(
-            sections=sections, paper=paper, processor=processor, max_concurrent=2
+            sections=sections,
+            paper=paper,
+            processor=processor,
+            max_concurrent=2,
         )
 
         # Should return elements from successful sections only
@@ -378,7 +390,10 @@ class TestValidation:
         )
 
         pdf_content = PdfContent(
-            file_path="test.pdf", total_pages=1, pages=(page,), extraction_metadata={}
+            file_path="test.pdf",
+            total_pages=1,
+            pages=(page,),
+            extraction_metadata={},
         )
 
         validated_elements = validate_extracted_elements(elements, pdf_content)
@@ -424,7 +439,10 @@ class TestValidation:
         )
 
         pdf_content = PdfContent(
-            file_path="test.pdf", total_pages=1, pages=(page,), extraction_metadata={}
+            file_path="test.pdf",
+            total_pages=1,
+            pages=(page,),
+            extraction_metadata={},
         )
 
         validated_elements = validate_extracted_elements(elements, pdf_content)
@@ -530,17 +548,21 @@ class TestPipelineIntegration:
                 "text": "Users completed tasks 23% faster using TouchGestures compared to conventional touch input",
                 "evidence_type": "quantitative",
                 "confidence": 0.95,
-            }
+            },
         ]
 
         processor = LLMSectionProcessor(llm_provider=mock_llm)
         paper = Paper.create_with_auto_id(
-            title="TouchGestures Paper", authors=("Dr. Touch",)
+            title="TouchGestures Paper",
+            authors=("Dr. Touch",),
         )
 
         # Step 3: Process sections
         all_elements = await process_sections_batch(
-            sections=sections, paper=paper, processor=processor, max_concurrent=2
+            sections=sections,
+            paper=paper,
+            processor=processor,
+            max_concurrent=2,
         )
 
         # Step 4: Validate elements

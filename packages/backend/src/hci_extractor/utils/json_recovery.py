@@ -24,6 +24,7 @@ Example usage:
 import json
 import logging
 import re
+import types
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -55,7 +56,7 @@ class JsonRecoveryStrategy(Enum):
 class JsonRecoveryOptions:
     """Configuration options for JSON recovery."""
 
-    strategies: List[str] = field(default_factory=lambda: ["all"])
+    strategies: tuple[str, ...] = ("all",)
     expected_structure: Optional[Dict[str, type]] = None
     max_recovery_attempts: int = 3
     max_lookback: int = 1000  # Max chars to look back for recovery
@@ -74,12 +75,13 @@ class JsonRecoveryResult:
     original_error: Optional[json.JSONDecodeError] = None
     confidence_score: float = 0.0  # 0.0-1.0 confidence in recovery quality
     recovery_metadata: Dict[str, Any] = field(
-        default_factory=dict,
+        default_factory=lambda: types.MappingProxyType({}),
     )  # Additional recovery info
 
 
 def recover_json(
-    text: str, options: Optional[JsonRecoveryOptions] = None,
+    text: str,
+    options: Optional[JsonRecoveryOptions] = None,
 ) -> JsonRecoveryResult:
     """
     Attempt to recover valid JSON from malformed text.
@@ -143,7 +145,8 @@ def recover_json(
                 # Validate structure if requested
                 if options.validate_structure and options.expected_structure:
                     if result.recovered_data and _validate_structure(
-                        result.recovered_data, options.expected_structure,
+                        result.recovered_data,
+                        options.expected_structure,
                     ):
                         return result
                     logger.debug(
@@ -167,7 +170,7 @@ def recover_json(
 
 
 def _get_strategies_to_try(
-    requested_strategies: List[str],
+    requested_strategies: tuple[str, ...],
 ) -> List[JsonRecoveryStrategy]:
     """Convert strategy names to enum values."""
     if "all" in requested_strategies:
@@ -196,7 +199,9 @@ def _get_strategies_to_try(
 
 
 def _try_truncation_recovery(
-    text: str, error: json.JSONDecodeError, options: JsonRecoveryOptions,
+    text: str,
+    error: json.JSONDecodeError,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by truncating at the error position.
@@ -278,7 +283,9 @@ def _try_truncation_recovery(
 
 
 def _try_array_completion_recovery(
-    text: str, error: json.JSONDecodeError, options: JsonRecoveryOptions,
+    text: str,
+    error: json.JSONDecodeError,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by completing an incomplete array structure.
@@ -385,7 +392,8 @@ def _try_array_completion_recovery(
 
 
 def _try_trailing_content_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by removing trailing non-JSON content.
@@ -443,7 +451,8 @@ def _try_trailing_content_recovery(
 
 
 def _try_quote_escaping_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by fixing unescaped quotes in strings.
@@ -487,7 +496,8 @@ def _try_quote_escaping_recovery(
 
 
 def _try_number_format_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by fixing malformed numbers.
@@ -528,7 +538,8 @@ def _try_number_format_recovery(
 
 
 def _validate_structure(
-    data: Dict[str, Any], expected_structure: Dict[str, type],
+    data: Dict[str, Any],
+    expected_structure: Dict[str, type],
 ) -> bool:
     """
     Validate that recovered JSON matches expected structure.
@@ -553,7 +564,8 @@ def _validate_structure(
 
 
 def _try_field_completion_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by completing missing required fields.
@@ -616,14 +628,15 @@ def _try_field_completion_recovery(
                     },
                 )
 
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"Field completion recovery failed: {e}")
 
     return None
 
 
 def _try_nested_structure_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by fixing malformed nested objects and arrays.
@@ -678,7 +691,8 @@ def _try_nested_structure_recovery(
 
 
 def _try_unicode_escape_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by fixing Unicode escape sequence issues.
@@ -690,10 +704,14 @@ def _try_unicode_escape_recovery(
     # Fix common Unicode escape issues
     # Replace malformed Unicode escapes with safe alternatives
     fixed_text = re.sub(
-        r"\\u(?![0-9a-fA-F]{4})", r"\\u0020", fixed_text,
+        r"\\u(?![0-9a-fA-F]{4})",
+        r"\\u0020",
+        fixed_text,
     )  # Replace incomplete escapes
     fixed_text = re.sub(
-        r"\\x([0-9a-fA-F]{2})", r"\\u00\1", fixed_text,
+        r"\\x([0-9a-fA-F]{2})",
+        r"\\u00\1",
+        fixed_text,
     )  # Convert hex escapes
 
     # Fix common encoding issues
@@ -725,7 +743,8 @@ def _try_unicode_escape_recovery(
 
 
 def _try_mixed_quotes_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by fixing mixed single/double quote issues.
@@ -767,7 +786,8 @@ def _try_mixed_quotes_recovery(
 
 
 def _try_incomplete_objects_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover by completing partially written objects.
@@ -844,7 +864,8 @@ def _try_incomplete_objects_recovery(
 
 
 def _try_provider_specific_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Try to recover using provider-specific patterns.
@@ -867,7 +888,8 @@ def _try_provider_specific_recovery(
 
 
 def _try_gemini_specific_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Gemini-specific recovery patterns.
@@ -908,7 +930,8 @@ def _try_gemini_specific_recovery(
 
 
 def _try_openai_specific_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     OpenAI-specific recovery patterns.
@@ -945,7 +968,8 @@ def _try_openai_specific_recovery(
 
 
 def _try_anthropic_specific_recovery(
-    text: str, options: JsonRecoveryOptions,
+    text: str,
+    options: JsonRecoveryOptions,
 ) -> Optional[JsonRecoveryResult]:
     """
     Anthropic-specific recovery patterns.

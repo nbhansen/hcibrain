@@ -48,7 +48,7 @@ class MarkupPromptLoader:
         if "template" in markup_config:
             # Use the new template-based approach
             template = markup_config["template"]
-            
+
             # Build chunk info if needed
             chunk_info = ""
             if total_chunks > 1:
@@ -60,10 +60,10 @@ class MarkupPromptLoader:
                     chunk_index=chunk_index,
                     total_chunks=total_chunks,
                 )
-                
+
                 # Add chunk context if available
                 chunk_context = self._prompts.get("chunk_processing", {}).get(
-                    "chunk_context", ""
+                    "chunk_context", "",
                 )
                 if chunk_context:
                     template += f"\n\n{chunk_context}"
@@ -75,7 +75,7 @@ class MarkupPromptLoader:
             else:
                 # Convert list to string if needed (backwards compatibility)
                 rules = "\n".join(str(rule) for rule in rules) if rules else ""
-            
+
             return template.format(
                 system_prompt=markup_config.get("system_prompt", "").strip(),
                 task_1_cleaning=markup_config.get("task_1_cleaning", "").strip(),
@@ -85,50 +85,49 @@ class MarkupPromptLoader:
                 text=text,
                 chunk_info=chunk_info,
             )
+        # Fallback to old structure for backwards compatibility
+        # Build chunk info if needed
+        chunk_info = ""
+        if total_chunks > 1:
+            chunk_template = self._prompts.get("chunk_processing", {}).get(
+                "chunk_info_template",
+                "",
+            )
+            chunk_info = chunk_template.format(
+                chunk_index=chunk_index,
+                total_chunks=total_chunks,
+            )
+
+        # Format rules as numbered list (old format expected list)
+        rules = markup_config.get("rules", [])
+        if isinstance(rules, list):
+            formatted_rules = "\n".join(f"{i + 1}. {rule}" for i, rule in enumerate(rules))
         else:
-            # Fallback to old structure for backwards compatibility
-            # Build chunk info if needed
-            chunk_info = ""
-            if total_chunks > 1:
-                chunk_template = self._prompts.get("chunk_processing", {}).get(
-                    "chunk_info_template",
-                    "",
-                )
-                chunk_info = chunk_template.format(
-                    chunk_index=chunk_index,
-                    total_chunks=total_chunks,
-                )
+            formatted_rules = str(rules)
 
-            # Format rules as numbered list (old format expected list)
-            rules = markup_config.get("rules", [])
-            if isinstance(rules, list):
-                formatted_rules = "\n".join(f"{i + 1}. {rule}" for i, rule in enumerate(rules))
-            else:
-                formatted_rules = str(rules)
+        # Build complete prompt
+        system_prompt = markup_config.get("system_prompt", "").strip()
+        if chunk_info:
+            system_prompt = system_prompt.replace(
+                "paper text",
+                f"paper text{chunk_info}",
+            )
 
-            # Build complete prompt
-            system_prompt = markup_config.get("system_prompt", "").strip()
-            if chunk_info:
-                system_prompt = system_prompt.replace(
-                    "paper text",
-                    f"paper text{chunk_info}",
-                )
+        prompt_parts = [
+            system_prompt,
+            "",
+            markup_config.get("task_1_cleaning", "").strip(),
+            "",
+            markup_config.get("task_2_markup", "").strip(),
+            "",
+            "Rules:",
+            formatted_rules,
+            "",
+            "Paper text:",
+            text,
+        ]
 
-            prompt_parts = [
-                system_prompt,
-                "",
-                markup_config.get("task_1_cleaning", "").strip(),
-                "",
-                markup_config.get("task_2_markup", "").strip(),
-                "",
-                "Rules:",
-                formatted_rules,
-                "",
-                "Paper text:",
-                text,
-            ]
-
-            return "\n".join(prompt_parts)
+        return "\n".join(prompt_parts)
 
     def reload_prompts(self) -> None:
         """Reload prompts from files (useful for development)."""

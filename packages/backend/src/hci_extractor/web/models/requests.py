@@ -18,7 +18,8 @@ class ExtractionRequest(BaseModel):
     """Request model for PDF extraction with optional metadata."""
 
     paper_metadata: Optional[PaperMetadata] = Field(
-        None, description="Optional paper metadata",
+        None,
+        description="Optional paper metadata",
     )
 
     class Config:

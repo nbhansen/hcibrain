@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from hci_extractor.core.events import EventBus
 from hci_extractor.core.models import LLMError, LLMValidationError, RateLimitError
@@ -52,60 +52,6 @@ class LLMProvider(ABC):
         else:
             self._retry_handler = retry_handler
 
-    @abstractmethod
-    async def analyze_section(
-        self,
-        section_text: str,
-        section_type: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
-        """
-        Analyze a paper section and return extracted elements.
-
-        Args:
-            section_text: The text content of the section
-            section_type: Type of section (e.g., 'abstract', 'introduction')
-            context: Additional context for analysis (paper metadata, etc.)
-
-        Returns:
-            List of dictionaries representing extracted elements with fields:
-            - element_type: "claim", "finding", or "method"
-            - text: Exact verbatim text from the section
-            - evidence_type: "quantitative", "qualitative", "theoretical", or "unknown"
-            - confidence: Float between 0.0 and 1.0
-
-        Raises:
-            LLMError: For general API or processing errors
-            RateLimitError: When rate limits are exceeded
-            LLMValidationError: When response format is invalid
-        """
-
-    @abstractmethod
-    async def generate_paper_summary(
-        self,
-        abstract_text: str,
-        introduction_text: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """
-        Generate paper summary from abstract and introduction sections.
-
-        Args:
-            abstract_text: The text content of the abstract section
-            introduction_text: The text content of the introduction section
-            context: Additional context for analysis (paper metadata, etc.)
-
-        Returns:
-            Dictionary containing:
-            - summary: Concise 2-3 sentence summary of the paper
-            - confidence: Float between 0.0 and 1.0
-            - source_sections: List of sections used for summary
-
-        Raises:
-            LLMError: For general API or processing errors
-            RateLimitError: When rate limits are exceeded
-            LLMValidationError: When response format is invalid
-        """
 
     @abstractmethod
     def validate_response(self, response: Dict[str, Any]) -> bool:
@@ -139,6 +85,22 @@ class LLMProvider(ABC):
             RateLimitError: For rate limit issues
         """
 
+    @abstractmethod
+    async def generate_markup(self, full_text: str) -> str:
+        """
+        Generate HTML markup for the full text with goal/method/result tags.
+
+        Args:
+            full_text: Complete text to analyze and mark up
+
+        Returns:
+            Full text with HTML markup tags for highlights
+
+        Raises:
+            LLMError: For API errors
+            LLMValidationError: If response format is invalid
+        """
+
     async def _enforce_rate_limit(self) -> None:
         """Enforce rate limiting between requests.
 
@@ -148,7 +110,10 @@ class LLMProvider(ABC):
         logger.debug("Rate limiting is deprecated in base LLMProvider")
 
     async def execute_with_retry(
-        self, operation: Any, *args: Any, **kwargs: Any,
+        self,
+        operation: Any,
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         """Execute operation with retry logic using the unified RetryHandler.
 
@@ -168,7 +133,10 @@ compatibility.
         return await self._retry_with_backoff(operation, *args, **kwargs)
 
     async def _retry_with_backoff(
-        self, operation: Any, *args: Any, **kwargs: Any,
+        self,
+        operation: Any,
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         """
         Execute operation with unified retry handler logic.

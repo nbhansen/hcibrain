@@ -130,16 +130,12 @@ class CLIContainerFactory:
         return container
 
 
-# Default service instances for CLI commands
-_default_configuration_service = CLIConfigurationService()
-_default_container_factory = CLIContainerFactory(_default_configuration_service)
-
-
 def get_cli_configuration_service() -> CLIConfigurationService:
-    """Get the default CLI configuration service."""
-    return _default_configuration_service
+    """Create a new CLI configuration service instance."""
+    return CLIConfigurationService()
 
 
 def get_cli_container_factory() -> CLIContainerFactory:
-    """Get the default CLI container factory."""
-    return _default_container_factory
+    """Create a new CLI container factory instance."""
+    configuration_service = get_cli_configuration_service()
+    return CLIContainerFactory(configuration_service)

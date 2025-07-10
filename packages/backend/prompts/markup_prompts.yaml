@@ -20,7 +20,7 @@ markup_generation:
 
   task_2_markup: |
     TASK 2 - ADD MARKUP TAGS:
-    Add these tags around relevant text and give them a confidence score (0.XX)
+    Add these tags around relevant text and give them a confidence score (0.XX) - BE CRITICAL - many things will sound like these but make sure you judge them critically and dont markup anything you are not sure about
     - <goal confidence="0.XX">text</goal> for what the goal of the research is - that might be a research question
     or a more loose goal like "boost performance" or "create equitable AI"
     - <method confidence="0.XX">text</method> for approaches, techniques, and methodologies  

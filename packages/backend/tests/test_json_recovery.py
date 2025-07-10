@@ -21,7 +21,7 @@ class TestBasicRecovery:
         assert result.success
         assert result.strategy_used == "none"
         assert result.recovered_data == {
-            "elements": [{"text": "test", "type": "finding"}]
+            "elements": [{"text": "test", "type": "finding"}],
         }
 
     def test_empty_string_fails(self):
@@ -173,7 +173,6 @@ class TestQuoteEscapingRecovery:
 
         # The current implementation is basic and might not handle this
         # In a production system, this would need more sophisticated parsing
-        pass
 
 
 class TestNumberFormatRecovery:
@@ -231,14 +230,14 @@ class TestCombinedStrategies:
 
         # Both trailing_content and array_completion could work
         options1 = JsonRecoveryOptions(
-            strategies=["trailing_content", "array_completion"]
+            strategies=["trailing_content", "array_completion"],
         )
         result1 = recover_json(malformed, options1)
         assert result1.strategy_used == "trailing_content"
 
         # Reverse order
         options2 = JsonRecoveryOptions(
-            strategies=["array_completion", "trailing_content"]
+            strategies=["array_completion", "trailing_content"],
         )
         result2 = recover_json(malformed, options2)
         # array_completion might not work for valid JSON with trailing content

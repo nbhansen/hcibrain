@@ -46,17 +46,23 @@ class TextNormalizer:
 
         # 1. Fix hyphenated words
         current_text, position_map = self._fix_hyphenation(
-            current_text, position_map, transformations,
+            current_text,
+            position_map,
+            transformations,
         )
 
         # 2. Normalize whitespace
         current_text, position_map = self._normalize_whitespace(
-            current_text, position_map, transformations,
+            current_text,
+            position_map,
+            transformations,
         )
 
         # 3. Remove headers/footers (conservative approach)
         current_text, position_map = self._remove_headers_footers(
-            current_text, position_map, transformations,
+            current_text,
+            position_map,
+            transformations,
         )
 
         # Build final character mapping
@@ -72,7 +78,10 @@ class TextNormalizer:
         )
 
     def _fix_hyphenation(
-        self, text: str, position_map: List[int], transformations: List[str],
+        self,
+        text: str,
+        position_map: List[int],
+        transformations: List[str],
     ) -> Tuple[str, List[int]]:
         """Fix hyphenated words split across lines."""
         # Pattern: word- \n word -> word word
@@ -117,7 +126,10 @@ class TextNormalizer:
         return new_text, new_position_map
 
     def _normalize_whitespace(
-        self, text: str, position_map: List[int], transformations: List[str],
+        self,
+        text: str,
+        position_map: List[int],
+        transformations: List[str],
     ) -> Tuple[str, List[int]]:
         """Normalize excessive whitespace while preserving structure."""
         # Replace multiple spaces with single space
@@ -174,7 +186,9 @@ class TextNormalizer:
         return new_text, new_position_map
 
     def _normalize_section_whitespace(
-        self, section: str, positions: List[int],
+        self,
+        section: str,
+        positions: List[int],
     ) -> Tuple[str, List[int]]:
         """Normalize whitespace in a text section."""
         # Multiple spaces -> single space
@@ -221,7 +235,10 @@ class TextNormalizer:
         return result, result_positions
 
     def _remove_headers_footers(
-        self, text: str, position_map: List[int], transformations: List[str],
+        self,
+        text: str,
+        position_map: List[int],
+        transformations: List[str],
     ) -> Tuple[str, List[int]]:
         """Conservatively remove repetitive headers and footers."""
         lines = text.split("\n")

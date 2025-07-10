@@ -172,7 +172,6 @@ def configure_services(container: DIContainer) -> None:
 
     # Register configuration service and configuration as singletons
     from hci_extractor.infrastructure.configuration_service import ConfigurationService
-    from hci_extractor.prompts import PromptManager
     from hci_extractor.providers import GeminiProvider, LLMProvider
     from hci_extractor.utils.retry_handler import RetryHandler
 
@@ -196,16 +195,23 @@ def configure_services(container: DIContainer) -> None:
 
     container.register_singleton(MetricsCollector, MetricsCollector)
 
+    # Register WebSocket manager as singleton
+    from hci_extractor.web.progress import WebSocketManager
+
+    container.register_singleton(WebSocketManager, WebSocketManager)
+
+    # Register UserErrorTranslator as singleton
+    from hci_extractor.utils.user_error_translator import UserErrorTranslator
+
+    container.register_singleton(UserErrorTranslator, UserErrorTranslator)
+
     # Note: ErrorClassifier removed - complex error classification not needed
     # Simple error handling is sufficient for this use case
-
-    # Register prompt manager as singleton
-    container.register_singleton(PromptManager, PromptManager)
 
     # Register markup prompt loader as singleton
     def create_markup_prompt_loader(config: ExtractorConfig) -> "MarkupPromptLoader":
         from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
-        
+
         prompts_dir = config.prompts_directory
         return MarkupPromptLoader(prompts_dir)
 
@@ -234,7 +240,6 @@ def configure_services(container: DIContainer) -> None:
     def create_llm_provider(
         config: ExtractorConfig,
         event_bus: EventBus,
-        prompt_manager: PromptManager,
         markup_prompt_loader: MarkupPromptLoader,
     ) -> LLMProvider:
         from hci_extractor.providers.provider_config import (
@@ -253,7 +258,6 @@ def configure_services(container: DIContainer) -> None:
             return GeminiProvider(
                 provider_config=provider_config,
                 event_bus=event_bus,
-                prompt_manager=prompt_manager,
                 markup_prompt_loader=markup_prompt_loader,
                 model_name=config.analysis.model_name,
             )
@@ -266,18 +270,16 @@ def configure_services(container: DIContainer) -> None:
     def create_gemini_provider(
         config: ExtractorConfig,
         event_bus: EventBus,
-        prompt_manager: PromptManager,
         markup_prompt_loader: "MarkupPromptLoader",
     ) -> GeminiProvider:
         provider = create_llm_provider(
             config,
             event_bus,
-            prompt_manager,
             markup_prompt_loader,
         )
         if not isinstance(provider, GeminiProvider):
             raise TypeError(
-                "GeminiProvider requested but different provider configured"
+                "GeminiProvider requested but different provider configured",
             )
         return provider
 
