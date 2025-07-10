@@ -185,9 +185,7 @@ def _show_debug_config_info() -> None:
             display_value = (
                 value
                 if "key" not in var.lower()
-                else f"{value[:8]}..."
-                if len(value) > 8
-                else "***"
+                else f"{value[:8]}..." if len(value) > 8 else "***"
             )
             click.echo(f"   {var}={display_value}")
     else:

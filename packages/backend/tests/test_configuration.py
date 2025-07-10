@@ -31,7 +31,7 @@ class TestConfiguration:
 
         # Basic structure verification
         assert hasattr(config, "extraction")
-        assert hasattr(config, "analysis") 
+        assert hasattr(config, "analysis")
         assert hasattr(config, "api")
         assert hasattr(config, "retry")
         assert hasattr(config, "cache")
@@ -51,7 +51,9 @@ class TestConfiguration:
         assert test_var is not None  # PATH should exist on all systems
 
         # Should handle missing variables gracefully
-        missing_var = config_service.get_environment_variable("NON_EXISTENT_VARIABLE_12345")
+        missing_var = config_service.get_environment_variable(
+            "NON_EXISTENT_VARIABLE_12345"
+        )
         assert missing_var is None
 
     def test_configuration_nested_objects_are_immutable(self):

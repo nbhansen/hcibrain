@@ -13,7 +13,7 @@ class TestCLIBasic:
         """Test that the main CLI command exists and is accessible."""
         runner = CliRunner()
         result = runner.invoke(cli, ["--help"])
-        
+
         # Should show help without errors
         assert result.exit_code == 0
         assert "HCI Paper Extractor" in result.output
@@ -22,7 +22,7 @@ class TestCLIBasic:
         """Test that CLI shows available commands."""
         runner = CliRunner()
         result = runner.invoke(cli, ["--help"])
-        
+
         # Should list main commands
         assert "extract" in result.output
         assert "config" in result.output
@@ -31,7 +31,7 @@ class TestCLIBasic:
         """Test that the config command works."""
         runner = CliRunner()
         result = runner.invoke(cli, ["config"])
-        
+
         # Config command should run without errors
         assert result.exit_code == 0
         assert "Configuration Options" in result.output
@@ -40,7 +40,7 @@ class TestCLIBasic:
         """Test that the diagnose command works."""
         runner = CliRunner()
         result = runner.invoke(cli, ["diagnose"])
-        
+
         # Diagnose should run and show system checks
         assert result.exit_code == 0
         assert "System Diagnostic" in result.output
@@ -49,7 +49,7 @@ class TestCLIBasic:
         """Test that extract command requires a file argument."""
         runner = CliRunner()
         result = runner.invoke(cli, ["extract"])
-        
+
         # Should fail with missing argument error
         assert result.exit_code != 0
         assert "Missing argument" in result.output or "Usage:" in result.output
@@ -58,7 +58,7 @@ class TestCLIBasic:
         """Test that version command works."""
         runner = CliRunner()
         result = runner.invoke(cli, ["version"])
-        
+
         # Should show version info
         assert result.exit_code == 0
         assert "HCI Paper Extractor" in result.output

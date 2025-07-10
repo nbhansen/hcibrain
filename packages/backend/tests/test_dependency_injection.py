@@ -59,14 +59,14 @@ class TestDependencyInjection:
 
         # For services registered as transient (if any)
         # Note: Most services are currently singletons, but this tests the pattern
-        
+
         # This test validates the container behavior rather than specific services
         # since our current architecture uses mostly singletons for stateless services
-        
+
         # Create two instances of the container itself
         container1 = create_configured_container()
         container2 = create_configured_container()
-        
+
         # Containers should be different instances
         assert container1 is not container2
 
@@ -77,10 +77,10 @@ class TestDependencyInjection:
         # When we resolve LLMProviderPort, it should automatically inject
         # its dependencies (like EventBus, ConfigurationService, etc.)
         llm_provider = container.resolve(LLMProviderPort)
-        
+
         # The provider should be properly initialized with its dependencies
         assert llm_provider is not None
-        
+
         # We can verify this worked by checking that we can call methods
         # without getting "missing dependency" errors
         assert hasattr(llm_provider, "generate_markup")
@@ -88,6 +88,6 @@ class TestDependencyInjection:
     def test_missing_service_raises_error(self):
         """Test that resolving an unregistered service raises an error."""
         container = DIContainer()  # Empty container
-        
+
         with pytest.raises(ValueError, match="Service .* not registered"):
             container.resolve(ExtractorConfig)

@@ -1,6 +1,9 @@
 # HCIBrain Monorepo - Root Configuration
 # This defines the workspace and consolidates Python tooling configuration
 
+# HCIBrain Monorepo - Root Configuration
+# This is NOT a Python package - it's a monorepo with tools configuration only
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -14,9 +17,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 
-# No runtime dependencies at workspace level - install backend separately
-
-# Consolidated development dependencies for the entire workspace
+# Development dependencies for the entire workspace
 [project.optional-dependencies]
 dev = [
     # Core testing and quality tools
@@ -36,11 +37,13 @@ dev = [
     "vulture>=2.0.0",
 ]
 
-# No scripts at workspace level - use backend package directly
-
-# Build configuration - this is a tools-only workspace
+# This is a tools-only workspace - exclude from wheel building
 [tool.hatch.build.targets.wheel]
-packages = []  # No source packages to include
+packages = []
+
+# Mark this as a tools-only project to avoid build issues
+[tool.hatch.build]
+exclude = ["*"]
 
 # =============================================================================
 # Development Tool Configurations (Inherited from Backend)

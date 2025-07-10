@@ -59,17 +59,17 @@ class TestGlobalStateViolations:
         }
         actual_globals = set(global_vars.keys()) - expected_globals
 
-        assert not actual_globals, (
-            f"Found unexpected global variables: {actual_globals}"
-        )
+        assert (
+            not actual_globals
+        ), f"Found unexpected global variables: {actual_globals}"
 
     def test_no_get_container_function(self):
         """Test that get_container() function has been removed."""
         from hci_extractor.core import di_container
 
-        assert not hasattr(di_container, "get_container"), (
-            "get_container() function should be removed"
-        )
+        assert not hasattr(
+            di_container, "get_container"
+        ), "get_container() function should be removed"
 
     def test_cli_configuration_service_no_global_state(self):
         """Test that CLI configuration service doesn't create global state."""
@@ -107,17 +107,17 @@ class TestImmutableDesignViolations:
         ]
 
         for dataclass_type in dataclasses_to_check:
-            assert is_dataclass(dataclass_type), (
-                f"{dataclass_type.__name__} should be a dataclass"
-            )
+            assert is_dataclass(
+                dataclass_type
+            ), f"{dataclass_type.__name__} should be a dataclass"
 
             # Check if frozen=True
             # For dataclasses, check the __dataclass_params__ attribute
             if hasattr(dataclass_type, "__dataclass_params__"):
                 params = dataclass_type.__dataclass_params__
-                assert params.frozen, (
-                    f"{dataclass_type.__name__} should be frozen (use @dataclass(frozen=True))"
-                )
+                assert (
+                    params.frozen
+                ), f"{dataclass_type.__name__} should be frozen (use @dataclass(frozen=True))"
 
     def test_no_mutable_default_factories(self):
         """Test that dataclass fields don't use mutable default factories."""
@@ -130,14 +130,14 @@ class TestImmutableDesignViolations:
             if field.default_factory is not MISSING:
                 # If there's a default factory, it should not create mutable objects
                 default_value = field.default_factory()
-                assert not isinstance(default_value, (list, dict, set)), (
-                    f"{field.name} uses mutable default factory"
-                )
+                assert not isinstance(
+                    default_value, (list, dict, set)
+                ), f"{field.name} uses mutable default factory"
             elif field.default is not MISSING:
                 # Check that default values are immutable
-                assert not isinstance(field.default, (list, dict, set)), (
-                    f"{field.name} has mutable default value"
-                )
+                assert not isinstance(
+                    field.default, (list, dict, set)
+                ), f"{field.name} has mutable default value"
 
     def test_mapping_proxy_usage(self):
         """Test that immutable mappings are used where appropriate."""
@@ -152,9 +152,9 @@ class TestImmutableDesignViolations:
         for attr_name, attr_value in config_vars.items():
             if isinstance(attr_value, dict):
                 # If it's a dict, it should be a MappingProxyType
-                assert isinstance(attr_value, types.MappingProxyType), (
-                    f"Config attribute {attr_name} should use MappingProxyType"
-                )
+                assert isinstance(
+                    attr_value, types.MappingProxyType
+                ), f"Config attribute {attr_name} should use MappingProxyType"
 
 
 class TestHexagonalArchitectureCompliance:
@@ -191,31 +191,31 @@ class TestHexagonalArchitectureCompliance:
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     for alias in node.names:
-                        assert alias.name not in forbidden_imports, (
-                            f"Domain module {module_name} imports forbidden dependency {alias.name}"
-                        )
+                        assert (
+                            alias.name not in forbidden_imports
+                        ), f"Domain module {module_name} imports forbidden dependency {alias.name}"
                 elif isinstance(node, ast.ImportFrom):
                     if node.module:
                         for forbidden in forbidden_imports:
-                            assert not node.module.startswith(forbidden), (
-                                f"Domain module {module_name} imports from forbidden module {node.module}"
-                            )
+                            assert not node.module.startswith(
+                                forbidden
+                            ), f"Domain module {module_name} imports from forbidden module {node.module}"
 
     def test_providers_implement_abstractions(self):
         """Test that providers implement proper abstract interfaces."""
         from hci_extractor.providers.gemini_provider import GeminiProvider
-        
+
         # Test that GeminiProvider properly implements LLMProvider
-        assert issubclass(GeminiProvider, LLMProvider), (
-            "GeminiProvider should inherit from LLMProvider"
-        )
+        assert issubclass(
+            GeminiProvider, LLMProvider
+        ), "GeminiProvider should inherit from LLMProvider"
 
         # Test that abstract methods are implemented
         abstract_methods = LLMProvider.__abstractmethods__
         for method_name in abstract_methods:
-            assert hasattr(GeminiProvider, method_name), (
-                f"GeminiProvider should implement {method_name}"
-            )
+            assert hasattr(
+                GeminiProvider, method_name
+            ), f"GeminiProvider should implement {method_name}"
 
     def test_configuration_service_separation(self):
         """Test that configuration services properly separate infrastructure."""
@@ -229,9 +229,9 @@ class TestHexagonalArchitectureCompliance:
         ), "ConfigurationService should be in infrastructure layer"
 
         # Test that it has proper methods for configuration loading
-        assert hasattr(ConfigurationService, "load_configuration"), (
-            "ConfigurationService should have load_configuration method"
-        )
+        assert hasattr(
+            ConfigurationService, "load_configuration"
+        ), "ConfigurationService should have load_configuration method"
 
     def test_dependency_injection_container_usage(self):
         """Test that DI container is used for all service resolution."""
@@ -259,9 +259,9 @@ class TestProviderArchitectureCompliance:
         from hci_extractor.providers.provider_config import LLMProviderConfig
 
         # Test that LLMProviderConfig is properly defined
-        assert is_dataclass(LLMProviderConfig), (
-            "LLMProviderConfig should be a dataclass"
-        )
+        assert is_dataclass(
+            LLMProviderConfig
+        ), "LLMProviderConfig should be a dataclass"
 
         # Test that it has expected fields
         config_fields = {f.name for f in fields(LLMProviderConfig)}
@@ -271,9 +271,9 @@ class TestProviderArchitectureCompliance:
             "max_output_tokens",
             "max_attempts",
         }
-        assert expected_fields.issubset(config_fields), (
-            f"LLMProviderConfig should have fields: {expected_fields}"
-        )
+        assert expected_fields.issubset(
+            config_fields
+        ), f"LLMProviderConfig should have fields: {expected_fields}"
 
     def test_provider_no_direct_environment_access(self):
         """Test that providers don't directly access environment variables."""
@@ -346,9 +346,9 @@ class TestEventBusArchitectureCompliance:
                 attr1 = bus1_vars[attr_name]
                 attr2 = bus2_vars[attr_name]
                 if isinstance(attr1, (list, dict, set)):
-                    assert attr1 is not attr2, (
-                        f"EventBus instances share mutable state: {attr_name}"
-                    )
+                    assert (
+                        attr1 is not attr2
+                    ), f"EventBus instances share mutable state: {attr_name}"
 
     def test_domain_events_immutable(self):
         """Test that domain events are immutable."""
@@ -368,9 +368,9 @@ class TestEventBusArchitectureCompliance:
         ]
 
         for event_class in event_classes:
-            assert is_dataclass(event_class), (
-                f"{event_class.__name__} should be a dataclass"
-            )
+            assert is_dataclass(
+                event_class
+            ), f"{event_class.__name__} should be a dataclass"
 
             # Check if frozen=True
             if hasattr(event_class, "__dataclass_params__"):
@@ -407,14 +407,14 @@ class TestCLIArchitectureCompliance:
             source = f.read()
 
         # Should not contain setup_cli_container calls
-        assert "setup_cli_container" not in source, (
-            "CLI commands should not use setup_cli_container"
-        )
+        assert (
+            "setup_cli_container" not in source
+        ), "CLI commands should not use setup_cli_container"
 
         # Should use get_cli_container_factory instead
-        assert "get_cli_container_factory" in source, (
-            "CLI commands should use get_cli_container_factory"
-        )
+        assert (
+            "get_cli_container_factory" in source
+        ), "CLI commands should use get_cli_container_factory"
 
 
 class TestCodebaseStructuralCompliance:

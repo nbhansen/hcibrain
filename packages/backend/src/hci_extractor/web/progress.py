@@ -150,9 +150,11 @@ class WebSocketProgressHandler(EventHandler):
                 )
                 # Add error handling for the task
                 task.add_done_callback(
-                    lambda t: logger.error(f"Progress send error: {t.exception()}")
-                    if t.exception()
-                    else None,
+                    lambda t: (
+                        logger.error(f"Progress send error: {t.exception()}")
+                        if t.exception()
+                        else None
+                    ),
                 )
 
         except Exception:
