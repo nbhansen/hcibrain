@@ -111,23 +111,6 @@ The primary way to use HCIBrain is through the modern web interface:
 - **📑 Navigation** - Click table of contents to jump to sections
 - **📱 Mobile Friendly** - Responsive design for all devices
 
-### Command Line Interface
-
-For automated workflows and batch processing:
-
-```bash
-# Process a single paper
-cd packages/backend
-source venv/bin/activate
-python -m hci_extractor extract paper.pdf --output results.json
-
-# Check system status
-python -m hci_extractor diagnose
-
-# View configuration
-python -m hci_extractor config
-```
-
 ### API Integration
 
 REST API available for programmatic access:

@@ -104,7 +104,6 @@ class ExportConfig:
     timestamp_format: str
 
 
-
 @dataclass(frozen=True)
 class ExtractorConfig:
     """Main configuration object containing all sub-configurations."""
@@ -219,19 +218,23 @@ class ExtractorConfig:
             normalize_text=bool(extraction_data.get("normalize_text", True)),
             extract_positions=bool(extraction_data.get("extract_positions", True)),
         )
-        
+
         analysis_data = config_dict.get("analysis", {})
         analysis = AnalysisConfig(
             chunk_size=int(analysis_data.get("chunk_size", 10000)),
             chunk_overlap=int(analysis_data.get("chunk_overlap", 500)),
-            max_concurrent_sections=int(analysis_data.get("max_concurrent_sections", 3)),
-            section_timeout_seconds=float(analysis_data.get("section_timeout_seconds", 60.0)),
+            max_concurrent_sections=int(
+                analysis_data.get("max_concurrent_sections", 3)
+            ),
+            section_timeout_seconds=float(
+                analysis_data.get("section_timeout_seconds", 60.0)
+            ),
             min_section_length=int(analysis_data.get("min_section_length", 50)),
             model_name=str(analysis_data.get("model_name", "gemini-1.5-flash")),
             temperature=float(analysis_data.get("temperature", 0.1)),
             max_output_tokens=int(analysis_data.get("max_output_tokens", 100000)),
         )
-        
+
         api = ApiConfig(
             provider_type=config_dict.get("api", {}).get("provider_type", "gemini"),
             gemini_api_key=config_dict.get("api", {}).get("gemini_api_key"),
@@ -240,28 +243,42 @@ class ExtractorConfig:
             rate_limit_delay=config_dict.get("api", {}).get("rate_limit_delay", 1.0),
             timeout_seconds=config_dict.get("api", {}).get("timeout_seconds", 30.0),
         )
-        
+
         retry = RetryConfig(
             max_attempts=config_dict.get("retry", {}).get("max_attempts", 3),
-            initial_delay_seconds=config_dict.get("retry", {}).get("initial_delay_seconds", 2.0),
-            backoff_multiplier=config_dict.get("retry", {}).get("backoff_multiplier", 2.0),
-            max_delay_seconds=config_dict.get("retry", {}).get("max_delay_seconds", 30.0),
+            initial_delay_seconds=config_dict.get("retry", {}).get(
+                "initial_delay_seconds", 2.0
+            ),
+            backoff_multiplier=config_dict.get("retry", {}).get(
+                "backoff_multiplier", 2.0
+            ),
+            max_delay_seconds=config_dict.get("retry", {}).get(
+                "max_delay_seconds", 30.0
+            ),
         )
-        
+
         cache = CacheConfig(
             enabled=config_dict.get("cache", {}).get("enabled", False),
             directory=None,
             ttl_seconds=config_dict.get("cache", {}).get("ttl_seconds", 3600),
             max_size_mb=config_dict.get("cache", {}).get("max_size_mb", 1000),
         )
-        
+
         export = ExportConfig(
-            include_metadata=config_dict.get("export", {}).get("include_metadata", True),
-            include_confidence=config_dict.get("export", {}).get("include_confidence", True),
-            min_confidence_threshold=config_dict.get("export", {}).get("min_confidence_threshold", 0.0),
-            timestamp_format=config_dict.get("export", {}).get("timestamp_format", "%Y-%m-%d %H:%M:%S"),
+            include_metadata=config_dict.get("export", {}).get(
+                "include_metadata", True
+            ),
+            include_confidence=config_dict.get("export", {}).get(
+                "include_confidence", True
+            ),
+            min_confidence_threshold=config_dict.get("export", {}).get(
+                "min_confidence_threshold", 0.0
+            ),
+            timestamp_format=config_dict.get("export", {}).get(
+                "timestamp_format", "%Y-%m-%d %H:%M:%S"
+            ),
         )
-        
+
         return cls(
             extraction=extraction,
             analysis=analysis,
@@ -269,6 +286,8 @@ class ExtractorConfig:
             retry=retry,
             cache=cache,
             export=export,
-            prompts_directory=Path(config_dict.get("general", {}).get("prompts_directory", "prompts")),
+            prompts_directory=Path(
+                config_dict.get("general", {}).get("prompts_directory", "prompts")
+            ),
             log_level=config_dict.get("general", {}).get("log_level", "INFO"),
         )

@@ -42,7 +42,7 @@ class DIContainer:
 
     def __init__(self, config: Optional["ExtractorConfig"] = None) -> None:
         """Initialize DI container with optional configuration.
-        
+
         Following hexagonal architecture - config is injected, not accessed globally.
         All dependencies must be explicit and immutable.
         """
@@ -51,7 +51,7 @@ class DIContainer:
         self._resolving = threading.local()  # Thread-local circular dependency tracking
         self._lock = threading.RLock()  # Thread-safe operations
         self.config = config  # Store config for service creation
-        
+
         # Auto-configure services if config provided
         if config is not None:
             self._configure_default_services()
@@ -107,7 +107,7 @@ class DIContainer:
         """Resolve a service instance with thread safety."""
         with self._lock:
             # Initialize thread-local resolving set if needed
-            if not hasattr(self._resolving, 'resolving_set'):
+            if not hasattr(self._resolving, "resolving_set"):
                 self._resolving.resolving_set = set()
 
             if service_type in self._resolving.resolving_set:
@@ -174,35 +174,38 @@ class DIContainer:
             self._services.clear()
             self._singletons.clear()
             # Clear thread-local data if it exists
-            if hasattr(self._resolving, 'resolving_set'):
+            if hasattr(self._resolving, "resolving_set"):
                 self._resolving.resolving_set.clear()
 
     # TDD-compatible interface methods
     def get_event_bus(self) -> "EventBus":
         """Get EventBus singleton - TDD interface."""
         from hci_extractor.core.events import EventBus
+
         return self.resolve(EventBus)
 
     def get_llm_provider(self) -> "LLMProvider":
         """Get LLM provider based on configuration - TDD interface."""
         from hci_extractor.providers.base import LLMProvider
+
         # Return the actual provider (e.g., GeminiProvider)
         return self.resolve(LLMProvider)
 
     def get_markup_prompt_loader(self) -> "MarkupPromptLoader":
         """Get markup prompt loader - TDD interface."""
         from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+
         return self.resolve(MarkupPromptLoader)
 
     def cleanup(self) -> None:
         """Clean up resources - TDD interface."""
         # Clean up singletons if they have cleanup methods
         for instance in self._singletons.values():
-            if hasattr(instance, 'close') or hasattr(instance, 'cleanup'):
+            if hasattr(instance, "close") or hasattr(instance, "cleanup"):
                 try:
-                    if hasattr(instance, 'close'):
+                    if hasattr(instance, "close"):
                         instance.close()
-                    elif hasattr(instance, 'cleanup'):
+                    elif hasattr(instance, "cleanup"):
                         instance.cleanup()
                 except Exception as e:
                     logger.warning(f"Error during cleanup: {e}")
@@ -210,7 +213,7 @@ class DIContainer:
 
     def _configure_default_services(self) -> None:
         """Configure default services based on provided config.
-        
+
         Following hexagonal architecture - all dependencies explicit.
         """
         if not self.config:
@@ -229,37 +232,39 @@ class DIContainer:
         # Register MarkupPromptLoader as singleton
         def create_prompt_loader() -> MarkupPromptLoader:
             return MarkupPromptLoader(self.config.prompts_directory)
-        
-        self.register_factory(MarkupPromptLoader, create_prompt_loader, ServiceLifetime.SINGLETON)
+
+        self.register_factory(
+            MarkupPromptLoader, create_prompt_loader, ServiceLifetime.SINGLETON
+        )
 
         # Register LLM provider based on config
         def create_llm_provider() -> LLMProvider:
             if not self.config:
                 raise ValueError("Configuration required for LLM provider")
-                
+
             provider_type = self.config.api.provider_type.lower()
-            
+
             if provider_type == "gemini":
                 if not self.config.api.gemini_api_key:
                     raise ValueError("API key required for provider: gemini")
-                    
+
                 provider_config = LLMProviderConfig(
                     api_key=self.config.api.gemini_api_key,
                     temperature=self.config.analysis.temperature,
                     max_output_tokens=self.config.analysis.max_output_tokens,
                     max_attempts=self.config.retry.max_attempts,
                     timeout_seconds=self.config.api.timeout_seconds,
-                    rate_limit_delay=self.config.api.rate_limit_delay
+                    rate_limit_delay=self.config.api.rate_limit_delay,
                 )
-                
+
                 event_bus = self.resolve(EventBus)
                 prompt_loader = self.resolve(MarkupPromptLoader)
-                
+
                 return GeminiProvider(
                     provider_config=provider_config,
                     event_bus=event_bus,
                     markup_prompt_loader=prompt_loader,
-                    model_name=self.config.analysis.model_name
+                    model_name=self.config.analysis.model_name,
                 )
             elif provider_type == "openai":
                 raise NotImplementedError("OpenAI provider not yet implemented")
@@ -267,8 +272,12 @@ class DIContainer:
                 raise ValueError(f"Invalid provider type: {provider_type}")
 
         # Register both abstract and concrete types
-        self.register_factory(LLMProvider, create_llm_provider, ServiceLifetime.SINGLETON)
-        self.register_factory(GeminiProvider, create_llm_provider, ServiceLifetime.SINGLETON)
+        self.register_factory(
+            LLMProvider, create_llm_provider, ServiceLifetime.SINGLETON
+        )
+        self.register_factory(
+            GeminiProvider, create_llm_provider, ServiceLifetime.SINGLETON
+        )
 
 
 # No global state - container must be passed explicitly through dependency injection

@@ -88,35 +88,39 @@ class ConfigurationService(ConfigurationPort):
 
     def load_config(self, config_path: Path) -> ExtractorConfig:
         """Load configuration from YAML file and return ExtractorConfig object.
-        
+
         This method is compatible with TDD tests.
-        
+
         Args:
             config_path: Path to YAML configuration file
-            
+
         Returns:
             Immutable ExtractorConfig object
-            
+
         Raises:
             FileNotFoundError: If config file doesn't exist
             yaml.YAMLError: If YAML is invalid
             ValueError: If configuration validation fails
         """
         if not config_path.exists():
-            raise FileNotFoundError(f"ExtractorConfiguration file not found: {config_path}")
-            
+            raise FileNotFoundError(
+                f"ExtractorConfiguration file not found: {config_path}"
+            )
+
         try:
             with config_path.open("r", encoding="utf-8") as f:
                 config_dict = yaml.safe_load(f)
-                
+
             if not isinstance(config_dict, dict):
-                raise ValueError("ExtractorConfiguration file must contain a YAML dictionary")
-                
+                raise ValueError(
+                    "ExtractorConfiguration file must contain a YAML dictionary"
+                )
+
             # Validate provider type
             provider_type = config_dict.get("api", {}).get("provider_type")
             if provider_type not in ["gemini", "openai", "anthropic"]:
                 raise ValueError(f"Invalid provider type: {provider_type}")
-                
+
             # Validate API key
             api_section = config_dict.get("api", {})
             api_key = api_section.get(f"{provider_type}_api_key")
@@ -127,19 +131,21 @@ class ConfigurationService(ConfigurationPort):
                     raise ValueError(f"API key required for provider: {provider_type}")
                 # Override with environment variable
                 config_dict["api"][f"{provider_type}_api_key"] = env_key
-                
+
             # Type conversion and validation
             analysis = config_dict.get("analysis", {})
             temperature = analysis.get("temperature", 0.1)
             try:
                 temperature = float(temperature)
                 if not (0.0 <= temperature <= 1.0):
-                    raise ValueError(f"Temperature must be between 0.0 and 1.0, got: {temperature}")
+                    raise ValueError(
+                        f"Temperature must be between 0.0 and 1.0, got: {temperature}"
+                    )
             except (ValueError, TypeError) as e:
                 raise ValueError(f"Invalid temperature value: {temperature}") from e
-                
+
             return ExtractorConfig.from_dict(config_dict)
-            
+
         except yaml.YAMLError as e:
             raise yaml.YAMLError(f"Invalid YAML in configuration file: {e}") from e
         except Exception as e:

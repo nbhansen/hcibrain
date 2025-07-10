@@ -108,11 +108,15 @@ frontend.log
 server.log
 backend_fresh.log
 
-# Test files and sample data
+# Test files and sample data  
 *.pdf
 autisticadults.pdf
 deep_speech_2.pdf
 ooenviron.pdf
+
+# Exception: Allow specific test PDFs for development
+!ootest.pdf
+!ootest_big.pdf
 test_results.*
 analysis.csv
 batch_export.csv

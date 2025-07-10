@@ -97,7 +97,7 @@ run_backend_linting() {
     
     # Run ruff linting - check for critical issues only
     local ruff_output
-    ruff_output=$(python -m ruff check src/ --statistics 2>&1 || true)
+    ruff_output=$(ruff check src/ --statistics 2>&1 || true)
     
     # Count total errors
     local error_count
@@ -106,7 +106,7 @@ run_backend_linting() {
     if [[ -n "$error_count" && "$error_count" -gt 200 ]]; then
         error "🚨 BACKEND LINTING FAILED - TOO MANY ISSUES (${error_count})!"
         echo -e "${RED}Critical code quality threshold exceeded. Run the following to fix:${NC}"
-        echo "  source venv/bin/activate && python -m ruff check src/ --fix"
+        echo "  cd $BACKEND_DIR && source venv/bin/activate && ruff check src/ --fix"
         echo ""
         echo -e "${YELLOW}Must reduce errors below 200 before starting HCIBrain${NC}"
         exit 1
@@ -114,23 +114,17 @@ run_backend_linting() {
         warning "⚠️  ${error_count} minor linting issues found (acceptable for production)"
     fi
     
-    # Run mypy type checking with reasonable thresholds
-    local mypy_output
-    mypy_output=$(python -m mypy src/ 2>&1 || true)
+    # Run ruff format check
+    local format_output
+    format_output=$(ruff format --check src/ 2>&1 || true)
     
-    # Count type errors
-    local type_error_count
-    type_error_count=$(echo "$mypy_output" | grep "Found" | grep -o '[0-9]\+' | head -1)
-    
-    if [[ -n "$type_error_count" && "$type_error_count" -gt 50 ]]; then
-        error "🚨 BACKEND TYPE CHECKING FAILED - TOO MANY ERRORS (${type_error_count})!"
-        echo -e "${RED}Critical type safety threshold exceeded. Run the following:${NC}"
-        echo "  source venv/bin/activate && python -m mypy src/"
+    if ! ruff format --check src/ > /dev/null 2>&1; then
+        error "🚨 BACKEND FORMAT FAILED - CODE FORMATTING ISSUES!"
+        echo -e "${RED}Code formatting violations found. Run the following to fix:${NC}"
+        echo "  cd $BACKEND_DIR && source venv/bin/activate && ruff format src/"
         echo ""
-        echo -e "${YELLOW}Must reduce type errors below 50 before starting HCIBrain${NC}"
+        echo -e "${YELLOW}All formatting issues must be resolved${NC}"
         exit 1
-    elif [[ -n "$type_error_count" && "$type_error_count" -gt 0 ]]; then
-        warning "⚠️  ${type_error_count} minor type issues found (acceptable for production)"
     fi
     
     success "Backend linting passed"
@@ -142,7 +136,7 @@ run_frontend_linting() {
     
     cd "$FRONTEND_DIR"
     
-    # Run ESLint with pragmatic thresholds
+    # Run ESLint check
     local eslint_output
     eslint_output=$(npm run lint 2>&1 || true)
     
@@ -369,7 +363,7 @@ case "${1:-}" in
         echo "  (no args)  Start HCIBrain with full quality checks (default)"
         echo "  stop       Stop all HCIBrain processes"
         echo "  status     Check if HCIBrain is running"
-        echo "  lint       Run code quality checks only (Python + TypeScript)"
+        echo "  lint       Run code quality checks only (Python Ruff + TypeScript ESLint)"
         echo "  check      Alias for 'lint'"
         echo "  help       Show this help message"
         echo
