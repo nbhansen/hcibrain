@@ -2,7 +2,7 @@
 
 **AI-Powered Research Paper Analysis Tool**
 
-Extract and highlight key research elements (Goals, Methods, Results) from academic papers using advanced LLM technology.
+Extract and highlight key research elements (Goals, Methods, Results) from academic papers using an LLM. Useful for reading assistance.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![React](https://img.shields.io/badge/React-19.0-blue.svg)](https://reactjs.org)
@@ -14,7 +14,7 @@ Extract and highlight key research elements (Goals, Methods, Results) from acade
 
 ## 🎯 Overview
 
-HCIBrain is a production-ready research paper processing system that automatically extracts and highlights critical information from academic PDFs. Using advanced LLM analysis, it identifies and categorizes:
+HCIBrain processes research papers, automatically extracting and highlighting key information the PDFs. Using an LLM , it identifies and categorizes:
 
 - **🎯 Research Goals** - Objectives, research questions, and hypotheses
 - **🔬 Methods** - Approaches, techniques, and methodologies  
@@ -24,10 +24,9 @@ HCIBrain is a production-ready research paper processing system that automatical
 ### Key Features
 
 ✅ **Smart PDF Processing** - Handles large documents with automatic text chunking  
-✅ **Real-time Analysis** - Live progress updates with WebSocket integration  
 ✅ **Interactive UI** - Filter highlights, navigate via table of contents  
-✅ **Mobile Responsive** - Works seamlessly on desktop, tablet, and mobile  
-✅ **Enterprise Architecture** - Hexagonal design with 100% test coverage  
+✅ **Mobile Responsive** - Works seamlessly (COUGH) on desktop, tablet, and mobile  
+✅ **Enterprise Architecture** - Hexagonal design with 100% test coverage   (NOBODY CARES BUT I DO)
 ✅ **Security First** - XSS protection and input sanitization  
 
 ---
@@ -398,13 +397,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 3. **Verify setup** - `./hcibrain.sh status`
 4. **Quality check** - `./hcibrain.sh lint`
 
-### System Requirements
-
-- **Python**: 3.11+ (3.13 recommended)
-- **Node.js**: 18+ (20 LTS recommended)  
-- **Memory**: 4GB RAM minimum, 8GB recommended
-- **Storage**: 2GB free space for dependencies
-- **Network**: Stable internet for Gemini API calls
 
 ---
 
@@ -412,17 +404,13 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ### Upcoming Features
 
-- **🤖 Multi-LLM Support** - OpenAI, Anthropic, local models
-- **💾 Persistent Storage** - Database integration for processed papers
-- **🔐 Authentication** - User accounts and API key management
-- **📊 Analytics Dashboard** - Usage metrics and performance monitoring
-- **🐳 Docker Support** - Containerized deployment
-- **☁️ Cloud Deployment** - One-click cloud hosting options
+- **🤖 Multi-LLM Support** - OpenAI, Anthropic, local models (architecture is already there)
+- **💾 Persistent Storage** - Database integration for processed papers (for now we just let the LLM return the full markup - crude but efficient)
+- **🐳 Docker Support** - Containerized deployment (I dont really want to support a docker but also nobody probably cares about this software)
 
-### Long-term Vision
+### Long-term Vision (just a repo of dumb ideas)
 
-- **🔬 Advanced Analysis** - Citation networks, methodology comparison
-- **👥 Collaborative Features** - Team workspaces and shared libraries
+- **🔬 Advanced Analysis** - Citation networks, methodology comparison - extracting "methods" across papers etc? 
 - **🎨 Custom Highlighting** - User-defined categories and rules
 - **📈 Research Insights** - Trend analysis across paper collections
 
@@ -432,8 +420,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 **⭐ Star this repo if you find it useful!**
 
-Made with ❤️ by the HCIBrain Team
-
-[🌐 Website](https://hcibrain.com) • [📖 Documentation](https://docs.hcibrain.com) • [💬 Discord](https://discord.gg/hcibrain)
+Made with ❤️ by Nicolai Brodersen Hansen --> https://www.nbhansen.dk
 
 </div>

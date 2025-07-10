@@ -7,3 +7,6 @@
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
+13.49.46 [vite] (client) hmr update /src/App.tsx
+13.52.00 [vite] (client) hmr update /src/App.tsx
+13.52.49 [vite] (client) hmr update /src/App.tsx
