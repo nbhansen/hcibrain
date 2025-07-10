@@ -209,7 +209,7 @@ class MarkupChunkingService:
             List of text chunks ready for markup processing
         """
         logger.info(
-            f"Preparing chunks for markup: {len(text)} chars, max_chunk={max_chunk_size}",
+            f"Preparing chunks for markup: {len(text)} chars, max={max_chunk_size}"
         )
 
         if len(text) <= max_chunk_size:

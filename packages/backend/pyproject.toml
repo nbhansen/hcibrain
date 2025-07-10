@@ -123,8 +123,10 @@ ignore = [
 max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "ARG", "PLR2004"]  # Allow assert, unused args, magic numbers in tests
+"tests/*" = ["S101", "ARG", "PLR2004", "E501"]  # Allow assert, unused args, magic numbers, long lines in tests
 "scripts/*" = ["T201"]  # Allow print statements in scripts
 "src/hci_extractor/cli/commands.py" = ["C901", "PLR0912", "PLR0915", "F401", "RUF001", "E501"]  # Allow CLI complexity and detection imports
 "src/hci_extractor/web/routes/*" = ["B008", "E501", "SIM105"]  # Allow FastAPI patterns, long lines, OSError handling
 "src/hci_extractor/cli/command_modules/*" = ["PLC0415", "C901", "PTH123", "TRY301", "E501"]  # Allow CLI complexity patterns
+"src/hci_extractor/utils/*" = ["E501"]  # Allow long lines in utility modules
+"src/hci_extractor/web/models/*" = ["E501"]  # Allow long lines in web model examples

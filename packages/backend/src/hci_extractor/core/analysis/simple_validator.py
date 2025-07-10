@@ -48,7 +48,7 @@ def validate_extracted_elements(
             logger.warning(f"Text not found in source: '{element.text[:50]}...'")
 
     logger.info(
-        f"✅ Verbatim check: {len(verified_elements)}/{len(elements)} elements verified",
+        f"✅ Verbatim check: {len(verified_elements)}/{len(elements)} elements verified"
     )
 
     # Step 2: Remove exact duplicates

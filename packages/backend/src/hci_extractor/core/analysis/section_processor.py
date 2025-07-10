@@ -662,7 +662,7 @@ recovery."""
 
             if basic_elements:
                 logger.info(
-                    f"Partial extraction recovered {len(basic_elements)} basic elements",
+                    f"Partial extraction recovered {len(basic_elements)} basic elements"
                 )
                 return basic_elements
 

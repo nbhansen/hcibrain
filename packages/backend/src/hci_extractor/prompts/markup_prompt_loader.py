@@ -41,7 +41,7 @@ class MarkupPromptLoader:
         chunk_index: int = 1,
         total_chunks: int = 1,
     ) -> str:
-        """Generate complete markup prompt for given text using the template structure."""
+        """Generate complete markup prompt using the template structure."""
         markup_config = self._prompts.get("markup_generation", {})
 
         # Check if we have the new template structure

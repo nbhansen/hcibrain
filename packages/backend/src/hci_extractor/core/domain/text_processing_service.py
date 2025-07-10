@@ -27,7 +27,7 @@ class TextProcessingService:
             return marked_chunks[0]
 
         # Simple merge - join with double newlines to preserve structure
-        # The chunking service handles overlap intelligently, so simple concatenation works well
+        # The chunking service handles overlap intelligently
         merged = marked_chunks[0]
 
         for chunk in marked_chunks[1:]:

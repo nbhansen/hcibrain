@@ -169,7 +169,7 @@ class GeminiProvider(LLMProvider):
                 except Exception as e:
                     print(f"❌ Chunk {i + 1} failed: {e}")
                     logger.warning(
-                        f"🔍 MARKUP DEBUG - Chunk {i + 1} failed: {e}, using original text"
+                        f"🔍 MARKUP DEBUG - Chunk {i + 1} failed: {e}, using original"
                     )
                     marked_chunks.append(chunk)  # Fallback to unmarked text
 
@@ -201,53 +201,15 @@ class GeminiProvider(LLMProvider):
         total_chunks: int = 1,
     ) -> str:
         """Process a single chunk of text for markup generation."""
-        # Generate prompt using prompt loader if available, otherwise fallback
-        if self.markup_prompt_loader:
-            prompt = self.markup_prompt_loader.get_markup_prompt(
-                text,
-                chunk_index,
-                total_chunks,
-            )
-        else:
-            # Fallback to hardcoded prompt (for backwards compatibility)
-            chunk_info = (
-                f" (chunk {chunk_index}/{total_chunks})" if total_chunks > 1 else ""
-            )
-            prompt = (
-                f"You are an expert at analyzing academic papers. "
-                f"Please read the following paper text{chunk_info} and perform TWO tasks:\n\n"
-            ) + """
+        # Generate prompt using prompt loader
+        if not self.markup_prompt_loader:
+            raise ValueError("MarkupPromptLoader is required for markup generation")
 
-TASK 1 - CLEAN THE TEXT:
-Remove ONLY these academic artifacts:
-- Page numbers, headers, footers
-- Broken hyphenations across lines
-- Excessive whitespace
-- Copyright notices
-- Journal metadata
-
-PRESERVE: Reference content, citations, and bibliographies as they are 
-scientifically important
-
-TASK 2 - ADD MARKUP TAGS:
-Add these tags around relevant text:
-- <goal confidence="0.XX">text</goal> for research objectives, questions, and hypotheses
-- <method confidence="0.XX">text</method> for approaches, techniques, and methodologies
-- <result confidence="0.XX">text</result> for findings, outcomes, and discoveries
-
-Rules:
-1. Return the COMPLETE cleaned text with markup added
-2. Do NOT summarize or omit any content text
-3. Use confidence scores from 0.50 to 0.99 based on how certain you are
-4. Only mark text that clearly fits the categories
-5. Do NOT use any other HTML tags or formatting
-6. Escape any existing < > characters in the text as &lt; &gt;
-7. This may be part of a larger document - focus on marking up what's clearly 
-identifiable in this section
-
-Paper text:
-{text}
-"""
+        prompt = self.markup_prompt_loader.get_markup_prompt(
+            text,
+            chunk_index,
+            total_chunks,
+        )
 
         logger.info(f"🔍 MARKUP DEBUG - Single chunk prompt length: {len(prompt)}")
 
