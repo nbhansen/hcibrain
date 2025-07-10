@@ -1,56 +1,304 @@
-# Python
+# ================================
+# HCIBrain - Comprehensive .gitignore
+# ================================
+
+# ================================
+# SENSITIVE CONFIGURATION
+# ================================
+# Never commit API keys or secrets
+config.yaml
+.env
+.env.local
+.env.production
+.env.staging
+*.key
+*.pem
+secrets/
+
+# ================================
+# PYTHON
+# ================================
+# Bytecode
 __pycache__/
-.pytest_cache/
 *.py[cod]
 *$py.class
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
-/docs
-.claude
+.installed.cfg
+*.egg
+MANIFEST
 
-
-# Virtual Environment
+# Virtual environments
 venv/
 .venv/
 env/
+.env/
+ENV/
+env.bak/
+venv.bak/
 
-# Configuration with secrets
-config.yaml
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Caching and linting
+.mypy_cache/
+.pyre/
+.ruff_cache/
+.pylint.d/
 
-# OS
-.DS_Store
-Thumbs.db
+# ================================
+# NODE.JS / FRONTEND
+# ================================
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# SQLite database
-*.db
+# Build outputs
+dist/
+build/
+.vite/
+.next/
+.nuxt/
+.vercel/
 
-# Project specific
-data/
-output/
+# Runtime
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output
+
+# ================================
+# DEVELOPMENT FILES
+# ================================
+# Logs
+*.log
+backend.log
+frontend.log
+server.log
+backend_fresh.log
+
+# Test files and sample data
 *.pdf
-
-# Test outputs
+autisticadults.pdf
+deep_speech_2.pdf
+ooenviron.pdf
 test_results.*
 analysis.csv
 batch_export.csv
 fixed_results.json
-results
+results/
 test_batch_input/
 test_batch_output/
+data/
+output/
 
-# Development files
+# Development scripts and tools
+scripts/
+quick_test.sh
+test_api.sh
+setup_config.sh
+
+# Development HTML files (Vite output)
+"Vite + React + TS.html"
+"Vite + React + TS_files/"
+
+# Code quality and review files
 codereview*.md
+CODEREVIEW.md
+code_quality_baseline.py
 
-# Cache directories
-.mypy_cache/
-.ruff_cache/
+# ================================
+# IDE AND EDITORS
+# ================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ================================
+# OPERATING SYSTEM
+# ================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ================================
+# DATABASES
+# ================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# ================================
+# DOCUMENTATION BUILD
+# ================================
+docs/_build/
+docs/build/
+site/
+
+# ================================
+# TEMPORARY FILES
+# ================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+.cache/
+
+# ================================
+# ANALYSIS AND MONITORING
+# ================================
+# Performance monitoring
+.nyc_output/
+coverage/
+*.lcov
+
+# Profiling
+*.prof
+*.pstats
+
+# ================================
+# DOCKER
+# ================================
+# Docker
+.dockerignore
+Dockerfile.*
+
+# ================================
+# SECURITY
+# ================================
+# SSL certificates
+*.crt
+*.p12
+*.pfx
+
+# SSH keys
+id_rsa
+id_rsa.pub
+known_hosts
+
+# ================================
+# PROJECT SPECIFIC
+# ================================
+# Claude development files
+.claude/
+CLAUDE.md
+
+# Memory and architecture docs (development only)
+MEMORY.md
+ARCHITECTURE.md
+
+# Makefile (development utility)
+Makefile
+
+# Root package files (monorepo structure)
+package-lock.json
+package.json
+pyproject.toml
+
+# Archive documentation
+docs/archived/
+
+# ================================
+# GITHUB SPECIFIC
+# ================================
+# GitHub Codespaces
+.devcontainer/
+
+# GitHub Actions (if sensitive)
+# .github/
