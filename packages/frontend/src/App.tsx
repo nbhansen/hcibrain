@@ -363,7 +363,10 @@ function App() {
                   ref={markupContentRef}
                   className={`markup-content ${!filters.goals ? 'hide-goals' : ''} ${!filters.methods ? 'hide-methods' : ''} ${!filters.results ? 'hide-results' : ''}`}
                   dangerouslySetInnerHTML={{ 
-                    __html: DOMPurify.sanitize(processedHtml || markupResult.paper_full_text_with_markup) 
+                    __html: DOMPurify.sanitize(processedHtml || markupResult.paper_full_text_with_markup, {
+                      ADD_TAGS: ['goal', 'method', 'result', 'summary'],
+                      ADD_ATTR: ['confidence']
+                    })
                   }}
                 />
               </div>
