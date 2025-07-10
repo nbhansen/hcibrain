@@ -82,19 +82,59 @@ Our code is complete when:
 - Skip tests for simple CLI parsing
 
 ## Project Structure
+
 ```
 packages/
-├── backend/           # Backend Python code
-│   ├── src/          # Source code (hci_extractor package)
-│   ├── tests/        # Backend test files
-│   └── pyproject.toml
-├── frontend/         # Frontend React/TypeScript app
-│   ├── src/          # React components and assets
-│   ├── dist/         # Built frontend files
-│   └── package.json
-├── config.yaml       # Main configuration file
-└── prompts/          # Prompt templates and examples
+├── backend/                    # Backend Python application
+│   ├── src/hci_extractor/
+│   │   ├── core/              # 🏛️ Core Domain Layer
+│   │   │   ├── analysis/      # Section detection and processing
+│   │   │   ├── config.py      # Configuration objects
+│   │   │   ├── di_container.py # Dependency injection container
+│   │   │   ├── domain/        # Business logic services
+│   │   │   ├── events.py      # Domain events
+│   │   │   ├── extraction/    # PDF content extraction
+│   │   │   ├── metrics.py     # Performance tracking
+│   │   │   ├── models/        # Domain models and exceptions
+│   │   │   ├── ports/         # Domain interfaces
+│   │   │   └── text/          # Text processing utilities
+│   │   ├── infrastructure/    # 🔌 Infrastructure Layer
+│   │   │   └── configuration_service.py # Environment access
+│   │   ├── providers/         # 🤖 LLM Provider Adapters
+│   │   │   ├── base.py        # Abstract provider interface
+│   │   │   ├── gemini_provider.py # Google Gemini implementation
+│   │   │   └── provider_config.py # Provider configurations
+│   │   ├── prompts/           # 📝 Prompt Management
+│   │   │   ├── markup_prompt_loader.py # YAML prompt loader
+│   │   │   └── prompt_manager.py # Prompt template system
+│   │   ├── utils/             # 🛠️ Utilities
+│   │   │   ├── error_classifier.py # Error pattern matching
+│   │   │   ├── json_recovery.py # JSON parsing recovery
+│   │   │   ├── logging.py     # Structured logging
+│   │   │   ├── retry_handler.py # Retry logic with backoff
+│   │   │   └── user_error_translator.py # User-friendly errors
+│   │   ├── cli/               # 💻 Command Line Interface
+│   │   │   ├── commands.py    # CLI command implementations
+│   │   │   ├── config_builder.py # Configuration building
+│   │   │   └── progress.py    # CLI progress tracking
+│   │   └── web/               # 🌐 Web API Interface
+│   │       ├── app.py         # FastAPI application
+│   │       ├── dependencies.py # FastAPI DI integration
+│   │       ├── models/        # API request/response models
+│   │       ├── progress.py    # WebSocket progress updates
+│   │       └── routes/        # API endpoint handlers
+│   ├── tests/                 # 🧪 Test Suite
+│   ├── config.yaml           # 📄 Configuration file
+│   └── prompts/              # 📝 YAML prompt templates
+└── frontend/                  # ⚛️ React Frontend
+    ├── src/
+    │   ├── App.tsx           # Main application component
+    │   ├── ErrorBoundary.tsx # Error handling
+    │   └── constants.ts      # Frontend configuration
+    └── dist/                 # Built frontend assets
 ```
+
+
 
 ## TypeScript Standards (Frontend)
 

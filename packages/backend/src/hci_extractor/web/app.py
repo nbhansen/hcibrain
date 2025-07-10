@@ -69,5 +69,6 @@ def create_app() -> FastAPI:
     return app
 
 
-# App instance should be created in main entry point, not at module level
-# This prevents global state and allows for proper configuration
+# Module-level app instance for uvicorn compatibility
+# This is created on-demand to avoid global state during initialization
+app = create_app()
