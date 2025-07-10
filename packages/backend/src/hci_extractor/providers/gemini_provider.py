@@ -107,6 +107,10 @@ class GeminiProvider(LLMProvider):
         from hci_extractor.core.text import ChunkingMode, create_markup_chunking_service
 
         try:
+            # Handle empty text
+            if not full_text or not full_text.strip():
+                return ""
+                
             # DEBUG: Log input details
             logger.info(f"🔍 MARKUP DEBUG - Input text length: {len(full_text)}")
             logger.info(f"🔍 MARKUP DEBUG - First 200 chars: {full_text[:200]!r}")

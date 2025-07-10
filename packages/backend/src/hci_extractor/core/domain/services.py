@@ -5,7 +5,6 @@ import time
 from typing import Any, Dict, Optional, Tuple
 
 from hci_extractor.core.config import ExtractorConfig
-from hci_extractor.core.domain.transformers import ElementTransformer
 from hci_extractor.core.events import (
     EventBus,
     SectionProcessingCompleted,
@@ -91,8 +90,8 @@ class SectionAnalysisService:
                     context,
                 )
 
-                # Transform to domain objects
-                cleaned_elements = ElementTransformer.transform_elements(raw_elements)
+                # No transformation needed - raw elements are already clean
+                cleaned_elements = raw_elements
 
                 # Update metrics
                 metrics.tokens_input = len(section_text) // 4  # Rough estimate
@@ -188,8 +187,8 @@ class PaperSummaryService:
                     context,
                 )
 
-                # Transform to domain format
-                cleaned_summary = ElementTransformer.transform_summary(raw_summary)
+                # No transformation needed - raw summary is already clean
+                cleaned_summary = raw_summary
 
                 # Update metrics
                 total_text = abstract_text + introduction_text

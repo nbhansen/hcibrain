@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 import yaml
 
-from hci_extractor.core.config import ConfigurationData
+from hci_extractor.core.config import ExtractorConfig, ConfigurationData
 from hci_extractor.core.models.exceptions import ConfigurationError
 from hci_extractor.core.ports import ConfigurationPort
 
@@ -29,7 +29,7 @@ class ConfigurationService(ConfigurationPort):
 
         if not self.config_path.exists():
             raise ConfigurationError(
-                f"Configuration file not found: {self.config_path}. "
+                f"ExtractorConfiguration file not found: {self.config_path}. "
                 "Please create config.yaml from the template.",
             )
 
@@ -48,7 +48,7 @@ class ConfigurationService(ConfigurationPort):
 
             if not isinstance(config_dict, dict):
                 raise ConfigurationError(
-                    "Configuration file must contain a YAML dictionary",
+                    "ExtractorConfiguration file must contain a YAML dictionary",
                 )
 
             # Validate required sections exist
@@ -81,16 +81,77 @@ class ConfigurationService(ConfigurationPort):
             raise ConfigurationError(f"Invalid YAML in configuration file: {e}") from e
         except FileNotFoundError:
             raise ConfigurationError(
-                f"Configuration file not found: {self.config_path}",
+                f"ExtractorConfiguration file not found: {self.config_path}",
             )
         except Exception as e:
             raise ConfigurationError(f"Failed to load configuration: {e}") from e
+
+    def load_config(self, config_path: Path) -> ExtractorConfig:
+        """Load configuration from YAML file and return ExtractorConfig object.
+        
+        This method is compatible with TDD tests.
+        
+        Args:
+            config_path: Path to YAML configuration file
+            
+        Returns:
+            Immutable ExtractorConfig object
+            
+        Raises:
+            FileNotFoundError: If config file doesn't exist
+            yaml.YAMLError: If YAML is invalid
+            ValueError: If configuration validation fails
+        """
+        if not config_path.exists():
+            raise FileNotFoundError(f"ExtractorConfiguration file not found: {config_path}")
+            
+        try:
+            with config_path.open("r", encoding="utf-8") as f:
+                config_dict = yaml.safe_load(f)
+                
+            if not isinstance(config_dict, dict):
+                raise ValueError("ExtractorConfiguration file must contain a YAML dictionary")
+                
+            # Validate provider type
+            provider_type = config_dict.get("api", {}).get("provider_type")
+            if provider_type not in ["gemini", "openai", "anthropic"]:
+                raise ValueError(f"Invalid provider type: {provider_type}")
+                
+            # Validate API key
+            api_section = config_dict.get("api", {})
+            api_key = api_section.get(f"{provider_type}_api_key")
+            if not api_key or api_key == "":
+                # Check environment variable
+                env_key = os.environ.get(f"{provider_type.upper()}_API_KEY")
+                if not env_key:
+                    raise ValueError(f"API key required for provider: {provider_type}")
+                # Override with environment variable
+                config_dict["api"][f"{provider_type}_api_key"] = env_key
+                
+            # Type conversion and validation
+            analysis = config_dict.get("analysis", {})
+            temperature = analysis.get("temperature", 0.1)
+            try:
+                temperature = float(temperature)
+                if not (0.0 <= temperature <= 1.0):
+                    raise ValueError(f"Temperature must be between 0.0 and 1.0, got: {temperature}")
+            except (ValueError, TypeError) as e:
+                raise ValueError(f"Invalid temperature value: {temperature}") from e
+                
+            return ExtractorConfig.from_dict(config_dict)
+            
+        except yaml.YAMLError as e:
+            raise yaml.YAMLError(f"Invalid YAML in configuration file: {e}") from e
+        except Exception as e:
+            if isinstance(e, (FileNotFoundError, ValueError, yaml.YAMLError)):
+                raise
+            raise ValueError(f"Failed to load configuration: {e}") from e
 
     def get_prompts_directory(self, config_data: ConfigurationData) -> Path:
         """Get the prompts directory path from configuration.
 
         Args:
-            config_data: Configuration data object
+            config_data: ExtractorConfiguration data object
 
         Returns:
             Path to prompts directory
@@ -107,7 +168,7 @@ class ConfigurationService(ConfigurationPort):
         """Get the cache directory path if configured.
 
         Args:
-            config_data: Configuration data object
+            config_data: ExtractorConfiguration data object
 
         Returns:
             Path to cache directory or None if not configured
@@ -127,7 +188,7 @@ class ConfigurationService(ConfigurationPort):
         """Validate API configuration has required keys.
 
         Args:
-            config_data: Configuration data object
+            config_data: ExtractorConfiguration data object
 
         Raises:
             ConfigurationError: If API configuration is invalid
@@ -189,7 +250,7 @@ class ConfigurationService(ConfigurationPort):
         """Get configuration path from environment variable.
 
         Returns:
-            Configuration path from environment or None
+            ExtractorConfiguration path from environment or None
         """
         return self.get_environment_variable("HCI_CONFIG_PATH")
 
@@ -201,7 +262,7 @@ class ConfigurationService(ConfigurationPort):
         """
         return self.get_environment_variable("HCI_LOG_LEVEL")
 
-    # ConfigurationPort interface implementation
+    # ExtractorConfigurationPort interface implementation
 
     def get_api_key(self, provider: str) -> Optional[str]:
         """Get API key for a specific provider."""

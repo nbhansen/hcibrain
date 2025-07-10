@@ -1,10 +1,12 @@
 """Dependency injection container for the HCI extractor."""
 
 import logging
+import threading
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type, TypeVar, Union
 
 if TYPE_CHECKING:
+    from hci_extractor.core.config import ExtractorConfig
     from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
 
 logger = logging.getLogger(__name__)
@@ -38,10 +40,21 @@ class ServiceDescriptor:
 class DIContainer:
     """Dependency injection container."""
 
-    def __init__(self) -> None:
+    def __init__(self, config: Optional["ExtractorConfig"] = None) -> None:
+        """Initialize DI container with optional configuration.
+        
+        Following hexagonal architecture - config is injected, not accessed globally.
+        All dependencies must be explicit and immutable.
+        """
         self._services: Dict[Type[Any], ServiceDescriptor] = {}
         self._singletons: Dict[Type[Any], Any] = {}
-        self._resolving: set[Type[Any]] = set()  # Track circular dependency resolution
+        self._resolving = threading.local()  # Thread-local circular dependency tracking
+        self._lock = threading.RLock()  # Thread-safe operations
+        self.config = config  # Store config for service creation
+        
+        # Auto-configure services if config provided
+        if config is not None:
+            self._configure_default_services()
 
     def register_singleton(
         self,
@@ -91,32 +104,37 @@ class DIContainer:
         self._singletons[service_type] = instance
 
     def resolve(self, service_type: Type[T]) -> T:
-        """Resolve a service instance."""
-        if service_type in self._resolving:
-            raise ValueError(f"Circular dependency detected for {service_type}")
+        """Resolve a service instance with thread safety."""
+        with self._lock:
+            # Initialize thread-local resolving set if needed
+            if not hasattr(self._resolving, 'resolving_set'):
+                self._resolving.resolving_set = set()
 
-        if service_type not in self._services:
-            raise ValueError(f"Service {service_type} not registered")
+            if service_type in self._resolving.resolving_set:
+                raise ValueError(f"Circular dependency detected for {service_type}")
 
-        descriptor = self._services[service_type]
+            if service_type not in self._services:
+                raise ValueError(f"Service {service_type} not registered")
 
-        # Check if it's a singleton and already created
-        if descriptor.lifetime == ServiceLifetime.SINGLETON:
-            if service_type in self._singletons:
-                return self._singletons[service_type]  # type: ignore
+            descriptor = self._services[service_type]
 
-        # Create the instance
-        self._resolving.add(service_type)
-        try:
-            instance = self._create_instance(descriptor)
-
-            # Store singleton
+            # Check if it's a singleton and already created
             if descriptor.lifetime == ServiceLifetime.SINGLETON:
-                self._singletons[service_type] = instance
+                if service_type in self._singletons:
+                    return self._singletons[service_type]  # type: ignore
 
-            return instance  # type: ignore
-        finally:
-            self._resolving.discard(service_type)
+            # Create the instance
+            self._resolving.resolving_set.add(service_type)
+            try:
+                instance = self._create_instance(descriptor)
+
+                # Store singleton
+                if descriptor.lifetime == ServiceLifetime.SINGLETON:
+                    self._singletons[service_type] = instance
+
+                return instance  # type: ignore
+            finally:
+                self._resolving.resolving_set.discard(service_type)
 
     def _create_instance(self, descriptor: ServiceDescriptor) -> Any:
         """Create an instance from a service descriptor."""
@@ -152,9 +170,105 @@ class DIContainer:
 
     def clear(self) -> None:
         """Clear all registrations and singletons."""
-        self._services.clear()
-        self._singletons.clear()
-        self._resolving.clear()
+        with self._lock:
+            self._services.clear()
+            self._singletons.clear()
+            # Clear thread-local data if it exists
+            if hasattr(self._resolving, 'resolving_set'):
+                self._resolving.resolving_set.clear()
+
+    # TDD-compatible interface methods
+    def get_event_bus(self) -> "EventBus":
+        """Get EventBus singleton - TDD interface."""
+        from hci_extractor.core.events import EventBus
+        return self.resolve(EventBus)
+
+    def get_llm_provider(self) -> "LLMProvider":
+        """Get LLM provider based on configuration - TDD interface."""
+        from hci_extractor.providers.base import LLMProvider
+        # Return the actual provider (e.g., GeminiProvider)
+        return self.resolve(LLMProvider)
+
+    def get_markup_prompt_loader(self) -> "MarkupPromptLoader":
+        """Get markup prompt loader - TDD interface."""
+        from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+        return self.resolve(MarkupPromptLoader)
+
+    def cleanup(self) -> None:
+        """Clean up resources - TDD interface."""
+        # Clean up singletons if they have cleanup methods
+        for instance in self._singletons.values():
+            if hasattr(instance, 'close') or hasattr(instance, 'cleanup'):
+                try:
+                    if hasattr(instance, 'close'):
+                        instance.close()
+                    elif hasattr(instance, 'cleanup'):
+                        instance.cleanup()
+                except Exception as e:
+                    logger.warning(f"Error during cleanup: {e}")
+        self.clear()
+
+    def _configure_default_services(self) -> None:
+        """Configure default services based on provided config.
+        
+        Following hexagonal architecture - all dependencies explicit.
+        """
+        if not self.config:
+            return
+
+        # Import here to avoid circular dependencies
+        from hci_extractor.core.events import EventBus
+        from hci_extractor.providers.gemini_provider import GeminiProvider
+        from hci_extractor.providers.provider_config import LLMProviderConfig
+        from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+        from hci_extractor.providers.base import LLMProvider
+
+        # Register EventBus as singleton
+        self.register_singleton(EventBus, EventBus)
+
+        # Register MarkupPromptLoader as singleton
+        def create_prompt_loader() -> MarkupPromptLoader:
+            return MarkupPromptLoader(self.config.prompts_directory)
+        
+        self.register_factory(MarkupPromptLoader, create_prompt_loader, ServiceLifetime.SINGLETON)
+
+        # Register LLM provider based on config
+        def create_llm_provider() -> LLMProvider:
+            if not self.config:
+                raise ValueError("Configuration required for LLM provider")
+                
+            provider_type = self.config.api.provider_type.lower()
+            
+            if provider_type == "gemini":
+                if not self.config.api.gemini_api_key:
+                    raise ValueError("API key required for provider: gemini")
+                    
+                provider_config = LLMProviderConfig(
+                    api_key=self.config.api.gemini_api_key,
+                    temperature=self.config.analysis.temperature,
+                    max_output_tokens=self.config.analysis.max_output_tokens,
+                    max_attempts=self.config.retry.max_attempts,
+                    timeout_seconds=self.config.api.timeout_seconds,
+                    rate_limit_delay=self.config.api.rate_limit_delay
+                )
+                
+                event_bus = self.resolve(EventBus)
+                prompt_loader = self.resolve(MarkupPromptLoader)
+                
+                return GeminiProvider(
+                    provider_config=provider_config,
+                    event_bus=event_bus,
+                    markup_prompt_loader=prompt_loader,
+                    model_name=self.config.analysis.model_name
+                )
+            elif provider_type == "openai":
+                raise NotImplementedError("OpenAI provider not yet implemented")
+            else:
+                raise ValueError(f"Invalid provider type: {provider_type}")
+
+        # Register both abstract and concrete types
+        self.register_factory(LLMProvider, create_llm_provider, ServiceLifetime.SINGLETON)
+        self.register_factory(GeminiProvider, create_llm_provider, ServiceLifetime.SINGLETON)
 
 
 # No global state - container must be passed explicitly through dependency injection
@@ -286,21 +400,8 @@ def configure_services(container: DIContainer) -> None:
 
     container.register_factory(GeminiProvider, create_gemini_provider)
 
-    # Register LLMSectionProcessor factory
-    # Register LLMSectionProcessor factory
-    def create_section_processor(
-        llm_provider: LLMProviderPort,
-        config: ExtractorConfig,
-        event_bus: EventBus,
-    ) -> Any:  # Using Any to avoid circular import
-        from hci_extractor.core.analysis import LLMSectionProcessor
-
-        return LLMSectionProcessor(llm_provider, config, event_bus)
-
-    # Use the actual class after import
-    from hci_extractor.core.analysis import LLMSectionProcessor
-
-    container.register_factory(LLMSectionProcessor, create_section_processor)
+    # Note: LLMSectionProcessor was removed with the analysis module
+    # Section processing is now handled directly by domain services
 
     # Register domain services
     def create_section_analysis_service(
