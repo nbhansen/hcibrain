@@ -32,7 +32,7 @@ class MarkupPromptLoader:
                 self._prompts = yaml.safe_load(f)
             logger.info(f"Loaded markup prompts from {markup_prompts_file}")
         except Exception as e:
-            logger.error(f"Failed to load markup prompts: {e}")
+            logger.exception(f"Failed to load markup prompts: {e}")
             raise
 
     def get_markup_prompt(

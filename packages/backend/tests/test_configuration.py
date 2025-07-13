@@ -17,7 +17,7 @@ class TestConfiguration:
 
         # Verify frozen dataclass
         assert hasattr(config, "__dataclass_fields__")
-        assert getattr(config, "__dataclass_params__").frozen
+        assert config.__dataclass_params__.frozen
 
         # Try to modify - should raise AttributeError
         with pytest.raises(AttributeError):

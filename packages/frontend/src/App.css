@@ -191,7 +191,8 @@ body {
    BUTTONS
    ======================================== */
 .upload-button, 
-.new-upload-button {
+.new-upload-button,
+.export-button {
   background: var(--primary-blue);
   color: var(--background-primary);
   border: none;
@@ -209,19 +210,22 @@ body {
 }
 
 .upload-button:hover, 
-.new-upload-button:hover {
+.new-upload-button:hover,
+.export-button:hover {
   background: var(--primary-blue-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
 .upload-button:active, 
-.new-upload-button:active {
+.new-upload-button:active,
+.export-button:active {
   transform: translateY(0);
 }
 
 .upload-button:focus, 
-.new-upload-button:focus {
+.new-upload-button:focus,
+.export-button:focus {
   outline: 2px solid var(--primary-blue);
   outline-offset: 2px;
 }
@@ -321,6 +325,20 @@ body {
   font-size: 1.875rem;
   font-weight: var(--font-weight-semibold);
   letter-spacing: -0.025em;
+}
+
+.results-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.export-button {
+  background: var(--primary-purple);
+}
+
+.export-button:hover {
+  background: #6a4c93;
 }
 
 /* ========================================
@@ -766,15 +784,42 @@ body {
    MARKUP FILTERING
    ======================================== */
 .markup-content.hide-goals goal {
-  display: none;
+  background: transparent !important;
+  color: inherit !important;
+  border-left: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-weight: inherit !important;
+  border-radius: 0 !important;
+  display: inline !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .markup-content.hide-methods method {
-  display: none;
+  background: transparent !important;
+  color: inherit !important;
+  border-left: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-weight: inherit !important;
+  border-radius: 0 !important;
+  display: inline !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .markup-content.hide-results result {
-  display: none;
+  background: transparent !important;
+  color: inherit !important;
+  border-left: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-weight: inherit !important;
+  border-radius: 0 !important;
+  display: inline !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* ========================================
@@ -1037,10 +1082,16 @@ body {
   }
   
   .upload-button, 
-  .new-upload-button {
+  .new-upload-button,
+  .export-button {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: 1rem;
     min-width: 120px;
+  }
+  
+  .results-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
   
   .markup-content {
@@ -1071,6 +1122,7 @@ body {
   .upload-section,
   .results-header button,
   .new-upload-button,
+  .export-button,
   .markup-legend {
     display: none !important;
   }

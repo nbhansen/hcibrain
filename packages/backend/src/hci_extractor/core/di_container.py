@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type, TypeVar, 
 
 if TYPE_CHECKING:
     from hci_extractor.core.config import ExtractorConfig
+    from hci_extractor.core.events import EventBus
     from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
+    from hci_extractor.providers.base import LLMProvider
 
 logger = logging.getLogger(__name__)
 
@@ -221,10 +223,10 @@ class DIContainer:
 
         # Import here to avoid circular dependencies
         from hci_extractor.core.events import EventBus
-        from hci_extractor.providers.gemini_provider import GeminiProvider
-        from hci_extractor.providers.provider_config import LLMProviderConfig
         from hci_extractor.prompts.markup_prompt_loader import MarkupPromptLoader
         from hci_extractor.providers.base import LLMProvider
+        from hci_extractor.providers.gemini_provider import GeminiProvider
+        from hci_extractor.providers.provider_config import LLMProviderConfig
 
         # Register EventBus as singleton
         self.register_singleton(EventBus, EventBus)
@@ -266,10 +268,9 @@ class DIContainer:
                     markup_prompt_loader=prompt_loader,
                     model_name=self.config.analysis.model_name,
                 )
-            elif provider_type == "openai":
+            if provider_type == "openai":
                 raise NotImplementedError("OpenAI provider not yet implemented")
-            else:
-                raise ValueError(f"Invalid provider type: {provider_type}")
+            raise ValueError(f"Invalid provider type: {provider_type}")
 
         # Register both abstract and concrete types
         self.register_factory(

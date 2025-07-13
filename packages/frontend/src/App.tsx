@@ -199,6 +199,118 @@ function App() {
     }));
   }, []);
 
+  // Export filtered content to markdown
+  const exportToMarkdown = useCallback(() => {
+    if (!markupResult) return;
+
+    const { paper_full_text_with_markup, paper_info, plain_language_summary, processing_time_seconds } = markupResult;
+    
+    // Create a temporary DOM element to parse HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(paper_full_text_with_markup, 'text/html');
+    
+    // Start building markdown content
+    let markdown = '';
+    
+    // Add paper metadata header
+    markdown += `# ${paper_info.title}\n\n`;
+    markdown += `**Authors:** ${paper_info.authors.join(', ')}\n\n`;
+    markdown += `**Processing Time:** ${processing_time_seconds.toFixed(1)}s\n\n`;
+    
+    // Add plain language summary if available
+    if (plain_language_summary) {
+      markdown += `## Plain Language Summary\n\n${plain_language_summary}\n\n`;
+    }
+    
+    markdown += `## Extracted Content\n\n`;
+    markdown += `*The following content has been automatically extracted and categorized:*\n\n`;
+    
+    // Collect markup content by category
+    const goals: Array<{ confidence: string; text: string }> = [];
+    const methods: Array<{ confidence: string; text: string }> = [];
+    const results: Array<{ confidence: string; text: string }> = [];
+    
+    // Process the HTML content to extract markup tags
+    const collectMarkupTags = (node: Node): void => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        const tagName = element.tagName.toLowerCase();
+        
+        // Collect markup tags based on current filter state
+        if (tagName === 'goal' && filters.goals) {
+          const confidence = element.getAttribute('confidence') || '0.00';
+          goals.push({ confidence, text: element.textContent || '' });
+        } else if (tagName === 'method' && filters.methods) {
+          const confidence = element.getAttribute('confidence') || '0.00';
+          methods.push({ confidence, text: element.textContent || '' });
+        } else if (tagName === 'result' && filters.results) {
+          const confidence = element.getAttribute('confidence') || '0.00';
+          results.push({ confidence, text: element.textContent || '' });
+        }
+        
+        // Process children
+        for (const child of Array.from(element.childNodes)) {
+          collectMarkupTags(child);
+        }
+      }
+    };
+    
+    // Collect all markup tags
+    collectMarkupTags(doc.body);
+    
+    // Add sections for each category that has content
+    if (goals.length > 0) {
+      markdown += `### Goals\n\n`;
+      goals.forEach(item => {
+        const confidencePercent = Math.round(parseFloat(item.confidence) * 100);
+        markdown += `**🎯 Goal (${confidencePercent}%):** ${item.text}\n\n`;
+      });
+    }
+    
+    if (methods.length > 0) {
+      markdown += `### Methods\n\n`;
+      methods.forEach(item => {
+        const confidencePercent = Math.round(parseFloat(item.confidence) * 100);
+        markdown += `**🔬 Method (${confidencePercent}%):** ${item.text}\n\n`;
+      });
+    }
+    
+    if (results.length > 0) {
+      markdown += `### Results\n\n`;
+      results.forEach(item => {
+        const confidencePercent = Math.round(parseFloat(item.confidence) * 100);
+        markdown += `**📊 Result (${confidencePercent}%):** ${item.text}\n\n`;
+      });
+    }
+    
+    // Add footer with filter information
+    markdown += '\n---\n\n';
+    markdown += '*Export Information:*\n';
+    markdown += `- **Goals:** ${filters.goals ? 'Included' : 'Filtered out'}\n`;
+    markdown += `- **Methods:** ${filters.methods ? 'Included' : 'Filtered out'}\n`;
+    markdown += `- **Results:** ${filters.results ? 'Included' : 'Filtered out'}\n`;
+    markdown += `- **Export Date:** ${new Date().toLocaleString()}\n`;
+    
+    // Create and download file
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    // Generate clean filename from paper title
+    const cleanTitle = paper_info.title
+      .replace(/[^a-zA-Z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .toLowerCase()
+      .substring(0, 50); // Limit length
+    
+    link.href = url;
+    link.download = `${UI_TEXT.EXPORT_FILENAME_PREFIX}-${cleanTitle}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [markupResult, filters]);
+
   // Setup TOC and processed HTML when markup result is available
   useEffect(() => {
     if (markupResult?.paper_full_text_with_markup) {
@@ -284,9 +396,14 @@ function App() {
           <div className="results-section">
             <div className="results-header">
               <h2>{UI_TEXT.RESULTS_TITLE}</h2>
-              <button onClick={resetUpload} className="new-upload-button">
-                {UI_TEXT.NEW_UPLOAD_BUTTON}
-              </button>
+              <div className="results-actions">
+                <button onClick={exportToMarkdown} className="export-button">
+                  {UI_TEXT.EXPORT_BUTTON}
+                </button>
+                <button onClick={resetUpload} className="new-upload-button">
+                  {UI_TEXT.NEW_UPLOAD_BUTTON}
+                </button>
+              </div>
             </div>
 
             {markupResult.plain_language_summary && (

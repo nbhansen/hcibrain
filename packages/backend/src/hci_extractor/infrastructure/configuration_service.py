@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 import yaml
 
-from hci_extractor.core.config import ExtractorConfig, ConfigurationData
+from hci_extractor.core.config import ConfigurationData, ExtractorConfig
 from hci_extractor.core.models.exceptions import ConfigurationError
 from hci_extractor.core.ports import ConfigurationPort
 

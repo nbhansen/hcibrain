@@ -18,7 +18,9 @@ export const UI_TEXT = {
   ERROR_BOUNDARY_TITLE: 'Something went wrong',
   ERROR_BOUNDARY_MESSAGE: 'Please refresh the page and try again.',
   AUTHORS_LABEL: 'Authors:',
-  PROCESSING_TIME_LABEL: 'Processing time:'
+  PROCESSING_TIME_LABEL: 'Processing time:',
+  EXPORT_BUTTON: '📄 Export Markdown',
+  EXPORT_FILENAME_PREFIX: 'academic-paper'
 } as const;
 
 export const API_ENDPOINTS = {
